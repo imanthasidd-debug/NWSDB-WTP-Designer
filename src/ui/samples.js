@@ -35,4 +35,13 @@ export const SAMPLES = [
       return p;
     },
   },
+  {
+    id: 'cap25', title: 'Specified capacity – 25,000 m³/d plant', sub: 'Kurunegala · design for a pre-determined capacity (no demand forecast)', build: () => {
+      const p = newProject();
+      const i = p.inputs;
+      Object.assign(i.setup, { name: 'Sample 25,000 m³/d Water Treatment Plant (specified capacity)', code: 'WTP-SMP-25K', district: 'Kurunegala', source: 'Deduru Oya', sourceType: 'river', rsc: 'RSC – North Western' });
+      Object.assign(i.demand, { basis: 'capacity', capacity: 25000, capacityType: 'throughput', nTrains: 2 });
+      return p;
+    },
+  },
 ];

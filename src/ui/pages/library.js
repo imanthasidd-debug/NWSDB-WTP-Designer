@@ -6,14 +6,14 @@ import { DN, G, fmt, fmtAuto, hwLoss, vel } from '../../core/util.js';
 import { DOsat, mu, nu, pHs, rho, stability, stokes, lsiText, pVap } from '../../core/water.js';
 import JSZip from 'jszip';
 import { h, icon, toast } from '../dom.js';
-import { emblemSVG } from '../brand.js';
+import { CREDIT, DEVELOPER, bannerImg, emblemImg } from '../brand.js';
 import { REPORT_SECTIONS, buildReport } from '../report.js';
-import { card, chartCard, checksTable, kpis, saveFile, statusBadge, table } from '../results.js';
+import { locate } from '../locate.js';
+import { card, chartCard, checksTable, exportSheetsPDF, kpis, saveFile, statusBadge, table } from '../results.js';
 import { PAGES } from './registry.js';
 import { buildWorkbook } from '../xlsx.js';
 import { navigate, resetCriteria, saveSettings, setCriteria, store } from '../store.js';
-import { drawingDXF, drawingSVG } from '../draw/render.js';
-import * as U from '../draw/units.js';
+import { packHTML, packSheets } from '../draw/pack.js';
 
 const f2 = (v) => fmt(v, 2);
 
@@ -39,26 +39,33 @@ export const report = {
     const exportDrawings = async () => {
       const r = store.results;
       const zip = new JSZip();
-      const list = [U.intakeSection(r.intake), r.process.has.aeration ? U.aeratorSection(r.aeration) : null, U.rapidMixDrawing(r.rapidmix), U.flocDrawing(r.floc), U.sedPlan(r.sed), U.sedSection(r.sed), U.filterPlan(r.filt), U.filterSection(r.filt, r.hyd), U.contactPlan(r.dis), U.cwrPlan(r.storage), U.hydraulicProfile(r.hyd), U.layoutPlan(r.layout)].filter(Boolean);
-      list.forEach((dw, i) => {
-        const base = String(i + 1).padStart(2, '0') + '-' + dw.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, '');
-        zip.file(base + '.dxf', drawingDXF(dw));
-        zip.file(base + '.svg', drawingSVG(dw, { statik: true }).svg);
+      const sheets = packSheets(r, store.project);
+      sheets.forEach((sh, i) => {
+        const base = String(i).padStart(2, '0') + '-' + sh.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, '');
+        if (sh.dxf) zip.file('dxf/' + base + '.dxf', sh.dxf);
+        zip.file('svg/' + base + '.svg', sh.svg);
       });
+      zip.file('drawing-register.csv', ['Sheet,Drawing number,Title,Scale (A3)', ...sheets.map((sh, i) => `${i + 1},${sh.number},"${sh.title}",${sh.scale ? '1:' + sh.scale : 'NTS'}`)].join('\n'));
+      zip.file('A3-drawing-pack.html', packHTML(sheets, store.project.inputs.setup.name + ' – drawings'));
       const data = await zip.generateAsync({ type: 'uint8array' });
       saveFile((store.project.inputs.setup.code || 'WTP') + '-drawings.zip', new Blob([data], { type: 'application/zip' }), 'application/zip');
+    };
+    const exportPack = () => {
+      const sheets = packSheets(store.results, store.project);
+      exportSheetsPDF(packHTML(sheets, store.project.inputs.setup.name + ' – drawings'), (store.project.inputs.setup.code || 'WTP') + '-A3-drawings.pdf', store.project.inputs.setup.name);
     };
     setTimeout(refresh, 30);
     return [
       kpis([
         { label: 'Design report (PDF)', value: 'A4', sub: 'cover, summary, every unit, drawings, charts, calculation sheets', icon: 'file' },
         { label: 'Excel workbook', value: '10 sheets', sub: 'inputs, calculations, checks, BOQ, O&M, loads', icon: 'sheet' },
-        { label: 'Drawing pack', value: 'DXF + SVG', sub: 'AutoCAD R12 DXF, layers per element', icon: 'pen' },
+        { label: 'Drawing pack', value: 'A3 sheets', sub: 'NWSDB title block · PDF, AutoCAD DXF (layers) and SVG', icon: 'pen' },
       ]),
       card('Report contents', opts, { actions: [
         h('button', { class: 'btn primary', onclick: exportPDF }, icon('fileDown'), 'Export PDF'),
         h('button', { class: 'btn', onclick: exportXLSX }, icon('sheet'), 'Excel'),
-        h('button', { class: 'btn', onclick: exportDrawings }, icon('pen'), 'Drawings (ZIP)'),
+        h('button', { class: 'btn', onclick: exportPack }, icon('fileDown'), 'Drawing pack (A3 PDF)'),
+        h('button', { class: 'btn', onclick: exportDrawings }, icon('pen'), 'DXF + SVG (ZIP)'),
         h('button', { class: 'btn ghost', onclick: refresh }, icon('reset'), 'Refresh'),
       ] }),
       frame,
@@ -151,7 +158,7 @@ export const d2manual = {
     const tabs = [['compliance', 'Project compliance', 'checks'], ['clauses', 'Clause index', 'book'], ['tables', 'Design tables', 'table'], ['basins', 'River basins (Table 4.1)', 'rain']];
     const seg = h('div', { class: 'seg' }, tabs.map(([k, l, ic]) => h('button', { class: st.tab === k ? 'on' : '', onclick: () => { st.tab = k; navigate('d2manual'); } }, icon(ic), l)));
     if (st.tab === 'compliance') {
-      body.append(card('Checks against D2 in this project', checksTable(d2.checks.map((c) => ({ ...c, moduleLabel: `${pageTitle(c.module)} · ${c.clause}` })), { showModule: true, onRow: (c) => MOD_PAGE[c.module] && navigate(MOD_PAGE[c.module]) }), { flush: true, sub: 'click a row to open the design page' }));
+      body.append(card('Checks against D2 in this project', checksTable(d2.checks.map((c) => ({ ...c, moduleLabel: `${pageTitle(c.module)} · ${c.clause}` })), { locate, showModule: true, onRow: (c) => MOD_PAGE[c.module] && navigate(MOD_PAGE[c.module]) }), { flush: true, sub: 'click a row to open the design page' }));
     } else if (st.tab === 'clauses') {
       const parts = (x) => String(x).split('.').map(Number);
       const cmp = (a, b) => { for (let i = 0; i < Math.max(a.length, b.length); i++) { const d = (a[i] ?? -1) - (b[i] ?? -1); if (d) return d; } return 0; };
@@ -225,7 +232,7 @@ export const d3manual = {
       return a === b || a.startsWith(b + '.') || b.startsWith(a + '.');
     };
     if (st.tab === 'compliance') {
-      body.append(card('Checks against D3 in this project', checksTable(d3.checks.map((c) => ({ ...c, moduleLabel: `${pageTitle(c.module)} · ${c.clause}` })), { showModule: true, onRow: (c) => MOD_PAGE3[c.module] && navigate(MOD_PAGE3[c.module]) }), { flush: true, sub: 'click a row to open the design page' }));
+      body.append(card('Checks against D3 in this project', checksTable(d3.checks.map((c) => ({ ...c, moduleLabel: `${pageTitle(c.module)} · ${c.clause}` })), { locate, showModule: true, onRow: (c) => MOD_PAGE3[c.module] && navigate(MOD_PAGE3[c.module]) }), { flush: true, sub: 'click a row to open the design page' }));
     } else if (st.tab === 'clauses') {
       const rows = D3M.CLAUSES.map(([cl, title, rule, mod]) => { const key = /^\d/.test(cl) ? '§' + cl : cl; const list = d3.checks.filter((c) => clauseMatch(c.clause, key) || (key.startsWith('§') && c.src && c.src.includes(cl.startsWith('Annex') ? cl : '§' + cl))); return { cl: key, title, rule, mod, n: list.length, st: worst(list) }; });
       body.append(card('How D3 is applied in this application', table([
@@ -310,15 +317,15 @@ export const help = {
   id: 'help', title: 'Help & methods', sub: 'Workflow, methods, keyboard shortcuts and references', icon: 'help', group: 'Library', layout: 'full',
   renderFull() {
     return [h('div', { class: 'grid2' },
-      card('Workflow', h('div', { html: `<ol style="line-height:1.8;margin:0;padding-left:18px">
+      card('Workflow (follow the steps on the Dashboard)', h('div', { html: `<ol style="line-height:1.8;margin:0;padding-left:18px">
         <li><b>Project setup</b> – name, district (sets water temperature, monsoon pattern and regional alerts), source type and site level.</li>
-        <li><b>Demand forecast</b> – census-based projection, NWSDB Design Manual D2 per-capita, UFW and peaking rules → adopted capacity.</li>
-        <li><b>Raw water quality</b> – laboratory results compared with SLS 614:2013 and the SLS 722 raw-water limits (D3 Ch 2).</li>
-        <li><b>Source & hydrology</b> – D2 river-basin data, dry-weather availability, reservoir mass diagram and flood estimate.</li>
-        <li><b>Process selection</b> – the expert system recommends the train (D3 Table 4-5, Fig 4-3/4-4); override any unit.</li>
-        <li><b>Treatment units</b> – intake → aeration → chemical dosing → rapid mix → flocculation → sedimentation → filtration → disinfection → stabilisation.</li>
+        <li><b>Design basis</b> – either a <b>demand forecast</b> (census projection, D2 per-capita, NRW, peaking) or a <b>specified capacity</b> such as “design a 25,000 m³/d plant” (switch on the Dashboard or the Demand page; throughput or treated-water output).</li>
+        <li><b>Raw water quality & source</b> – laboratory results vs SLS 614:2013 / SLS 722 (D3 Ch 2), dry-weather availability, reservoir yield.</li>
+        <li><b>Plant configurator</b> – click one illustrated card per decision (route, pre-treatment, mixer, flocculator, clarifier, filter, disinfectant, stabilisation, residuals). Green badge = NWSDB D3 / expert recommendation, amber = outside D3 guidance; the live PFD updates immediately.</li>
+        <li><b>Treatment units</b> – each page shows what it <b>receives from</b> the unit upstream and <b>hands over</b> to the next (flow, water level, turbidity, pH, chemicals). Red / amber inputs show the failing check right under the field; <b>Locate</b> buttons jump to the input that controls any check.</li>
+        <li><b>Impact of a change</b> – after every edit the Impact panel lists the knock-on effects on every downstream unit (sizes, levels, turbidity, energy, cost, checks); <b>Design chain & impact</b> shows the water path, profiles, dependency matrix and a what-if explorer.</li>
         <li><b>Plant-wide</b> – storage & pumping, residuals, hydraulic profile, site layout, power & cost.</li>
-        <li><b>Outputs</b> – compliance, design-check register and the PDF/Excel/DXF exports.</li></ol>` })),
+        <li><b>Outputs</b> – compliance, design-check register, PDF report, Excel, and the NWSDB <b>A3 drawing pack</b> (title block, D3 concrete hatching, true scale) as PDF / DXF / SVG.</li></ol>` })),
       card('Keyboard shortcuts', table([{ k: 'k', l: 'Keys' }, { k: 'a', l: 'Action' }], [
         { k: 'Ctrl + N', a: 'New project' }, { k: 'Ctrl + O', a: 'Open project (.wtpd)' }, { k: 'Ctrl + S', a: 'Save' }, { k: 'Ctrl + Shift + S', a: 'Save as' },
         { k: 'Ctrl + Z / Ctrl + Y', a: 'Undo / redo' }, { k: 'Ctrl + P', a: 'Design report' }, { k: 'Ctrl + E', a: 'Export Excel workbook' }, { k: 'Ctrl + 1…9', a: 'Jump to pages' }, { k: 'F11', a: 'Full screen' }, { k: 'Ctrl + / −', a: 'Zoom' },
@@ -337,6 +344,7 @@ export const help = {
         <li>Disinfection: D3 Table 6-4/6-5 CT values (USEPA SWTR), Table 6-2 baffle factors, Table 6-7 credits, breakpoint chlorination, HOCl speciation.</li>
         <li>Stabilisation: Langelier & Ryznar indices with iterative post-lime solution.</li>
         <li>Residuals: D3 Method 02 mass balance (Table 5-44) with Method 01 cross-check; mass-curve service-reservoir sizing; quantity-based BOQ.</li></ul>` })),
+      card('About', h('div', { class: 'flex', style: { gap: '14px', alignItems: 'center' } }, h('div', { html: bannerImg(44), style: { background: '#fff', borderRadius: '8px', padding: '6px 8px', border: '1px solid var(--border)' } }), h('div', null, h('b', null, 'NWSDB WTP Designer v1.3'), h('div', { class: 'small' }, CREDIT), h('div', { class: 'small muted' }, 'Conventional water treatment plant design to NWSDB Design Manuals D2 (1989) & D3 (2020) and SLS 614:2013.')))),
       card('Important', h('div', { class: 'small', html: `This application supports – it does not replace – professional engineering judgement. Demand, source, intake, pumping, mains, storage and costing follow NWSDB Design Manual D2 (1989); water quality, process selection and treatment-unit design follow NWSDB Design Manual D3 (2020), supplemented by the lecture notes and AWWA/Kawamura where D3 is silent. Printed D3 inconsistencies and the interpretation adopted are listed under Library → D3 → Errata. Confirm all criteria, unit rates and tariffs against the current NWSDB Design Manual, specifications and schedules of rates before issue. Predicted water quality is a screening estimate; verify with jar tests and pilot data.` })),
     )];
   },
@@ -348,7 +356,7 @@ export const settings = {
   renderFull() {
     const s = store.settings;
     const theme = h('div', { class: 'seg' }, [['light', 'Light', 'sun'], ['dark', 'Dark', 'moon'], ['system', 'System', 'settings']].map(([k, l, ic]) => h('button', { class: s.theme === k ? 'on' : '', onclick: () => { s.theme = k; saveSettings(); window.dispatchEvent(new Event('wtp-theme')); navigate('settings'); } }, icon(ic), l)));
-    const logoPrev = h('div', { style: { width: '72px', height: '72px', display: 'grid', placeItems: 'center', border: '1px dashed var(--border-strong)', borderRadius: '10px', background: 'var(--surface-2)' }, html: s.logo ? `<img src="${s.logo}" style="max-width:64px;max-height:64px">` : emblemSVG(56) });
+    const logoPrev = h('div', { style: { width: '72px', height: '72px', display: 'grid', placeItems: 'center', border: '1px dashed var(--border-strong)', borderRadius: '10px', background: 'var(--surface-2)' }, html: s.logo ? `<img src="${s.logo}" style="max-width:64px;max-height:64px">` : emblemImg(56) });
     const file = h('input', { type: 'file', accept: 'image/png,image/jpeg,image/svg+xml', style: { display: 'none' } });
     file.addEventListener('change', () => { const f = file.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { s.logo = rd.result; saveSettings(); window.dispatchEvent(new Event('wtp-theme')); navigate('settings'); toast('Logo updated'); }; rd.readAsDataURL(f); });
     const designer = h('input', { type: 'text', value: s.designer || '', placeholder: 'Name used for new projects' });
@@ -356,10 +364,10 @@ export const settings = {
     return [
       card('Appearance', h('div', { class: 'field' }, h('label', null, 'Theme'), theme)),
       card('Organisation logo', h('div', { class: 'flex', style: { gap: '16px' } }, logoPrev, h('div', null,
-        h('p', { class: 'small muted', style: { margin: '0 0 8px' } }, 'Load the official NWSDB logo (PNG/SVG) to show it in the title bar and on the report cover. The built-in emblem is used otherwise.'),
+        h('p', { class: 'small muted', style: { margin: '0 0 8px' } }, 'The official NWSDB logo is built in (title bar, dashboard, report cover and drawing title blocks). You may load another organisation logo for the title bar and report cover.'),
         h('div', { class: 'flex' }, h('button', { class: 'btn', onclick: () => file.click() }, icon('upload'), 'Choose logo…'), s.logo ? h('button', { class: 'btn ghost', onclick: () => { delete s.logo; saveSettings(); window.dispatchEvent(new Event('wtp-theme')); navigate('settings'); } }, 'Use built-in emblem') : null), file))),
       card('Defaults', h('div', { class: 'field' }, h('label', null, 'Designer name for new projects'), h('div', { class: 'inp' }, designer))),
-      card('About', h('div', { class: 'small', html: `<b>NWSDB WTP Designer</b> v1.2 – conventional water treatment plant design suite, incorporating NWSDB Design Manuals D2 (1989) and D3 (2020).<br>Built with Electron, d3 (ISC), KaTeX (MIT), JSZip (MIT) and Lucide icons (ISC).<br>Calculation engine: ${f2(store.calcMs)} ms per full plant recalculation.` })),
+      card('About', h('div', { class: 'small', html: `<div style="margin-bottom:10px">${bannerImg(56)}</div><b>NWSDB WTP Designer</b> v1.3 – conventional water treatment plant design suite, incorporating NWSDB Design Manuals D2 (1989) and D3 (2020).<br><b style="color:var(--primary)">${CREDIT}</b> for the National Water Supply &amp; Drainage Board, Sri Lanka.<br>Built with Electron, d3 (ISC), KaTeX (MIT), JSZip (MIT) and Lucide icons (ISC).<br>Calculation engine: ${f2(store.calcMs)} ms per full plant recalculation.` })),
     ];
   },
 };

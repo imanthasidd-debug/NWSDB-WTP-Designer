@@ -5,6 +5,37 @@ It takes a scheme from population forecast to a costed, drawn and checked plant:
 aeration → chemical dosing → rapid mixing → flocculation → sedimentation → filtration → disinfection → stabilisation →
 storage & pumping → residuals → hydraulic profile → site layout → power → cost → SLS 614 compliance → design report.
 
+*Developed by **Eng. Imantha Dilshan** for the National Water Supply & Drainage Board.*
+
+**Version 1.3 – a connected, easier plant designer**
+* **Dashboard** rebuilt around the NWSDB logo: design capacity and design-basis switch, compliance rings (design checks,
+  SLS 614, NWSDB D2, NWSDB D3), a 7-step design workflow with live status, the animated plant, items needing attention
+  (each with *Locate*), the impact of the last change, key figures and unit status.
+* **Specified capacity** – design for a pre-determined capacity (e.g. a 25,000 m³/d plant) instead of a demand forecast:
+  throughput or treated-water output; peak flows for pumping and storage are back-calculated with the D2 factors.
+* **Plant configurator** (replaces the process-selection drop-downs) – one row of illustrated, animated cards per
+  decision (route, pre-sedimentation, aeration, pre-chlorination, PAC, rapid mixer, flocculator, clarifier, filter,
+  disinfectant, post-lime, sludge, wash-water recovery). The NWSDB D3 / expert recommendation is badged green, options
+  outside D3 guidance for the raw water are badged amber with the reason, and the live process flow diagram updates instantly.
+* **Advanced animated process flow diagram** – pictorial sections of every unit with moving impellers, paddles,
+  scrapers, settling particles, filtration and backwash, reservoir levels; water coloured by its turbidity; chemical
+  dosing stations; numbered process streams with a stream table; sludge, wash-water and recovered-water lines; status badges.
+* **Connected design** – every unit page shows what it *receives from* the unit upstream and *hands over* to the next
+  (flow, water level, turbidity, pH, chemicals added, solids removed) and which units it uses / feeds.
+* **Impact of every change** – after an edit, a panel lists the knock-on effects on every downstream unit (sizes,
+  levels, turbidity, run lengths, energy, cost, failing / review checks) with *Undo*. The **Design chain & impact**
+  page shows the water path, turbidity / level / pH / alkalinity profiles through the train, a flow & quality balance,
+  a dependency matrix and a **what-if explorer** (try a value, see the ripple, then apply it).
+* **Locate any error** – failing / review inputs are outlined in red / amber with the check, criterion and a fix hint
+  right under the field; *Locate* buttons on every check (page banner, Checks tab, Design checks, D2/D3 registers,
+  Dashboard) open the page, scroll to the controlling input and flash it.
+* **NWSDB-style drawings** – concrete drawn in the D3 annex convention (red outline, cross-hatched), D3-style captions,
+  black dimensions and level symbols; every drawing can be shown and exported as an **A3 landscape sheet** at a true
+  standard scale with the NWSDB title block (logo, project, drawing title, drawing number NWSDB/<code>/D-nn, scale,
+  sheet, revision, designed / drawn / checked / approved), notes, legend, graphic scale and north arrow. Exports: PDF,
+  DXF (same title block, layers per element), SVG and 300-dpi PNG; **Drawing pack (A3 PDF)** and a DXF + SVG ZIP with a
+  drawing register. The design report numbers its figures and lists the drawing register.
+
 **Version 1.2 incorporates NWSDB Design Manual D3 – Water Quality & Treatment Manual (Revision 01, November 2020)**
 for all treatment-process design: SLS 614 (Table 2-4) and SLS 722 raw-water limits (Table 2-6), process selection by
 Table 4-5 and the Fig 4-3/4-4 treatment trains (with at least two independent trains), screen channels (Annex A),
@@ -27,7 +58,7 @@ is listed in **Library → NWSDB Design Manual D2** and in a dedicated report ch
 
 ## Install on Windows 10 / 11
 
-1. Extract `NWSDB-WTP-Designer-1.2.0-win-x64.zip` (right-click → *Extract all*).
+1. Extract `NWSDB-WTP-Designer-1.3.0-win-x64.zip` (right-click → *Extract all*).
 2. Double-click **Install.cmd**. The app is installed for the current user (no administrator rights), with Start-menu and
    desktop shortcuts and the `.wtpd` project-file association. Uninstall from *Settings → Apps*.
 3. Or run it without installing: open the `NWSDB WTP Designer` folder and double-click `NWSDB WTP Designer.exe`.
@@ -40,13 +71,15 @@ choose **More info → Run anyway**, or ask ICT to sign/whitelist it (see *Build
 | Area | What you do |
 |---|---|
 | Project setup | Name, district (sets water temperature, monsoon pattern and regional alerts), source type, site level, design team |
-| Demand forecast | Census-based projection; D2 §3 per-capita (house connections / standposts), non-domestic unit demands, UFW, peaking → adopted capacity |
+| Dashboard | Design basis switch (forecast / specified capacity), compliance rings, 7-step workflow, animated plant, items to fix (Locate), impact of the last change |
+| Design chain & impact | Water path through the plant, profiles, flow & quality balance, dependency matrix, what-if explorer |
+| Demand forecast | Census-based projection; D2 §3 per-capita (house connections / standposts), non-domestic unit demands, UFW, peaking → adopted capacity — or a specified capacity (e.g. 25,000 m³/d) |
 | Raw water quality | Laboratory results vs SLS 614:2013 and the SLS 722:1985 raw-water limits (D3 Tables 2-4, 2-6); monthly (monsoon) turbidity profile |
 | Source & hydrology | D2 §4: river-basin data (103 basins), dry-weather availability, reservoir mass diagram (Rippl), sediment, evaporation, flood estimate |
-| Process selection | Expert-system recommendation of the train (D3 Table 4-5, Fig 4-3/4-4) with a decision log; override any unit |
-| Treatment units | Each page: inputs on the left (live criteria hints), results / charts / checks / calculation sheet on the right |
+| Plant configurator | Click one illustrated card per decision; D3 / expert recommendation and suitability on every option; live animated PFD; decision log, D3 Table 4-5 |
+| Treatment units | Each page: inputs on the left (live criteria hints, failing checks under the field), connection strip (receives / hands over), results / charts / checks / calculation sheet / drawings (model or A3 sheet) on the right |
 | Plant-wide | Storage & pumping (mass curve, pump curves, surge), residuals, hydraulic profile, draggable site layout, power, cost |
-| Outputs | SLS 614 compliance & log credits, design-check register, PDF report, Excel workbook, DXF/SVG drawing pack |
+| Outputs | SLS 614 compliance & log credits, design-check register (Locate), PDF report, Excel workbook, NWSDB A3 drawing pack (PDF / DXF / SVG) |
 | Library | NWSDB Design Manuals D2 and D3 (clause index, project compliance, design tables, errata), editable design-criteria library, engineering toolbox, help, settings |
 
 Shortcuts: `Ctrl+N` new · `Ctrl+O` open · `Ctrl+S` save · `Ctrl+Z/Y` undo/redo · `Ctrl+P` report · `Ctrl+E` Excel · `Ctrl+1…9` pages.
@@ -77,6 +110,6 @@ test          engine.test.mjs (hand-calculation checks), functional and screensh
 ```
 
 * Run from source: `npm install` then `npm start` (Node 20+).
-* Engine tests: `npm test` (155 checks incl. D2 tables & formulae, D3 tables and annex design examples, CT tables, carbonate chemistry, continuity, every unit combination).
+* Engine tests: `npm test` (170 checks incl. specified capacity, design chain and impact ripple, D2 tables & formulae, D3 tables and annex design examples, CT tables, carbonate chemistry, continuity, every unit combination).
 * **Building a signed installer:** `npm run dist` produces an NSIS installer and a portable EXE in `release/` with the
   application icon and `.wtpd` association embedded. Sign them with the NWSDB code-signing certificate if available.

@@ -34,6 +34,20 @@ const out = process.argv[2];
     return pdf.length;
   }, { html, pdfPath });
   console.log('pdf bytes:', bytes);
+  // real export handlers (save dialog stubbed): A4 report + A3 drawing pack
+  await app.evaluate(({ dialog, shell }, outDir) => {
+    const path = process.getBuiltinModule('path');
+    dialog.showSaveDialog = async (_w, o) => ({ canceled: false, filePath: path.join(outDir, String(o.defaultPath).split(/[\\/]/).pop()) });
+    shell.openPath = async () => '';
+  }, out);
+  await win.evaluate(() => [...document.querySelectorAll('button')].find((b) => b.textContent.includes('Drawing pack (A3 PDF)')).click());
+  for (let i = 0; i < 40 && !fs.readdirSync(out).some((f) => f.endsWith('-A3-drawings.pdf')); i++) await win.waitForTimeout(500);
+  const a3 = fs.readdirSync(out).find((f) => f.endsWith('-A3-drawings.pdf'));
+  console.log('A3 drawing pack:', a3, a3 ? fs.statSync(path.join(out, a3)).size : 0);
+  await win.evaluate(() => [...document.querySelectorAll('button')].find((b) => b.textContent.includes('Export PDF')).click());
+  for (let i = 0; i < 40 && !fs.readdirSync(out).some((f) => f.endsWith('-design-report.pdf')); i++) await win.waitForTimeout(500);
+  const rp = fs.readdirSync(out).find((f) => f.endsWith('-design-report.pdf'));
+  console.log('A4 report via handler:', rp, rp ? fs.statSync(path.join(out, rp)).size : 0);
   console.log('LOGS:', JSON.stringify(logs, null, 1).slice(0, 3000));
   // close handling: app should ask renderer (not dirty) -> closes
   await app.close();

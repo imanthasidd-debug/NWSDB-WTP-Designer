@@ -6,9 +6,9 @@ import { AREA_PRESETS, DISTRICTS, ZONE_LABEL, elevationOf, provinceOf, waterTemp
 import { MONTHS, esc, fmt, fmtAuto } from '../../core/util.js';
 import { LABELS } from '../../engine/process.js';
 import { h, icon } from '../dom.js';
-import { pfdSVG } from '../draw/pfd.js';
 import { card, chartCard, kpis, notes, statusBadge, table } from '../results.js';
 import { navigate, setInput, store } from '../store.js';
+import { basisCards, capacityPresets } from '../widgets.js';
 
 const opt = (o) => Object.entries(o);
 
@@ -29,6 +29,12 @@ export const setup = {
     { k: 'siteGL', l: 'Treatment-site ground level', u: 'm MSL', step: 0.1 },
     { k: 'siteElevation', l: 'Site elevation (for DO & NPSH)', u: 'm', step: 1 },
     { k: 'landConstrained', l: 'Land is constrained (favour compact units)', t: 'bool' },
+    { sec: 'Design basis – how is the plant capacity fixed?' },
+    { k: '_basis', t: 'custom', render: () => basisCards() },
+    { k: 'capacity', path: ['demand', 'capacity'], l: 'Specified plant capacity', u: 'm³/d', step: 500, show: (i) => i.demand?.basis === 'capacity' },
+    { k: '_presets', t: 'custom', render: () => capacityPresets(), show: (i) => i.demand?.basis === 'capacity' },
+    { k: 'capacityType', path: ['demand', 'capacityType'], l: 'Capacity refers to', t: 'sel', o: [['throughput', 'Plant design throughput (inflow)'], ['output', 'Treated-water output (losses added)']], show: (i) => i.demand?.basis === 'capacity' },
+    { k: 'nTrains', path: ['demand', 'nTrains'], l: 'Parallel treatment streams', step: 1, note: 'D3 §4.3.8: ≥ 2 independent trains' },
     { sec: 'Design team' },
     { k: 'designer', l: 'Designed by', t: 'text' },
     { k: 'checker', l: 'Checked by', t: 'text' },
@@ -65,12 +71,17 @@ export const setup = {
 export const demand = {
   id: 'demand', title: 'Demand forecast', sub: 'Population projection, per-capita demand, NRW and peaking → plant capacity', icon: 'users', group: 'Design basis', mod: 'demand',
   fields: [
+    { sec: 'Design basis' },
+    { k: '_basis', t: 'custom', render: () => basisCards() },
+    { k: 'capacity', l: 'Specified plant capacity', u: 'm³/d', step: 500, show: (i) => i.demand.basis === 'capacity' },
+    { k: '_presets', t: 'custom', render: () => capacityPresets(), show: (i) => i.demand.basis === 'capacity' },
+    { k: 'capacityType', l: 'Capacity refers to', t: 'sel', o: [['throughput', 'Plant design throughput (inflow)'], ['output', 'Treated-water output (losses added)']], show: (i) => i.demand.basis === 'capacity' },
     { sec: 'Planning horizon (D2 §2.4)' },
-    { k: 'baseYear', l: 'Base year', step: 1 },
-    { k: 'stageYear', l: 'Stage I year', step: 1, note: 'D2: two 10-year stages' },
+    { k: 'baseYear', l: 'Base year', step: 1, show: (i) => i.demand.basis !== 'capacity' },
+    { k: 'stageYear', l: 'Stage I year', step: 1, note: 'D2: two 10-year stages', show: (i) => i.demand.basis !== 'capacity' },
     { k: 'designYear', l: 'Design (ultimate) year', step: 1, note: (r) => `D2: ${r.demand.d2.horizon.text}` },
     { k: 'nTrains', l: 'Parallel treatment streams', step: 1, note: 'Redundancy for maintenance' },
-    { sec: 'Population (D2 §3.1)' },
+    { sec: 'Population (D2 §3.1)', show: (i) => i.demand.basis !== 'capacity' },
     { k: 'method', l: 'Projection method', t: 'sel', o: [['geom', 'Geometric / exponential (census)'], ['arith', 'Arithmetic / linear (census)'], ['incr', 'Incremental increase (census)'], ['rate', 'Given growth rate (district rate)']] },
     { k: 'basePop', l: 'Base-year population', step: 100, show: (i) => i.demand.method === 'rate' },
     { k: 'growthRate', l: 'Growth rate', u: '%/yr', step: 0.05, show: (i) => i.demand.method === 'rate', note: 'D2: district average where history is unknown' },
@@ -86,6 +97,7 @@ export const demand = {
     { k: 'spLpcd', l: 'Standpost consumption', u: 'L/c/d', show: (i) => i.demand.demandBasis === 'd2', note: 'D2: 45 L/c/d' },
     { sec: 'Non-domestic demand (D2 §3.2.3)' },
     { k: 'nonDomPct', l: 'Non-domestic demand', u: '% of dom.', note: 'D2: ≈ 10 % small urban & rural' },
+    { sec: 'Other consumers', show: (i) => i.demand.basis !== 'capacity' },
     { k: 'nonDomItems', t: 'table', l: 'Institutions & commercial (D2 unit demands)', minRows: 0, cols: [{ k: 'type', l: 'Category', o: NON_DOMESTIC.map((x) => [x.id, `${x.label} (${x.min}–${x.max} L/${x.per}·d)`]), w: '58%' }, { k: 'qty', l: 'Number' }, { k: 'rate', l: 'L/unit·d (0 = mid)' }], add: { type: 'hospital', qty: 100, rate: 0 } },
     { k: 'floatPop', l: 'Floating / tourist population', step: 100 },
     { k: 'floatLpcd', l: 'Floating population demand', u: 'L/c/d' },
@@ -97,13 +109,30 @@ export const demand = {
     { k: 'phf', l: 'Peak-hour factor', crit: 'dem.phf', step: 0.1, auto: true, autoVal: (r) => r.demand.phf },
     { k: 'ownUse', l: 'Raw-water & treatment losses', u: '% of max day', crit: 'dem.own', step: 0.5 },
     { k: 'opHours', l: 'Plant operating hours', u: 'h/d', step: 1, note: 'D2 §9.2: 24 h for treatment plants' },
-    { sec: 'Capacity' },
+    { sec: 'Capacity', show: (i) => i.demand.basis !== 'capacity' },
     { k: 'roundStep', l: 'Round capacity up to', u: 'm³/d', step: 500 },
     { k: 'overrideCap', l: 'Override adopted capacity', u: 'm³/d', auto: true, autoVal: (r) => r.demand.adopted },
   ],
   render(r) {
     const d = r.demand;
     const D = d.design;
+    if (d.basis === 'capacity') {
+      const flows = [{ k: 'Average day', v: D.gross }, { k: 'Maximum day', v: D.mdd }, { k: 'Plant throughput', v: d.Qd }, { k: 'Peak hour (as day rate)', v: D.phd }];
+      return {
+        overview: [
+          kpis([
+            { label: 'Specified plant capacity', value: fmt(d.Qd, 0), unit: 'm³/d', sub: `${fmt(d.Qd / 1000, 1)} MLD · ${fmt(d.Qd / 24, 0)} m³/h · ${fmt(d.Qd / 86.4, 0)} L/s`, accent: true, icon: 'droplets' },
+            { label: 'Average-day production', value: fmt(D.gross, 0), unit: 'm³/d', sub: `max-day factor ${d.mdf} (D2 §3.2.5)` },
+            { label: 'Maximum-day demand', value: fmt(D.mdd, 0), unit: 'm³/d', sub: `treatment losses ${d.inputs.ownUse} %` },
+            { label: 'Peak-hour (distribution)', value: fmt(D.phd / 24, 0), unit: 'm³/h', sub: `× ${d.phf} of average` },
+            { label: 'Population equivalent', value: fmt(D.served, 0), sub: `${fmt(d.lpcd, 0)} L/c/d, NRW ${d.inputs.nrw} %`, icon: 'users' },
+            { label: 'D2 community class', value: d.d2.cls.label.split(' (')[0], sub: 'from the population equivalent', icon: 'book' },
+          ]),
+          notes([{ level: 'info', text: 'Design basis: specified (pre-determined) capacity. Every unit is sized for this flow; the demand forecast is not used. Switch the basis above to return to the D2 population method.' }, ...(d.notes || [])]),
+          chartCard('Design flows', { type: 'bar', data: flows, x: { key: 'k', label: '' }, y: { label: 'm³/d', format: (v) => fmtAuto(v) }, series: [{ key: 'v', label: 'm³/d' }], unit: 'm³/d', height: 240 }),
+        ],
+      };
+    }
     const every = d.table.filter((x) => (x.year - d.inputs.baseYear) % 5 === 0 || x.year === d.inputs.designYear);
     const popData = d.years.map((y, i) => ({ year: y, sel: d.table[i].P, arith: d.methods?.arith[i], geom: d.methods?.geom[i], incr: d.methods?.incr[i] }));
     for (const c of d.census || []) if (c.year < d.inputs.baseYear) popData.unshift({ year: c.year, census: c.pop });
@@ -270,52 +299,4 @@ export const quality = {
   },
 };
 
-// ------------------------------------------------------------------ Process selection
-const autoOpt = (key, labels) => (r) => {
-  const pr = r.process;
-  const cur = pr[key];
-  return [['auto', `Auto (recommended: ${labels[cur] || cur})`], ...Object.entries(labels)];
-};
-export const process = {
-  id: 'process', title: 'Process selection', sub: 'Expert-system recommendation of the treatment train – override any unit', icon: 'workflow', group: 'Design basis', mod: 'process',
-  fields: [
-    { sec: 'Treatment route' },
-    { k: 'route', l: 'Treatment route', t: 'sel', o: autoOpt('route', LABELS.route) },
-    { k: 'presed', l: 'Pre-sedimentation', t: 'sel', o: (r) => [['auto', `Auto (${r.process.presed === 'yes' ? 'yes' : 'no'})`], ['yes', 'Yes'], ['no', 'No']] },
-    { k: 'aeration', l: 'Aeration', t: 'sel', o: autoOpt('aeration', LABELS.aeration) },
-    { k: 'prechlor', l: 'Pre-chlorination', t: 'sel', o: (r) => [['auto', `Auto (${r.process.prechlor === 'yes' ? 'yes' : 'no'})`], ['yes', 'Yes'], ['no', 'No']] },
-    { k: 'pac', l: 'Powdered activated carbon', t: 'sel', o: (r) => [['auto', `Auto (${r.process.pac === 'yes' ? 'yes' : 'no'})`], ['yes', 'Yes'], ['no', 'No']], note: 'D3 §5.2.3 – algae, T&O, toxins' },
-    { sec: 'Unit types' },
-    { k: 'rapidMix', l: 'Rapid mixing', t: 'sel', o: autoOpt('rapidMix', LABELS.rapidMix) },
-    { k: 'floc', l: 'Flocculator', t: 'sel', o: autoOpt('floc', LABELS.floc) },
-    { k: 'clarifier', l: 'Clarifier', t: 'sel', o: autoOpt('clarifier', LABELS.clarifier) },
-    { k: 'filter', l: 'Filter', t: 'sel', o: autoOpt('filter', LABELS.filter) },
-    { k: 'disinfectant', l: 'Disinfectant', t: 'sel', o: autoOpt('disinfectant', LABELS.disinfectant) },
-    { k: 'postLime', l: 'Post-lime stabilisation', t: 'sel', o: (r) => [['auto', `Auto (${r.stab?.apply ? 'yes' : 'no'})`], ['yes', 'Yes'], ['no', 'No']] },
-    { k: 'sludge', l: 'Residuals treatment', t: 'sel', o: autoOpt('sludge', LABELS.sludge) },
-    { k: 'recovery', l: 'Wash-water recovery', t: 'sel', o: [['yes', 'Yes – recover & recycle'], ['no', 'No']] },
-  ],
-  render(r) {
-    const pr = r.process;
-    const pfd = h('div', { class: 'pfd', html: pfdSVG(r, { width: 1050 }) });
-    pfd.addEventListener('click', (e) => { const g = e.target.closest('[data-page]'); if (g) navigate(g.dataset.page); });
-    return {
-      overview: [
-        kpis([
-          { label: 'Treatment route', value: pr.route === 'conventional' ? 'Conventional' : pr.route === 'direct' ? 'Direct filtration' : 'Slow sand', icon: 'workflow', accent: true, sub: LABELS.route[pr.route] },
-          { label: 'Unit processes', value: pr.train.length, sub: 'in the selected train' },
-          { label: 'Design turbidity', value: r.quality.turbMax, unit: 'NTU', sub: r.quality.turbClass },
-          { label: 'Capacity', value: fmt(r.demand.Qd, 0), unit: 'm³/d' },
-        ]),
-        card('Process flow diagram', pfd, { sub: 'click a unit to open its design' }),
-        notes(pr.notes),
-        card('Why this train? (decision log)', h('div', { class: 'notes', style: { margin: 0 } }, pr.reasons.map((x) => h('div', { class: 'note info' }, icon('bulb'), h('div', { html: `<b>${esc(x.unit)}.</b> ${esc(x.txt)}` }))))),
-        h('div', { class: 'grid2' },
-          card(`NWSDB D3 ${pr.typical.fig} – ${pr.typical.cat}`, h('div', { class: 'small', html: `<ol style="line-height:1.8;margin:0;padding-left:18px">${pr.typical.steps.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>${pr.typical.alt ? `<p style="margin:8px 0 0"><b>Alternative:</b> ${esc(pr.typical.alt.join(' → '))}</p>` : ''}` }), { sub: 'typical treatment train for this source' }),
-          card('NWSDB D3 Table 4-5 – essential processes', table([{ k: 'char', l: 'Characteristic', v: (x) => `${x.char} ${x.band}` }, { k: 'E', l: 'Essential', v: (x) => h('span', { class: 'small' }, x.E.map((q) => D3PROC[q]).join(', ') || '—') }, { k: 's', l: '', v: (x) => (x.hard.length ? statusBadge('warn') : x.soft.length ? statusBadge('info') : statusBadge('ok')) }], pr.t45.rows), { flush: true, sub: 'union of essential processes; advisory where Table 4-5 conflicts with Fig 4-3/4-4' }),
-        ),
-      ],
-    };
-  },
-};
 export { waterTempOf };

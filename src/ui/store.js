@@ -2,6 +2,7 @@
 import { computeAll, newProject } from '../engine/index.js';
 import { deepClone, deepMerge } from '../core/util.js';
 import { DEFAULT_INPUTS } from '../engine/index.js';
+import { diffSnapshots, kpiSnapshot } from '../engine/chain.js';
 
 const listeners = new Set();
 export const store = {
@@ -13,6 +14,7 @@ export const store = {
   history: [],
   future: [],
   calcMs: 0,
+  impact: null,      // last input change and its ripple through the downstream units
   settings: loadSettings(),
 };
 export const on = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
@@ -50,6 +52,7 @@ export function setProject(p, filePath = null) {
   store.dirty = false;
   store.history = [];
   store.future = [];
+  store.impact = null;
   recompute();
   emit('project');
 }
@@ -67,6 +70,16 @@ function snapshot() {
 /** set value at path like ['sed','sor'] */
 export function setInput(path, value, { immediate = false } = {}) {
   if (!lastSnapshot) lastSnapshot = JSON.stringify(store.project);
+  // impact tracking: consecutive edits of the same input share one baseline
+  const pathKey = path.join('.');
+  const now = Date.now();
+  if (!store.impact || store.impact.pathKey !== pathKey || now - store.impact.t > 8000) {
+    const old = getInput(path);
+    store.impact = { path: [...path], pathKey, from: old === undefined ? null : JSON.parse(JSON.stringify(old)), base: store.results ? kpiSnapshot(store.results) : null, t: now, diff: null, closed: false };
+  }
+  store.impact.t = now;
+  store.impact.to = value;
+  store.impact.closed = false;
   let o = store.project.inputs;
   for (let i = 0; i < path.length - 1; i++) { if (o[path[i]] === undefined || o[path[i]] === null) o[path[i]] = {}; o = o[path[i]]; }
   o[path[path.length - 1]] = value;
@@ -74,7 +87,7 @@ export function setInput(path, value, { immediate = false } = {}) {
   clearTimeout(snapshotTimer);
   snapshotTimer = setTimeout(snapshot, 600);
   clearTimeout(pending);
-  const run = () => { recompute(); emit('results'); autosave(); };
+  const run = () => { recompute(); if (store.impact?.base) store.impact.diff = diffSnapshots(store.impact.base, kpiSnapshot(store.results)); emit('results'); autosave(); };
   if (immediate) run(); else pending = setTimeout(run, 140);
 }
 export function getInput(path) {
@@ -108,7 +121,7 @@ export function undo() {
   const prev = store.history.pop();
   store.project = JSON.parse(prev);
   lastSnapshot = prev;
-  store.dirty = true; recompute(); emit('project');
+  store.dirty = true; store.impact = null; recompute(); emit('project');
 }
 export function redo() {
   if (!store.future.length) return;
@@ -116,7 +129,7 @@ export function redo() {
   const nxt = store.future.pop();
   store.project = JSON.parse(nxt);
   lastSnapshot = nxt;
-  store.dirty = true; recompute(); emit('project');
+  store.dirty = true; store.impact = null; recompute(); emit('project');
 }
 export function navigate(page) {
   store.page = page;

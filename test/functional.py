@@ -33,7 +33,7 @@ async def main():
             # confirm discard modal
             if await pg.locator('.modal').count():
                 await pg.click(".modal button:has-text(\"Don't save\")"); await pg.wait_for_timeout(900)
-            print('loaded', s, '->', await pg.evaluate("document.querySelector('.hero-card .hv').innerText.replace(/\\n/g,' ')"), '| train:', (await pg.evaluate("[...document.querySelectorAll('.pfd .ut')].map(t=>t.textContent).join(' ')"))[:200])
+            print('loaded', s, '->', await pg.evaluate("document.querySelector('.dh-q').innerText.replace(/\\n/g,' ')"), '| train:', (await pg.evaluate("[...document.querySelectorAll('.pfd2 .pf-u > text')].map(t=>t.textContent).filter(Boolean).join(' / ')"))[:260])
         # visit every page for render errors
         names = await pg.evaluate("[...document.querySelectorAll('.nav')].map(n=>n.textContent.trim()).filter(Boolean)")
         for n in names:

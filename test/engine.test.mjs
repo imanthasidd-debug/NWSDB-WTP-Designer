@@ -7,6 +7,7 @@ import { SAMPLES } from '../src/ui/samples.js';
 import * as D2 from '../src/core/d2.js';
 import * as D3 from '../src/core/d3.js';
 import { gravelRuleCheck } from '../src/engine/filtration.js';
+import { diffSnapshots, kpiSnapshot } from '../src/engine/chain.js';
 
 let pass = 0, fail = 0;
 const near = (a, b, tol, msg) => {
@@ -194,6 +195,37 @@ for (const route of ['conventional', 'direct', 'ssf']) for (const floc of ['hbaf
   Object.assign(q.inputs.process, { route, floc, clarifier: clar, rapidMix: floc === 'paddle' ? 'mechanical' : 'jump', aeration: 'cascade', disinfectant: 'naocl', sludge: 'beds' });
   const rr = computeAll(q);
   ok(Object.keys(rr.errors).length === 0, `combination ${route}/${floc}/${clar}: ${JSON.stringify(rr.errors).slice(0, 300)}`);
+}
+// ---- v1.3: specified capacity, design chain, impact ripple
+{
+  const pc = newProject();
+  Object.assign(pc.inputs.demand, { basis: 'capacity', capacity: 25000, capacityType: 'throughput' });
+  const rc = computeAll(pc);
+  ok(Object.keys(rc.errors).length === 0, 'capacity mode computes: ' + JSON.stringify(rc.errors));
+  near(rc.demand.Qd, 25000, 1e-6, 'specified capacity 25,000 m³/d drives the plant');
+  near(rc.intake.Q * 86400, 25000, 1, 'intake sized for the specified capacity');
+  near(rc.sed.Qd * rc.sed.N, 25000, 1, 'sedimentation trains carry the specified capacity');
+  const po = newProject();
+  Object.assign(po.inputs.demand, { basis: 'capacity', capacity: 25000, capacityType: 'output' });
+  near(computeAll(po).demand.Qd, 25000 * 1.05, 1, 'output basis adds 5 % treatment losses');
+  // design chain: water state passes from unit to unit
+  const ch = rc.chain;
+  ok(ch.stages.length >= 9, 'design chain has every unit of the train');
+  const st = Object.fromEntries(ch.stages.map((x) => [x.key, x.out]));
+  near(st.sed.turb, rc.sed.settledPeak, 1e-9, 'chain: sedimentation hands settled turbidity to filters');
+  near(rc.filt.infPeak, rc.sed.settledPeak, 1e-9, 'filters are designed with the settled turbidity they receive');
+  ok(st.filt.turb < st.sed.turb && st.sed.turb < st.floc.turb, 'turbidity falls through the train');
+  near(st.dis.cl, rc.dis.C, 1e-9, 'chain: chlorine residual leaves the contact tank');
+  near(ch.product, 25000 / 1.05, 1, 'net treated water = capacity / (1 + losses)');
+  // impact ripple: raising the overflow rate shrinks the basins and shortens filter runs downstream
+  const a = kpiSnapshot(rc);
+  pc.inputs.sed.sor = 30;
+  const d = diffSnapshots(a, kpiSnapshot(computeAll(pc)));
+  const by = (lab) => d.items.find((x) => x.label === lab);
+  ok(by('Basin area (each)') && by('Basin area (each)').to < by('Basin area (each)').from, 'impact: SOR ↑ → basin area ↓');
+  ok(by('Settled turbidity (peak)') && by('Settled turbidity (peak)').to > by('Settled turbidity (peak)').from, 'impact: SOR ↑ → settled turbidity ↑');
+  ok(by('Filter run (peak)') && by('Filter run (peak)').to < by('Filter run (peak)').from, 'impact ripples to filtration: shorter filter runs');
+  ok(d.items.some((x) => x.stage === 'cost'), 'impact ripples to the cost estimate');
 }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

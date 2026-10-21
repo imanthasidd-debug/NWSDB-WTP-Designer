@@ -2,7 +2,7 @@
 import { worstStatus } from '../core/calc.js';
 import { fmt } from '../core/util.js';
 import { newProject } from '../engine/index.js';
-import { emblemSVG } from './brand.js';
+import { CREDIT, bannerImg, emblemImg } from './brand.js';
 import { clear, h, icon, modal, popupMenu, toast } from './dom.js';
 import { renderForm } from './form.js';
 import { GROUPS, PAGES } from './pages/registry.js';
@@ -10,6 +10,8 @@ import { calcSheet, checksTable, notes, saveFile } from './results.js';
 import { SAMPLES } from './samples.js';
 import { loadAutosave, markSaved, navigate, normalise, on, redo, resetModule, saveSettings, setProject, store, undo } from './store.js';
 import { buildWorkbook } from './xlsx.js';
+import { defaultHint, fieldFor, locate } from './locate.js';
+import { connectionStrip, mountImpactDock, updateImpactDock } from './chain.js';
 
 const isElectron = !!window.wtp;
 let els = {};
@@ -20,7 +22,7 @@ function applyTheme() {
   const t = store.settings.theme === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : store.settings.theme;
   document.documentElement.dataset.theme = t;
   window.wtp?.setTheme?.(t);
-  if (els.logo) els.logo.innerHTML = store.settings.logo ? `<img src="${store.settings.logo}" style="width:24px;height:24px;object-fit:contain">` : emblemSVG(24, { mono: false });
+  if (els.logo) els.logo.innerHTML = store.settings.logo ? `<img src="${store.settings.logo}" style="width:28px;height:28px;object-fit:contain">` : emblemImg(28);
 }
 window.addEventListener('wtp-theme', applyTheme);
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', applyTheme);
@@ -148,7 +150,8 @@ function renderStatus() {
     Object.keys(r.errors || {}).length ? h('span', { class: 'sb', style: { color: 'var(--fail)' } }, icon('warn'), 'Calculation error in: ' + Object.keys(r.errors).join(', ')) : null,
     h('span', { class: 'sb' }, `recalc ${fmt(store.calcMs, 0)} ms`),
     h('span', { class: 'sb' }, 'SI units · SLS 614:2013'),
-    h('span', { class: 'sb' }, store.filePath ? String(store.filePath).split(/[\\/]/).pop() : 'not saved')].filter(Boolean));
+    h('span', { class: 'sb' }, store.filePath ? String(store.filePath).split(/[\\/]/).pop() : 'not saved'),
+    h('span', { class: 'sb credit', title: 'NWSDB WTP Designer' }, icon('pen'), CREDIT)].filter(Boolean));
   els.pname.textContent = store.project.inputs.setup.name || 'Untitled project';
   els.dirty.style.display = store.dirty ? '' : 'none';
   els.undo.disabled = !store.history.length && !store.dirty;
@@ -162,6 +165,7 @@ let current = null; // { page, form, out, tabsEl }
 function renderMain() {
   const page = PAGES.find((p) => p.id === store.page) || PAGES[0];
   const r = store.results;
+  const keepScroll = current?.page?.id === page.id && current.body ? current.body.scrollTop : 0;
   clear(els.main);
   const idx = PAGES.indexOf(page);
   const prev = PAGES[idx - 1], next = PAGES[idx + 1];
@@ -177,8 +181,9 @@ function renderMain() {
   if (page.renderFull) {
     const full = h('div', { class: 'full' });
     body.append(full);
-    try { full.append(...page.renderFull(r).filter(Boolean)); } catch (e) { full.append(errorBox(e)); }
+    try { full.append(...page.renderFull(r).filter(Boolean)); } catch (e) { full.append(errorBox(e)); console.error(e); }
     current.full = full;
+    if (keepScroll) body.scrollTop = keepScroll;
     return;
   }
   const split = h('div', { class: 'split' + (page.wideLeft ? ' wide-left' : '') });
@@ -216,13 +221,48 @@ function renderResults() {
   if (!tabs.find((t) => t[0] === tab)) tab = 'overview';
   const tabBar = h('div', { class: 'tabs' }, tabs.map(([k, l, , cnt]) => h('button', { class: tab === k ? 'on' : '', onclick: () => { ui.tab[page.id] = k; renderResults(); } }, l, cnt !== undefined ? h('span', { class: 'cnt' }, cnt) : null,
     k === 'checks' && res.checks.some((c) => c.status !== 'ok') ? h('span', { class: 'dot ' + worstStatus(res.checks) }) : null)));
+  const strip = page.mod ? connectionStrip(page.mod) : null;
+  if (strip) out.append(strip);
   out.append(tabBar);
+  const bad = (res?.checks || []).filter((c) => c.status === 'fail' || c.status === 'warn').sort((a, b) => (a.status === 'fail' ? 0 : 1) - (b.status === 'fail' ? 0 : 1));
+  if (bad.length && tab !== 'checks') {
+    out.append(h('div', { class: 'issue-bar ' + (bad.some((c) => c.status === 'fail') ? 'fail' : 'warn') },
+      h('div', { class: 'ib-h' }, icon(bad.some((c) => c.status === 'fail') ? 'fail' : 'warn'), `${bad.length} check${bad.length > 1 ? 's' : ''} need${bad.length > 1 ? '' : 's'} attention on this page`),
+      h('div', { class: 'ib-list' }, bad.slice(0, 5).map((c) => h('button', { class: 'ib-item ' + c.status, title: (fieldFor({ ...c, module: page.mod }).hint || defaultHint(c)), onclick: () => locate({ ...c, module: page.mod }) },
+        h('span', { class: 'dot ' + c.status }), h('span', { class: 'ib-l' }, c.label), h('span', { class: 'ib-v' }, `${typeof c.value === 'number' ? fmt(c.value, 3) : c.value} ${c.unit && c.unit !== '–' ? c.unit : ''}`), h('span', { class: 'ib-go' }, icon('search'), 'Locate'))),
+      bad.length > 5 ? h('button', { class: 'ib-item more', onclick: () => { ui.tab[page.id] = 'checks'; renderResults(); } }, `+ ${bad.length - 5} more – open the Checks tab`) : null)));
+  }
   if (tab === 'overview') out.append(...(o.overview || []).filter(Boolean));
   else if (tab === 'visuals') out.append(h('div', { class: 'grid2' }, ...o.visuals.filter(Boolean)));
-  else if (tab === 'checks') { out.append(notes(res.notes) || h('span')); out.append(h('div', { class: 'card' }, checksTable(res.checks))); }
+  else if (tab === 'checks') { out.append(notes(res.notes) || h('span')); out.append(h('div', { class: 'card' }, checksTable(res.checks, { locate, module: page.mod }))); }
   else if (tab === 'calc') out.append(h('div', { class: 'card' }, h('div', { class: 'card-b' }, calcSheet(res.steps, { showRefs: store.settings.showRefs }))));
   out.scrollTop = scroll;
 }
+
+// ------------------------------------------------------------------ locate an input from any check
+function doLocate(c) {
+  const page = PAGES.find((p) => p.mod === c.module && !p.renderFull && p.fields) || PAGES.find((p) => p.mod === c.module);
+  if (!page) return;
+  if (store.page !== page.id) navigate(page.id);
+  setTimeout(() => {
+    const el = c.field ? els.main.querySelector(`[data-k="${c.field}"]`) : null;
+    const hint = c.hint || defaultHint(c);
+    if (el && el.offsetParent !== null) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+      setTimeout(() => el.querySelector('input,select,button')?.focus({ preventScroll: true }), 350);
+      toast(`${c.label}: ${hint || 'adjust this input'}`, c.status === 'fail' ? 'fail' : 'warn');
+    } else {
+      ui.tab[page.id] = 'checks';
+      renderResults();
+      const row = [...(els.main.querySelectorAll('tr[data-label]'))].find((tr) => tr.dataset.label === c.label);
+      if (row) { row.scrollIntoView({ behavior: 'smooth', block: 'center' }); row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash'); }
+      toast(`${c.label} is a computed result${hint ? ' – ' + hint : ''}`, 'info');
+    }
+  }, 80);
+}
+window.addEventListener('wtp-locate', (e) => doLocate(e.detail));
+window.addEventListener('wtp-action', (e) => { if (e.detail === 'excel') exportExcel(); else if (e.detail === 'save') saveProject(); else if (e.detail === 'open') openProj(); });
 
 // ------------------------------------------------------------------ keyboard
 function onKey(e) {
@@ -243,7 +283,7 @@ function onKey(e) {
 export async function boot(root) {
   buildShell(root);
   applyTheme();
-  const splash = h('div', { class: 'splash' }, h('div', { class: 'si', html: `${emblemSVG(92)}<h2>NWSDB WTP Designer</h2><p>Conventional Water Treatment Plant Design Suite</p><div class="si-lang">National Water Supply &amp; Drainage Board · Sri Lanka<br>ජාතික ජල සම්පාදන හා ජලාපවහන මණ්ඩලය<br>தேசிய நீர் வழங்கல் மற்றும் வடிகாலமைப்புச் சபை</div>` }));
+  const splash = h('div', { class: 'splash' }, h('div', { class: 'si', html: `<div class="si-logo">${bannerImg(86)}</div><h2>WTP Designer</h2><p>Conventional Water Treatment Plant Design Suite · NWSDB Design Manuals D2 &amp; D3</p><div class="si-bar"><span></span></div><div class="si-credit">${CREDIT}</div>` }));
   document.body.append(splash);
   // initial project: file passed by OS > autosave > sample
   let started = false;
@@ -256,10 +296,11 @@ export async function boot(root) {
     if (a) { setProject(normalise(a.project), a.path); store.dirty = true; } else setProject(newProject(), null);
   }
   on((what) => {
-    if (what === 'results') { renderSidebar(); renderStatus(); current?.form?.update(); renderResults(); if (current?.full && ['dashboard', 'checks', 'compliance'].includes(store.page)) renderMain(); }
+    if (what === 'results') { renderSidebar(); renderStatus(); current?.form?.update(); renderResults(); if (current?.full && (['dashboard', 'checks', 'compliance', 'chain'].includes(store.page) || current.page.live)) renderMain(); updateImpactDock(); }
     else if (what === 'saved') renderStatus();
-    else { renderSidebar(); renderStatus(); renderMain(); }
+    else { renderSidebar(); renderStatus(); renderMain(); updateImpactDock(); }
   });
+  mountImpactDock();
   renderSidebar(); renderStatus(); renderMain();
   document.addEventListener('keydown', onKey);
   window.wtp?.onOpenFile?.((f) => loadText(f.content, f.path));

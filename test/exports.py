@@ -23,7 +23,7 @@ async def main():
         s = await dl(lambda: pg.keyboard.press('Control+s'))
         proj = json.load(open(s)); print('saved project:', os.path.basename(s), 'keys', list(proj['inputs'].keys())[:6], '...')
         await pg.evaluate("[...document.querySelectorAll('.nav')].find(n=>n.textContent.includes('Design report')).click()"); await pg.wait_for_timeout(1200)
-        z = await dl(lambda: pg.click("button:has-text('Drawings (ZIP)')"))
+        z = await dl(lambda: pg.click("button:has-text('DXF + SVG (ZIP)')"))
         names = zipfile.ZipFile(z).namelist(); print('drawing zip:', len(names), 'files e.g.', names[:4])
         # PNG export of a drawing
         await pg.evaluate("[...document.querySelectorAll('.nav')].find(n=>n.textContent.startsWith('Sedimentation')).click()"); await pg.wait_for_timeout(800)

@@ -63,7 +63,7 @@ export function renderChart(container, spec, opts = {}) {
   const W = opts.width || Math.max(260, container.clientWidth || 600);
   const H = spec.height || 260;
   const hb = spec.type === 'hbar';
-  const m = { t: 12, r: spec.marginRight ?? (hb ? 64 : 22), b: spec.x?.label ? 42 : 28, l: spec.marginLeft ?? (hb ? 170 : 56) };
+  const m = { t: 12, r: spec.marginRight ?? (hb ? 64 : 22), b: spec.marginBottom ?? (spec.x?.rotate ? 78 : spec.x?.label ? 42 : 28), l: spec.marginLeft ?? (hb ? 170 : 56) };
   const iw = W - m.l - m.r;
   const ih = H - m.t - m.b;
   const svg = d3.select(container).append('svg').attr('width', W).attr('height', H).attr('viewBox', `0 0 ${W} ${H}`)
@@ -152,6 +152,7 @@ export function renderChart(container, spec, opts = {}) {
   };
   const hideTip = () => tip && tip.style('opacity', 0);
   const unit = spec.unit ? ' ' + spec.unit : '';
+  const xp = (d) => (isBand ? x(d[xk]) + x.bandwidth() / 2 : x(+d[xk]));
 
   // ---- marks
   if (spec.type === 'line') {
@@ -159,16 +160,16 @@ export function renderChart(container, spec, opts = {}) {
       const c = colorOf(s, i, statik);
       const pts = data.filter((d) => Number.isFinite(+d[s.key]) && (spec.y?.type !== 'log' || +d[s.key] > 0));
       if (s.area) {
-        const area = d3.area().x((d) => x(+d[xk])).y0(y(Math.max(y.domain()[0], 0))).y1((d) => y(+d[s.key])).curve(s.step ? d3.curveStepAfter : d3.curveLinear);
+        const area = d3.area().x(xp).y0(y(Math.max(y.domain()[0], 0))).y1((d) => y(+d[s.key])).curve(s.step ? d3.curveStepAfter : d3.curveLinear);
         g.append('path').datum(pts).attr('d', area).attr('fill', c).attr('fill-opacity', 0.1);
       }
-      const line = d3.line().x((d) => x(+d[xk])).y((d) => y(+d[s.key])).curve(s.step ? d3.curveStepAfter : s.smooth ? d3.curveMonotoneX : d3.curveLinear);
+      const line = d3.line().x(xp).y((d) => y(+d[s.key])).curve(s.step ? d3.curveStepAfter : s.smooth ? d3.curveMonotoneX : d3.curveLinear);
       g.append('path').datum(pts).attr('d', line).attr('fill', 'none').attr('stroke', c).attr('stroke-width', s.width || 2)
         .attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('stroke-dasharray', s.dash ? '6 4' : null);
-      if (s.marker) g.selectAll(null).data(pts).enter().append('circle').attr('cx', (d) => x(+d[xk])).attr('cy', (d) => y(+d[s.key])).attr('r', 4).attr('fill', c).attr('stroke', surfC).attr('stroke-width', 2);
+      if (s.marker) g.selectAll(null).data(pts).enter().append('circle').attr('cx', xp).attr('cy', (d) => y(+d[s.key])).attr('r', 4).attr('fill', c).attr('stroke', surfC).attr('stroke-width', 2);
       if (s.endLabel && pts.length) {
         const last = pts[pts.length - 1];
-        g.append('text').attr('x', x(+last[xk]) + 6).attr('y', y(+last[s.key]) + 4).attr('font-size', 11).attr('fill', inkC).text(s.endLabel === true ? s.label : s.endLabel);
+        g.append('text').attr('x', xp(last) + 6).attr('y', y(+last[s.key]) + 4).attr('font-size', 11).attr('fill', inkC).text(s.endLabel === true ? s.label : s.endLabel);
       }
     });
   } else if (spec.type === 'bar') {
@@ -235,11 +236,12 @@ export function renderChart(container, spec, opts = {}) {
     g.append('rect').attr('width', iw).attr('height', ih).attr('fill', 'transparent')
       .on('mousemove', (ev) => {
         const [px] = d3.pointer(ev);
-        const xv = x.invert(px);
-        let idx = d3.bisectCenter(xs, xv);
+        let idx;
+        if (isBand) { const step = x.step(); idx = Math.floor((px - x(data[0][xk]) + (step - x.bandwidth()) / 2) / step); }
+        else idx = d3.bisectCenter(xs, x.invert(px));
         idx = Math.max(0, Math.min(data.length - 1, idx));
         const d = data[idx];
-        const cx = x(+d[xk]);
+        const cx = xp(d);
         cross.attr('x1', cx).attr('x2', cx).style('opacity', 1);
         let rows = '';
         series.forEach((s, i) => {
@@ -247,7 +249,7 @@ export function renderChart(container, spec, opts = {}) {
           if (Number.isFinite(v) && (spec.y?.type !== 'log' || v > 0)) { dots[i].attr('cx', cx).attr('cy', y(v)).style('opacity', 1); rows += `<div class="tr"><span class="sw" style="background:${colorOf(s, i, statik)}"></span>${s.label}<span class="tv">${tipFmt(v)}${unit}</span></div>`; }
           else dots[i].style('opacity', 0);
         });
-        showTip(`<div class="th">${spec.x?.label ? spec.x.label.replace(/\s*\(.*\)/, '') + ': ' : ''}${xfmt(+d[xk])}${spec.x?.unit ? ' ' + spec.x.unit : ''}</div>${rows}`, cx, d3.pointer(ev)[1]);
+        showTip(`<div class="th">${isBand ? d[xk] : (spec.x?.label ? spec.x.label.replace(/\s*\(.*\)/, '') + ': ' : '') + xfmt(+d[xk])}${spec.x?.unit ? ' ' + spec.x.unit : ''}</div>${rows}`, cx, d3.pointer(ev)[1]);
       })
       .on('mouseleave', () => { cross.style('opacity', 0); dots.forEach((dd) => dd.style('opacity', 0)); hideTip(); });
   }

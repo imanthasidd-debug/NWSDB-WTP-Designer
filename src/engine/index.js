@@ -24,6 +24,7 @@ import * as layout from './layout.js';
 import * as energy from './energy.js';
 import * as cost from './cost.js';
 import * as compliance from './compliance.js';
+import { designChain } from './chain.js';
 
 export const SETUP_DEFAULTS = {
   name: 'Sample Water Treatment Plant – Stage I',
@@ -109,5 +110,7 @@ export function computeAll(project) {
   };
   const d2 = register(isD2, 'D2');
   const d3 = register(isD3, 'D3');
-  return { ...res, checks: all, summary, d2, d3, errors, water: ctx.water };
+  let chain = { stages: [], profile: [] };
+  try { chain = designChain({ ...res, checks: all }); } catch (e) { errors.chain = String(e && e.stack ? e.stack : e); }
+  return { ...res, checks: all, summary, d2, d3, errors, water: ctx.water, chain };
 }

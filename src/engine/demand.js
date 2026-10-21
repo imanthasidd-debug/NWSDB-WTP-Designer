@@ -4,6 +4,9 @@ import { NON_DOMESTIC, UFW, communityOf, horizonFor, lpcdRange, peaking, ref } f
 import { ceilTo, num } from '../core/util.js';
 
 export const DEFAULTS = {
+  basis: 'forecast',         // forecast (D2 population method) | capacity (pre-determined plant capacity)
+  capacity: 25000,           // m3/d – specified plant capacity
+  capacityType: 'throughput', // throughput (= plant design flow) | output (treated-water output; losses added)
   areaType: 'mc',
   baseYear: 2026,
   designYear: 2046,
@@ -110,6 +113,49 @@ export function compute(inp, ctx) {
   const D = row(d.designYear);
   const S = row(d.stageYear);
 
+  const capMode = d.basis === 'capacity' && num(d.capacity) > 0;
+  // ---------------- Specified (pre-determined) plant capacity ----------------
+  function capacityResult() {
+    const c2 = new Calc(ctx.crit);
+    const Qp = d.capacityType === 'output' ? num(d.capacity) * (1 + d.ownUse / 100) : num(d.capacity);
+    const mddC = (Qp / (1 + d.ownUse / 100)) * (d.opHours / 24);
+    // population equivalent and D2 peaking (fixed point: peaking depends on population)
+    let mdfC = d.mdf > 0 ? d.mdf : 1.25, phfC = d.phf > 0 ? d.phf : 2.0, Peq = 0, pkC = peaking(1e6);
+    for (let i = 0; i < 4; i++) {
+      const grossI = mddC / mdfC;
+      const netI = grossI * (1 - d.nrw / 100);
+      Peq = (netI * 1000) / (lpcd * (1 + d.nonDomPct / 100)) / Math.max(d.coverageDesign / 100, 0.01);
+      pkC = peaking(Peq);
+      mdfC = d.mdf > 0 ? d.mdf : pkC.mdf; phfC = d.phf > 0 ? d.phf : pkC.phf;
+    }
+    const gross = mddC / mdfC, net = gross * (1 - d.nrw / 100);
+    const served = Peq * d.coverageDesign / 100;
+    const domC = (served * lpcd) / 1000;
+    const Dc = { year: d.designYear, P: Peq, cov: d.coverageDesign, served, dom: domC, nonDom: net - domC, flt: 0, bulk: 0, net, nrwQ: gross - net, gross, mdd: mddC, phd: gross * phfC, plant: Qp };
+    c2.section('Specified plant capacity (pre-determined)');
+    c2.text(`The plant is designed for a specified capacity of ${Math.round(num(d.capacity)).toLocaleString('en-US')} m³/d ${d.capacityType === 'output' ? '(treated-water output; treatment losses added)' : '(plant design throughput)'}. Average-day, maximum-day and peak-hour flows and the population equivalent are back-calculated for pumping, storage, residuals and cost.`);
+    if (d.capacityType === 'output') c2.step('Plant design throughput (output + treatment losses)', 'Q_p = Q_{out}(1+w)', `${n(num(d.capacity), 0)}(1+${n(d.ownUse / 100, 3)})`, Qp, 'm³/d', ref('3.2.5'));
+    else c2.step('Plant design throughput (specified)', 'Q_p', '\\text{specified}', Qp, 'm³/d');
+    c2.step('Maximum-day demand supplied', 'Q_{md} = \\frac{Q_p}{1+w}\\cdot\\frac{h_{op}}{24}', `\\frac{${n(Qp, 0)}}{1+${n(d.ownUse / 100, 3)}}\\cdot\\frac{${n(d.opHours, 0)}}{24}`, mddC, 'm³/d', ref('3.2.5'));
+    c2.step('Maximum-day factor', 'k_{md}', d.mdf > 0 ? '\\text{user value}' : `\\text{D2: } ${pkC.mdf}`, mdfC, '–', ref('3.2.5'));
+    c2.step('Average-day production', 'Q_{avg} = Q_{md}/k_{md}', `${n(mddC, 0)}/${n(mdfC, 2)}`, gross, 'm³/d');
+    c2.step('Peak-hour demand (distribution)', 'Q_{ph} = k_{ph}Q_{avg}', `${n(phfC, 2)}\\times${n(gross, 0)}`, gross * phfC, 'm³/d', ref('3.2.5'));
+    c2.step('Population equivalent served', 'P_{eq} = \\frac{Q_{avg}(1-NRW)\\,1000}{q(1+k_{nd})}', `\\frac{${n(gross, 0)}(1-${n(d.nrw / 100, 2)})\\times1000}{${n(lpcd, 0)}(1+${n(d.nonDomPct / 100, 2)})}`, served, 'persons');
+    c2.check('dem.mdf', mdfC);
+    c2.check('dem.phf', phfC);
+    c2.check('dem.own', d.ownUse);
+    c2.flag('Design basis', true, `specified ${Math.round(num(d.capacity)).toLocaleString('en-US')} m³/d`, 'pre-determined capacity', 'Demand forecast checks (D2 §2.4, §3.2.1) are not applied', 'info', ref('3.2'));
+    if (d.nTrains < 2) c2.note('warn', 'A single treatment stream gives no redundancy during maintenance – at least two parallel streams are recommended.');
+    const tableC = years.map((y) => ({ ...Dc, year: y }));
+    const clsC = communityOf(Peq);
+    return {
+      inputs: d, basis: 'capacity', method, table: tableC, years, design: Dc, stage: Dc, adopted: Qp, stageCap: Qp, methods: null,
+      d2: { cls: clsC, pk: pkC, mdf: mdfC, phf: phfC, lpcd, hcPct, hcLpcd, items, instQ, horizon: horizonFor(Peq), range: lpcdRange(clsC), Pdesign: Peq },
+      mdf: mdfC, phf: phfC, lpcd, census: d.census,
+      Qd: Qp, Qh: Qp / 24, Qs: Qp / 86400, nTrains: Math.max(1, Math.round(d.nTrains)),
+      ...c2.result(),
+    };
+  }
   calc.section('Population projection');
   if (method === 'rate') {
     calc.step('Design-year population (geometric, given rate)', 'P_n = P_0\\,(1+r)^n', `P_{${d.designYear}} = ${n(d.basePop, 0)}\\,(1+${n(d.growthRate / 100, 4)})^{${d.designYear - d.baseYear}}`, D.P, 'persons');
@@ -138,9 +184,10 @@ export function compute(inp, ctx) {
   calc.step('Maximum-day demand', 'Q_{md} = k_{md}\\,Q_{avg}', `${n(mdf, 2)} \\times ${n(D.gross, 0)}`, D.mdd, 'm³/d', ref('3.2.5'));
   calc.step('Peak-hour demand (distribution)', 'Q_{ph} = k_{ph}\\,Q_{avg}', `${n(phf, 2)} \\times ${n(D.gross, 0)}`, D.phd, 'm³/d', ref('3.2.5'));
   calc.step('Required plant throughput (incl. treatment losses)', 'Q_{p} = Q_{md}(1+w)\\frac{24}{h_{op}}', `${n(D.mdd, 0)}(1+${n(d.ownUse / 100, 3)})\\frac{24}{${n(d.opHours, 1)}}`, D.plant, 'm³/d', ref('3.2.5') + ' – 1.05–1.10 × max day');
-  const adopted = d.overrideCap > 0 ? d.overrideCap : ceilTo(D.plant, d.roundStep || 1);
+  let adopted = d.overrideCap > 0 ? d.overrideCap : ceilTo(D.plant, d.roundStep || 1);
   calc.step('Adopted plant design capacity', 'Q_{design}', d.overrideCap > 0 ? '\\text{user override}' : `\\lceil ${n(D.plant, 0)} \\rceil_{${n(d.roundStep, 0)}}`, adopted, 'm³/d');
-  const stageCap = ceilTo(S.plant, d.roundStep || 1);
+  let stageCap = ceilTo(S.plant, d.roundStep || 1);
+  if (capMode) return capacityResult();
 
   calc.check('dem.lpcd', lpcd);
   const rng = lpcdRange(cls);
@@ -167,7 +214,7 @@ export function compute(inp, ctx) {
   } : null;
 
   return {
-    inputs: d, method, table, years, design: D, stage: S, adopted, stageCap, methods,
+    inputs: d, basis: 'forecast', method, table, years, design: D, stage: S, adopted, stageCap, methods,
     d2: { cls, pk, mdf, phf, lpcd, hcPct, hcLpcd, items, instQ, horizon: hz, range: rng, Pdesign },
     mdf, phf, lpcd,
     census: d.census,

@@ -24,7 +24,7 @@ mkdir -p "$STAGE/Samples"
 node --input-type=module -e "
 import fs from 'node:fs';
 import { SAMPLES } from '$ROOT/src/ui/samples.js';
-const names = { wet: 'Gampaha 42 MLD river plant', dry: 'Anuradhapura 12.5 MLD reservoir plant', rural: 'Badulla 2.3 MLD slow sand scheme' };
+const names = { wet: 'Gampaha 42 MLD river plant', dry: 'Anuradhapura 12.5 MLD reservoir plant', rural: 'Badulla 2.3 MLD slow sand scheme', cap25: 'Kurunegala 25,000 m3-d specified capacity plant' };
 for (const s of SAMPLES) { const p = s.build(); fs.writeFileSync('$STAGE/Samples/' + (names[s.id] || p.inputs.setup.code) + '.wtpd', JSON.stringify(p, null, 1)); }
 "
 sed 's/$/\r/' "$ROOT/README.md" > "$STAGE/README.md"

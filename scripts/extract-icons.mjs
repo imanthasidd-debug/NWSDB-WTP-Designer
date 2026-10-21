@@ -24,6 +24,8 @@ const want = {
   trending: 'TrendingUp', leaf: 'Leaf', landmark: 'Landmark', hammer: 'Hammer', plug: 'PlugZap',
   banknote: 'Banknote', clipboard: 'ClipboardCheck', home: 'House', image: 'Image', upload: 'Upload',
   microscope: 'Microscope', container: 'Container', shapes: 'Shapes', more: 'Ellipsis',
+  crosshair: 'Crosshair', link: 'Link2', arrowDown: 'ArrowDown', arrowUp: 'ArrowUp', route: 'Route', play: 'Play',
+  pause: 'Pause', target: 'Target', branch: 'GitBranch', split: 'Split', eye: 'Eye', award: 'Award', network: 'Network',
 };
 const out = {};
 const toKebab = (k) => k.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());

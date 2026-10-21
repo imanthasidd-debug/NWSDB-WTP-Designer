@@ -4,8 +4,9 @@ import { fmt } from '../../core/util.js';
 const S = 100; // svg units per metre
 
 export const STYLE = {
-  concrete: { fill: 'url(#p-hatch)', stroke: 'var(--dw-line)', sw: 1.1 },
-  concreteSolid: { fill: 'var(--dw-concrete)', stroke: 'var(--dw-line)', sw: 1.1 },
+  // NWSDB D3 annex style: reinforced concrete in red outline with red cross-hatching (e.g. D3 Fig A4)
+  concrete: { fill: 'url(#p-hatch)', stroke: 'var(--dw-conc)', sw: 1.5 },
+  concreteSolid: { fill: 'url(#p-hatch)', stroke: 'var(--dw-conc)', sw: 1.5 },
   water: { fill: 'var(--dw-water)', stroke: 'none' },
   waterline: { fill: 'none', stroke: 'var(--dw-water-line)', sw: 1.6 },
   sand: { fill: 'url(#p-sand)', stroke: 'var(--dw-line)', sw: 0.6 },
@@ -36,6 +37,7 @@ const STATIC_VARS = {
   '--dw-bg': '#ffffff', '--dw-line': '#22324a', '--dw-concrete': '#c9d2de', '--dw-water': 'rgba(42,120,214,.18)', '--dw-water-line': '#2a78d6',
   '--dw-sand': '#e8d29b', '--dw-gravel': '#b9a88a', '--dw-anth': '#4b4b52', '--dw-dim': '#5b6b80', '--dw-equip': '#eb6834', '--dw-ground': '#8a6d3b', '--dw-text': '#1d2b40',
   '--primary': '#0b63b6', '--teal': '#10a59a', '--fail': '#c53030',
+  '--dw-conc': '#b3001b', '--dw-hatch': '#d0313f', '--dw-dimc': '#111111', '--dw-paper': '#ffffff',
 };
 function resolveVars(str) {
   return str.replace(/color-mix\(in srgb, var\((--[\w-]+)\) (\d+)%, (?:var\((--[\w-]+)\)|transparent)\)/g, (_, a, p, b) => {
@@ -61,21 +63,38 @@ export function drawingSVG(dw, { statik = false, width = null, idPrefix = 'd' } 
   const th = (dw.textH || Math.max(Wm, Hm) / 36) * S;
   const ps = Math.max(Wm, Hm) * S / 90; // pattern size
   const id = (n) => `${idPrefix}-${n}`;
+  // statik (print / PDF) output draws hatching as clipped vector lines: SVG patterns are rasterised by PDF printers
+  const vector = statik;
+  const SOLID = { 'p-hatch': 'var(--dw-paper)', 'p-sand': 'var(--dw-sand)', 'p-gravel': 'var(--dw-gravel)', 'p-anth': 'var(--dw-anth)', 'p-soil': 'none' };
+  let clipN = 0;
+  const hatch = (shape, bx, by, bw, bh, cls) => {
+    const st = STYLE[cls] || {};
+    const pat = (st.fill || '').startsWith('url(#') ? st.fill.slice(5, -1) : null;
+    if (!vector || !pat || !['p-hatch', 'p-soil'].includes(pat)) return '';
+    const cid = id('c' + (++clipN));
+    const sp = pat === 'p-hatch' ? ps * 0.8 : ps * 2;
+    let d = '';
+    for (let k = -bh; k <= bw; k += sp) {
+      d += `M${(bx + k).toFixed(1)},${by.toFixed(1)}L${(bx + k + bh).toFixed(1)},${(by + bh).toFixed(1)}`;
+      if (pat === 'p-hatch') d += `M${(bx + k).toFixed(1)},${(by + bh).toFixed(1)}L${(bx + k + bh).toFixed(1)},${by.toFixed(1)}`;
+    }
+    return `<clipPath id="${cid}">${shape}</clipPath><path d="${d}" clip-path="url(#${cid})" fill="none" stroke="${pat === 'p-hatch' ? 'var(--dw-hatch)' : 'var(--dw-ground)'}" stroke-width="${(ps * (pat === 'p-hatch' ? 0.05 : 0.08)).toFixed(2)}" opacity="${pat === 'p-hatch' ? 0.85 : 0.5}"/>`;
+  };
   const style = (cls) => {
     const st = STYLE[cls] || STYLE.outline;
     let fill = st.fill || 'none';
-    if (fill.startsWith('url(#')) fill = `url(#${id(fill.slice(5, -1))})`;
+    if (fill.startsWith('url(#')) fill = vector ? SOLID[fill.slice(5, -1)] || 'none' : `url(#${id(fill.slice(5, -1))})`;
     return `fill="${fill}" stroke="${st.stroke || 'none'}" stroke-width="${st.sw || 1}"${st.dash ? ` stroke-dasharray="${st.dash}"` : ''} vector-effect="non-scaling-stroke"`;
   };
   const out = [];
   out.push(`<defs>
-<pattern id="${id('p-hatch')}" patternUnits="userSpaceOnUse" width="${ps}" height="${ps}" patternTransform="rotate(45)"><rect width="${ps}" height="${ps}" fill="var(--dw-concrete)"/><line x1="0" y1="0" x2="0" y2="${ps}" stroke="var(--dw-line)" stroke-width="${ps * 0.06}" opacity=".45"/></pattern>
+<pattern id="${id('p-hatch')}" patternUnits="userSpaceOnUse" width="${ps * 0.8}" height="${ps * 0.8}"><rect width="${ps * 0.8}" height="${ps * 0.8}" fill="var(--dw-paper)"/><path d="M0,0L${ps * 0.8},${ps * 0.8}M${ps * 0.8},0L0,${ps * 0.8}" stroke="var(--dw-hatch)" stroke-width="${ps * 0.05}" opacity=".85"/></pattern>
 <pattern id="${id('p-sand')}" patternUnits="userSpaceOnUse" width="${ps}" height="${ps}"><rect width="${ps}" height="${ps}" fill="var(--dw-sand)"/><circle cx="${ps * .25}" cy="${ps * .3}" r="${ps * .07}" fill="var(--dw-line)" opacity=".5"/><circle cx="${ps * .7}" cy="${ps * .75}" r="${ps * .06}" fill="var(--dw-line)" opacity=".5"/></pattern>
 <pattern id="${id('p-gravel')}" patternUnits="userSpaceOnUse" width="${ps * 1.6}" height="${ps * 1.6}"><rect width="${ps * 1.6}" height="${ps * 1.6}" fill="var(--dw-gravel)"/><circle cx="${ps * .5}" cy="${ps * .5}" r="${ps * .32}" fill="none" stroke="var(--dw-line)" stroke-width="${ps * .05}" opacity=".6"/><circle cx="${ps * 1.2}" cy="${ps * 1.15}" r="${ps * .25}" fill="none" stroke="var(--dw-line)" stroke-width="${ps * .05}" opacity=".6"/></pattern>
 <pattern id="${id('p-anth')}" patternUnits="userSpaceOnUse" width="${ps}" height="${ps}"><rect width="${ps}" height="${ps}" fill="var(--dw-anth)"/><circle cx="${ps * .3}" cy="${ps * .4}" r="${ps * .08}" fill="#999"/></pattern>
 <pattern id="${id('p-soil')}" patternUnits="userSpaceOnUse" width="${ps * 2}" height="${ps * 2}" patternTransform="rotate(-45)"><line x1="0" y1="0" x2="0" y2="${ps * 2}" stroke="var(--dw-ground)" stroke-width="${ps * .08}" opacity=".5"/></pattern>
 <marker id="${id('arr')}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--dw-water-line)"/></marker>
-<marker id="${id('arrd')}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="var(--dw-dim)"/></marker>
+<marker id="${id('arrd')}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="var(--dw-dimc)"/></marker>
 </defs>`);
   let curGroup = null;
   for (const it of dw.items) {
@@ -86,8 +105,22 @@ export function drawingSVG(dw, { statik = false, width = null, idPrefix = 'd' } 
     }
     const ts = th * (it.size || 1);
     switch (it.t) {
-      case 'rect': out.push(`<rect x="${X(it.x)}" y="${Y(it.y + it.h)}" width="${L(it.w)}" height="${L(it.h)}" ${it.rx ? `rx="${L(it.rx)}"` : ''} ${style(it.cls)}${it.op ? ` opacity="${it.op}"` : ''}/>`); break;
-      case 'poly': out.push(`<${it.closed === false ? 'polyline' : 'polygon'} points="${it.pts.map(([px, py]) => `${X(px)},${Y(py)}`).join(' ')}" ${style(it.cls)}/>`); break;
+      case 'rect': {
+        const geo = `x="${X(it.x)}" y="${Y(it.y + it.h)}" width="${L(it.w)}" height="${L(it.h)}" ${it.rx ? `rx="${L(it.rx)}"` : ''}`;
+        const ht = hatch(`<rect ${geo}/>`, +X(it.x), +Y(it.y + it.h), +L(it.w), +L(it.h), it.cls);
+        if (ht) { out.push(`<rect ${geo} fill="${STYLE[it.cls].fill.includes('p-soil') ? 'none' : 'var(--dw-paper)'}" stroke="none"/>`, ht, `<rect ${geo} fill="none" stroke="${STYLE[it.cls].stroke || 'none'}" stroke-width="${STYLE[it.cls].sw || 1}" vector-effect="non-scaling-stroke"/>`); break; }
+        out.push(`<rect ${geo} ${style(it.cls)}${it.op ? ` opacity="${it.op}"` : ''}/>`); break;
+      }
+      case 'poly': {
+        const pts = it.pts.map(([px, py]) => `${X(px)},${Y(py)}`).join(' ');
+        if (it.closed !== false) {
+          const xs = it.pts.map(([px]) => +X(px)), ys = it.pts.map(([, py]) => +Y(py));
+          const bx = Math.min(...xs), by = Math.min(...ys);
+          const ht = hatch(`<polygon points="${pts}"/>`, bx, by, Math.max(...xs) - bx, Math.max(...ys) - by, it.cls);
+          if (ht) { out.push(STYLE[it.cls].fill.includes('p-soil') ? '' : `<polygon points="${pts}" fill="var(--dw-paper)" stroke="none"/>`, ht, `<polygon points="${pts}" fill="none" stroke="${STYLE[it.cls].stroke || 'none'}" stroke-width="${STYLE[it.cls].sw || 1}" vector-effect="non-scaling-stroke"/>`); break; }
+        }
+        out.push(`<${it.closed === false ? 'polyline' : 'polygon'} points="${pts}" ${style(it.cls)}/>`); break;
+      }
       case 'line': out.push(`<line x1="${X(it.x1)}" y1="${Y(it.y1)}" x2="${X(it.x2)}" y2="${Y(it.y2)}" ${style(it.cls)}${it.arrow ? ` marker-end="url(#${id(it.cls === 'dash' ? 'arrd' : 'arr')})"` : ''}/>`); break;
       case 'circle': out.push(`<circle cx="${X(it.cx)}" cy="${Y(it.cy)}" r="${L(it.r)}" ${style(it.cls)}/>`); break;
       case 'text': {
@@ -98,8 +131,8 @@ export function drawingSVG(dw, { statik = false, width = null, idPrefix = 'd' } 
       case 'level': {
         const s = th * 0.55;
         const xx = +X(it.x), yy = +Y(it.y);
-        out.push(`<path d="M${xx - s},${yy - s * 1.2} L${xx + s},${yy - s * 1.2} L${xx},${yy} Z" fill="none" stroke="var(--dw-water-line)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>`);
-        out.push(`<text x="${xx + s * 1.6}" y="${yy - s * 0.4}" font-size="${(th * 0.85).toFixed(1)}" fill="var(--dw-water-line)" font-family="Segoe UI, Arial, sans-serif" font-weight="600">${escx(it.text)}</text>`);
+        out.push(`<path d="M${xx - s},${yy - s * 1.2} L${xx + s},${yy - s * 1.2} L${xx},${yy} Z" fill="var(--dw-paper)" stroke="var(--dw-dimc)" stroke-width="1" vector-effect="non-scaling-stroke"/><path d="M${xx - s * 0.6},${yy + s * 0.35}H${xx + s * 0.6}M${xx - s * 0.3},${yy + s * 0.7}H${xx + s * 0.3}" stroke="var(--dw-dimc)" stroke-width="0.8" vector-effect="non-scaling-stroke"/>`);
+        out.push(`<text x="${xx + s * 1.6}" y="${yy - s * 0.4}" font-size="${(th * 0.8).toFixed(1)}" fill="var(--dw-dimc)" font-family="Calibri, Segoe UI, Arial, sans-serif" font-weight="600">${escx(it.text)}</text>`);
         break;
       }
       case 'dim': {
@@ -109,14 +142,14 @@ export function drawingSVG(dw, { statik = false, width = null, idPrefix = 'd' } 
         const o = it.off ?? 0.5;
         const ax = it.x1 + nx * o, ay = it.y1 + ny * o, bx = it.x2 + nx * o, by = it.y2 + ny * o;
         const ext = Math.sign(o || 1) * Math.max(Wm, Hm) * 0.006;
-        out.push(`<line x1="${X(it.x1)}" y1="${Y(it.y1)}" x2="${X(ax + nx * ext)}" y2="${Y(ay + ny * ext)}" fill="none" stroke="var(--dw-dim)" stroke-width="0.7" vector-effect="non-scaling-stroke"/>`);
-        out.push(`<line x1="${X(it.x2)}" y1="${Y(it.y2)}" x2="${X(bx + nx * ext)}" y2="${Y(by + ny * ext)}" fill="none" stroke="var(--dw-dim)" stroke-width="0.7" vector-effect="non-scaling-stroke"/>`);
-        out.push(`<line x1="${X(ax)}" y1="${Y(ay)}" x2="${X(bx)}" y2="${Y(by)}" fill="none" stroke="var(--dw-dim)" stroke-width="0.8" vector-effect="non-scaling-stroke" marker-start="url(#${id('arrd')})" marker-end="url(#${id('arrd')})"/>`);
+        out.push(`<line x1="${X(it.x1)}" y1="${Y(it.y1)}" x2="${X(ax + nx * ext)}" y2="${Y(ay + ny * ext)}" fill="none" stroke="var(--dw-dimc)" stroke-width="0.6" vector-effect="non-scaling-stroke"/>`);
+        out.push(`<line x1="${X(it.x2)}" y1="${Y(it.y2)}" x2="${X(bx + nx * ext)}" y2="${Y(by + ny * ext)}" fill="none" stroke="var(--dw-dimc)" stroke-width="0.6" vector-effect="non-scaling-stroke"/>`);
+        out.push(`<line x1="${X(ax)}" y1="${Y(ay)}" x2="${X(bx)}" y2="${Y(by)}" fill="none" stroke="var(--dw-dimc)" stroke-width="0.7" vector-effect="non-scaling-stroke" marker-start="url(#${id('arrd')})" marker-end="url(#${id('arrd')})"/>`);
         let ang = Math.atan2(dy, dx) * 180 / Math.PI;
         if (ang > 90) ang -= 180; if (ang < -90) ang += 180;
         const mx = (ax + bx) / 2 + nx * th / S * 0.35 * Math.sign(o || 1), my = (ay + by) / 2 + ny * th / S * 0.35 * Math.sign(o || 1);
         const txt = it.text ?? fmt(len, 2);
-        out.push(`<text x="${X(mx)}" y="${Y(my)}" font-size="${(th * 0.8).toFixed(1)}" text-anchor="middle" fill="var(--dw-dim)" font-family="Segoe UI, Arial, sans-serif" transform="rotate(${-ang} ${X(mx)} ${Y(my)})" dy="${o >= 0 ? -th * 0.15 : th * 0.75}">${escx(txt)}</text>`);
+        out.push(`<text x="${X(mx)}" y="${Y(my)}" font-size="${(th * 0.8).toFixed(1)}" text-anchor="middle" fill="var(--dw-dimc)" font-family="Calibri, Segoe UI, Arial, sans-serif" transform="rotate(${-ang} ${X(mx)} ${Y(my)})" dy="${o >= 0 ? -th * 0.15 : th * 0.75}">${escx(txt)}</text>`);
         break;
       }
       default: break;
@@ -180,8 +213,8 @@ export function mountDrawing(container, dw, { height = 380, idPrefix } = {}) {
 
 // ------------------------------------------------------------------ DXF (AutoCAD R12 ASCII)
 const LAYER_OF = { concrete: 'CONCRETE', concreteSolid: 'CONCRETE', water: 'WATER', waterline: 'WATER', sand: 'MEDIA', gravel: 'MEDIA', anth: 'MEDIA', soil: 'GROUND', ground: 'GROUND', outline: 'OUTLINE', thick: 'OUTLINE', thin: 'OUTLINE', dash: 'HIDDEN', center: 'CENTER', equip: 'EQUIPMENT', equipFill: 'EQUIPMENT', pipe: 'PIPES', pipeFill: 'PIPES', baffle: 'CONCRETE', building: 'BUILDINGS', process: 'PROCESS', residual: 'RESIDUALS', site: 'BOUNDARY', road: 'ROADS', hgl: 'HGL', sludge: 'RESIDUALS', grid: 'GRID' };
-const LAYER_COLOR = { CONCRETE: 8, WATER: 5, MEDIA: 42, GROUND: 32, OUTLINE: 7, HIDDEN: 9, CENTER: 1, EQUIPMENT: 30, PIPES: 4, BUILDINGS: 150, PROCESS: 140, RESIDUALS: 34, BOUNDARY: 3, ROADS: 252, HGL: 1, DIMENSIONS: 2, TEXT: 7, LEVELS: 5, GRID: 253 };
-export function drawingDXF(dw) {
+const LAYER_COLOR = { SHEET: 8, FRAME: 7, TITLEBLOCK: 7, CONCRETE: 1, WATER: 5, MEDIA: 42, GROUND: 32, OUTLINE: 7, HIDDEN: 9, CENTER: 1, EQUIPMENT: 30, PIPES: 4, BUILDINGS: 150, PROCESS: 140, RESIDUALS: 34, BOUNDARY: 3, ROADS: 252, HGL: 1, DIMENSIONS: 2, TEXT: 7, LEVELS: 5, GRID: 253 };
+export function drawingDXF(dw, { extra } = {}) {
   const o = [];
   const p = (code, val) => o.push(String(code), String(val));
   const th = dw.textH || Math.max(dw.bounds.x1 - dw.bounds.x0, dw.bounds.y1 - dw.bounds.y0) / 36;
@@ -216,6 +249,10 @@ export function drawingDXF(dw) {
       }
       default: break;
     }
+  }
+  if (extra) {
+    for (const [x1, y1, x2, y2, layer] of extra.lines || []) line(x1, y1, x2, y2, layer || 'TITLEBLOCK');
+    for (const [x, y, hh, str, align] of extra.texts || []) text(x, y, hh, str, 'TITLEBLOCK', 0, align || 0);
   }
   p(0, 'ENDSEC'); p(0, 'EOF');
   return o.join('\r\n');

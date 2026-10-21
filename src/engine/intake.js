@@ -18,7 +18,7 @@ export const DEFAULTS = {
   // screen channel – NWSDB D3 Annex A: approach velocity 0.4 m/s, flow depth D = Q/(V·B)
   chanU: 0.4, chanW: 0,  // m/s, m (0 = auto, ≥ 0.6 m for raking)
   // intake conduit (river intake → jack well) – D2 §5.3.1 velocity 0.6–0.9 m/s
-  conduitL: 30, conduitC: 120,
+  conduitL: 30, conduitC: 120, conduitDN: 0, // 0 = automatic (D2 §5.3.1 0.6–0.9 m/s)
   // wet well
   wellHrt: 5, wellEffDepth: 1.5, submergence: 1.2,
   // pumps (D2 §6) – 0 = automatic (D2 Table 6.2 efficiencies, §6.4.1 stand-by)
@@ -119,7 +119,7 @@ export function compute(inp, ctx) {
     calc.text('Two sets of removable fine screens are provided so that one can be cleaned while the other is in place (D2 §5.4; duplicate screens, D3 §5.1.5.2).');
     // ---- conduit (D2 §5.3.1)
     calc.section('Intake pipe / conduit to jack well');
-    const cdn = selectDNRange(Q, INTAKE.pipeV[0], INTAKE.pipeV[1], 0.75);
+    const cdn = d.conduitDN > 0 ? d.conduitDN : selectDNRange(Q, INTAKE.pipeV[0], INTAKE.pipeV[1], 0.75);
     const cv = vel(Q, cdn / 1000);
     const chl = hwLoss(Q, cdn / 1000, d.conduitL, d.conduitC) + 1.5 * cv * cv / (2 * G);
     calc.step('Intake pipe diameter', 'DN', `v=${n(cv)}\\,m/s`, cdn, 'mm', ref('5.3.1') + ' – pipe velocity 0.6–0.9 m/s');

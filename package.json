@@ -1,10 +1,10 @@
 {
   "name": "nwsdb-wtp-designer",
   "productName": "NWSDB WTP Designer",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Conventional water treatment plant design suite for the National Water Supply & Drainage Board, Sri Lanka",
   "main": "electron/main.js",
-  "author": "National Water Supply & Drainage Board",
+  "author": "Eng. Imantha Dilshan (for the National Water Supply & Drainage Board)",
   "license": "UNLICENSED",
   "private": true,
   "scripts": {

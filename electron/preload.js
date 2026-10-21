@@ -15,7 +15,7 @@ contextBridge.exposeInMainWorld('wtp', {
   openProject: () => ipcRenderer.invoke('open-project'),
   saveProject: (content, filePath, defaultName) => ipcRenderer.invoke('save-project', content, filePath, defaultName),
   saveFile: async (defaultName, data) => ipcRenderer.invoke('save-file', defaultName, await toTransferable(data)),
-  exportPDF: (html, defaultName, headerText) => ipcRenderer.invoke('export-pdf', html, defaultName, headerText),
+  exportPDF: (html, defaultName, headerText, opts) => ipcRenderer.invoke('export-pdf', html, defaultName, headerText, opts || {}),
   setTitle: (title) => ipcRenderer.send('set-title', title),
   setTheme: (theme) => ipcRenderer.send('set-theme', theme),
   quit: () => ipcRenderer.send('quit'),

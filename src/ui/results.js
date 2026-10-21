@@ -2,7 +2,9 @@
 import katex from 'katex';
 import { esc, fmtAuto, isNum } from '../core/util.js';
 import { renderChart } from './charts.js';
-import { drawingDXF, drawingSVG, mountDrawing } from './draw/render.js';
+import { drawingSVG, mountDrawing } from './draw/render.js';
+import { drawingNumber, sheetDXF, sheetMeta, sheetSVG, sheetsHTML } from './draw/sheet.js';
+import { saveSettings, store } from './store.js';
 import { h, icon, toast } from './dom.js';
 
 export function kpis(list) {
@@ -36,9 +38,10 @@ export function table(cols, rows, { onRow, totals, cls } = {}) {
 export function kvTable(rows) {
   return table([{ k: 'k', l: 'Item' }, { k: 'v', l: 'Value', num: true }, { k: 'u', l: 'Unit' }], rows.filter(Boolean).map(([k, v, u]) => ({ k, v, u })));
 }
-export function checksTable(checks, { showModule = false, onRow } = {}) {
+export function checksTable(checks, { showModule = false, onRow, locate: loc, module } = {}) {
   if (!checks?.length) return h('div', { class: 'empty' }, 'No design checks for this unit.');
   const cols = [
+    ...(loc ? [{ k: 'loc', l: '', v: (r) => h('button', { class: 'loc-btn' + (r.status === 'fail' || r.status === 'warn' ? ' hot' : ''), title: 'Locate the input that controls this check', onclick: (e) => { e.stopPropagation(); loc({ ...r, module: r.module || module }); } }, icon('search')) }] : []),
     { k: 'status', l: '', v: (r) => statusBadge(r.status) },
     ...(showModule ? [{ k: 'module', l: 'Unit', v: (r) => r.moduleLabel || r.module }] : []),
     { k: 'label', l: 'Check', v: (r) => (r.note && r.src ? h('span', null, r.label, h('div', { class: 'small muted' }, r.note)) : r.label) },
@@ -47,7 +50,9 @@ export function checksTable(checks, { showModule = false, onRow } = {}) {
     { k: 'range', l: 'Criterion' },
     { k: 'src', l: 'Source', v: (r) => h('span', { class: 'small muted' }, r.src || r.note || '') },
   ];
-  return table(cols, checks, { onRow });
+  const t = table(cols, checks, { onRow });
+  if (loc) [...t.querySelectorAll('tbody tr')].forEach((tr, i) => { tr.dataset.label = checks[i]?.label || ''; tr.classList.add('st-' + (checks[i]?.status || 'ok')); });
+  return t;
 }
 export function notes(list) {
   if (!list?.length) return null;
@@ -90,28 +95,62 @@ export async function saveFile(name, content, mime = 'text/plain') {
 }
 const slug = (s) => String(s || 'drawing').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-/** card containing an interactive drawing with SVG/DXF/PNG export */
+/** export an HTML document of A3 sheets to PDF (Electron) or open the print dialog (browser) */
+export async function exportSheetsPDF(html, name, title) {
+  if (window.wtp?.exportPDF) {
+    toast('Generating A3 PDF…', 'file');
+    const p = await window.wtp.exportPDF(html, name, title, { pageSize: 'A3', landscape: true, header: false, cssPage: true, title: 'Export drawings (A3 PDF)' });
+    if (p) toast('Saved ' + p.split(/[\\/]/).pop());
+    return p;
+  }
+  const w = window.open('', '_blank');
+  if (!w) { saveFile(name.replace(/\.pdf$/, '.html'), html, 'text/html'); return null; }
+  w.document.write(html); w.document.close(); setTimeout(() => { w.focus(); w.print(); }, 500);
+  return null;
+}
+
+/** card containing a drawing: interactive model view or NWSDB A3 sheet, with DXF / SVG / PNG / PDF export */
 export function drawingCard(dw, { height = 380 } = {}) {
   if (!dw) return null;
   const box = h('div');
-  const exportSVG = () => saveFile(slug(dw.title) + '.svg', drawingSVG(dw, { statik: true }).svg, 'image/svg+xml');
-  const exportDXF = () => saveFile(slug(dw.title) + '.dxf', drawingDXF(dw), 'application/dxf');
+  const meta = () => sheetMeta(store.project);
+  const num = () => drawingNumber(store.project?.inputs?.setup, dw.title).replace(/\//g, '-');
+  const base = () => num() + '-' + slug(dw.title);
+  const exportSVG = () => saveFile(base() + '.svg', sheetSVG(dw, meta()).svg, 'image/svg+xml');
+  const exportDXF = () => saveFile(base() + '.dxf', sheetDXF(dw, meta()), 'application/dxf');
   const exportPNG = async () => {
-    const { svg, vw, vh } = drawingSVG(dw, { statik: true, width: 2400 });
+    const W = 4961, H = 3508; // A3 at 300 dpi
+    const svg = sheetSVG(dw, meta()).svg.replace('width="420mm" height="297mm"', `width="${W}" height="${H}"`);
     const img = new Image();
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     await img.decode();
     const c = document.createElement('canvas');
-    c.width = 2400; c.height = Math.round(2400 * vh / vw);
-    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
-    c.toBlob((b) => saveFile(slug(dw.title) + '.png', b, 'image/png'));
+    c.width = W; c.height = H;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.drawImage(img, 0, 0, W, H);
+    c.toBlob((b) => saveFile(base() + '.png', b, 'image/png'));
   };
-  const el = card(dw.title, box, { flush: true, actions: [
-    h('button', { class: 'btn sm ghost', title: 'Export to AutoCAD DXF', onclick: exportDXF }, icon('pen'), 'DXF'),
-    h('button', { class: 'btn sm ghost', title: 'Export SVG', onclick: exportSVG }, icon('image'), 'SVG'),
-    h('button', { class: 'btn sm ghost', title: 'Export PNG', onclick: exportPNG }, icon('download'), 'PNG'),
+  const exportPDF = () => exportSheetsPDF(sheetsHTML([sheetSVG(dw, meta()).svg], dw.title), base() + '.pdf', dw.title);
+  const seg = h('div', { class: 'seg dw-seg' });
+  const draw = () => {
+    const mode = store.settings.sheetView ? 'sheet' : 'model';
+    seg.innerHTML = '';
+    for (const [k, l] of [['model', 'Model'], ['sheet', 'A3 sheet']]) seg.append(h('button', { class: mode === k ? 'on' : '', onclick: () => { store.settings.sheetView = k === 'sheet'; saveSettings(); draw(); } }, l));
+    box.innerHTML = '';
+    box.className = '';
+    if (mode === 'sheet') {
+      const s = sheetSVG(dw, meta());
+      box.className = 'sheet-view';
+      box.innerHTML = s.svg;
+    } else mountDrawing(box, dw, { height });
+  };
+  const el = card(dw.title, box, { flush: true, sub: drawingNumber(store.project?.inputs?.setup, dw.title), actions: [
+    seg,
+    h('button', { class: 'btn sm ghost', title: 'Export to AutoCAD DXF (with NWSDB title block)', onclick: exportDXF }, icon('pen'), 'DXF'),
+    h('button', { class: 'btn sm ghost', title: 'Export the A3 sheet as PDF', onclick: exportPDF }, icon('fileDown'), 'PDF'),
+    h('button', { class: 'btn sm ghost', title: 'Export the A3 sheet as SVG', onclick: exportSVG }, icon('image'), 'SVG'),
+    h('button', { class: 'btn sm ghost', title: 'Export the A3 sheet as PNG (300 dpi)', onclick: exportPNG }, icon('download'), 'PNG'),
   ] });
-  requestAnimationFrame(() => mountDrawing(box, dw, { height }));
+  requestAnimationFrame(draw);
   el._dw = dw;
   return el;
 }

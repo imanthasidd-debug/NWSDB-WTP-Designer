@@ -3,6 +3,7 @@ import { CRITERIA, evaluate, rangeText } from '../core/criteria.js';
 import { fmtAuto } from '../core/util.js';
 import { clear, h, icon } from './dom.js';
 import { getInput, setInput, store } from './store.js';
+import { defaultHint, issuesByField } from './locate.js';
 
 /**
  * Render a form for module `mod` from a field schema. Returns {el, update()}
@@ -24,6 +25,23 @@ export function renderForm(mod, fields) {
   }
   const update = () => {
     for (const r of refs) r.update?.();
+    // field-level messages for failing / to-review checks controlled by each input
+    const iss = issuesByField(mod);
+    for (const r of refs) {
+      if (!r.key || !r.el) continue;
+      const list = iss.get(r.key) || [];
+      const st = list.some((c) => c.status === 'fail') ? 'fail' : list.length ? 'warn' : '';
+      r.el.classList.toggle('has-fail', st === 'fail');
+      r.el.classList.toggle('has-warn', st === 'warn');
+      if (!r.msg) { r.msg = h('div', { class: 'fmsg' }); r.el.append(r.msg); }
+      clear(r.msg);
+      r.msg.style.display = list.length ? '' : 'none';
+      for (const c of list.slice(0, 3)) {
+        const v = typeof c.value === 'number' ? fmtAuto(c.value) : c.value;
+        r.msg.append(h('div', { class: 'fm ' + c.status }, icon(c.status === 'fail' ? 'fail' : 'warn'),
+          h('span', null, h('b', null, c.label), ` = ${v ?? ''} ${c.unit && c.unit !== '–' ? c.unit : ''} · criterion ${c.range || ''}`, c.hint || defaultHint(c) ? h('span', { class: 'fm-hint' }, ' – ' + (c.hint || defaultHint(c))) : null)));
+      }
+    }
   };
   update();
   return { el, update };
@@ -35,8 +53,8 @@ function fieldNode(mod, f, refs) {
   const path = f.path || [mod, f.k];
   const val = () => getInput(path);
   const set = (v, imm) => setInput(path, v, { immediate: imm });
-  const wrap = h('div', { class: 'field' + (f.block || ['table', 'area', 'help', 'custom', 'array'].includes(f.t) ? ' block' : '') });
-  const ref = { el: wrap, update: null };
+  const wrap = h('div', { class: 'field' + (f.block || ['table', 'area', 'help', 'custom', 'array'].includes(f.t) ? ' block' : ''), 'data-k': f.k, 'data-crit': f.crit || '' });
+  const ref = { el: wrap, update: null, key: f.k };
   refs.push(ref);
   const showUpd = () => { if (f.show) wrap.style.display = f.show(store.project.inputs, store.results) ? '' : 'none'; };
   if (f.t === 'help') {

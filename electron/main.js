@@ -116,17 +116,20 @@ ipcMain.handle('save-file', async (_e, defaultName, data) => {
   fs.writeFileSync(r.filePath, toBuffer(data));
   return r.filePath;
 });
-ipcMain.handle('export-pdf', async (_e, html, defaultName, headerText) => {
-  const r = await dialog.showSaveDialog(win, { title: 'Export design report', defaultPath: path.join(docsDir(), defaultName || 'design-report.pdf'), filters: FILTERS.pdf });
+ipcMain.handle('export-pdf', async (_e, html, defaultName, headerText, opts = {}) => {
+  const r = await dialog.showSaveDialog(win, { title: opts.title || 'Export design report', defaultPath: path.join(docsDir(), defaultName || 'design-report.pdf'), filters: FILTERS.pdf });
   if (r.canceled || !r.filePath) return null;
   const tmp = path.join(os.tmpdir(), `wtp-report-${Date.now()}.html`);
   fs.writeFileSync(tmp, html, 'utf8');
-  const pw = new BrowserWindow({ show: false, width: 1000, height: 1400, webPreferences: { sandbox: true, contextIsolation: true, javascript: false } });
+  const pw = new BrowserWindow({ show: false, width: opts.pageSize === 'A3' ? 1600 : 1000, height: 1400, webPreferences: { sandbox: true, contextIsolation: true, javascript: false } });
   try {
     await pw.loadFile(tmp);
     await new Promise((res) => setTimeout(res, 600));
     const esc = (s) => String(s || '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
-    const pdf = await pw.webContents.printToPDF({
+    const sheet = opts.pageSize === 'A3';
+    const pdf = await pw.webContents.printToPDF(sheet ? {
+      pageSize: 'A3', landscape: true, printBackground: true, displayHeaderFooter: false, margins: { top: 0, bottom: 0, left: 0, right: 0 }, preferCSSPageSize: true,
+    } : {
       pageSize: 'A4',
       printBackground: true,
       displayHeaderFooter: true,

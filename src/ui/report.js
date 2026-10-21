@@ -5,10 +5,12 @@ import { chartToSVG } from './charts.js';
 import { drawingSVG } from './draw/render.js';
 import { hydraulicProfile, layoutPlan } from './draw/units.js';
 import { pfdSVG } from './draw/pfd.js';
+import { chooseScale, drawingNumber } from './draw/sheet.js';
+import { drawingList } from './draw/pack.js';
 import { calcSheet, checksTable } from './results.js';
 import { store } from './store.js';
 import { PAGES } from './pages/registry.js';
-import { emblemSVG } from './brand.js';
+import { CREDIT, bannerImg } from './brand.js';
 
 const f0 = (v) => fmt(v, 0), f1 = (v) => fmt(v, 1), f2 = (v) => fmt(v, 2);
 
@@ -30,6 +32,9 @@ body { font-family: "Segoe UI", Arial, sans-serif; font-size: 10.5pt; color: #0f
 .cover { height: 257mm; display: flex; flex-direction: column; }
 .cover .band { background: linear-gradient(120deg, #0a3d7a, #0b63b6); color: #fff; padding: 22px 26px; border-radius: 10px; display: flex; gap: 18px; align-items: center; }
 .cover .band img, .cover .band svg { width: 64px; height: 64px; }
+.cover .band.banner { background: #fff; border: 1.5px solid #0b63b6; border-bottom: 5px solid #0b63b6; padding: 14px 18px; justify-content: center; }
+.cover .band.banner img.cover-banner { width: auto; height: 70px; }
+.cover .credit { margin-top: auto; padding-top: 14px; border-top: 1px solid #dbe2eb; color: #0b63b6; font-weight: 600; font-size: 9.5pt; }
 .cover .org { font-size: 15pt; font-weight: 600; }
 .cover .org-l { font-family: "Nirmala UI", "Iskoola Pota", Latha, sans-serif; font-size: 9.5pt; opacity: .9; line-height: 1.5; }
 .cover h1 { font-size: 26pt; margin: 60px 0 6px; color: #0a3d7a; font-weight: 600; }
@@ -69,7 +74,8 @@ table.res tr.tot td { font-weight: 700; background: #f6f8fb; }
 .card-b { padding: 6px 8px; } .card-b.flush { padding: 0; }
 .fig { page-break-inside: avoid; margin: 8px 0 12px; text-align: center; }
 .fig svg { max-width: 100%; height: auto; }
-.fig .cap { font-size: 8.5pt; color: #44546b; margin-top: 3px; }
+.fig .cap { font-size: 9.5pt; color: #000; margin-top: 4px; font-family: 'Times New Roman', Times, serif; font-weight: 700; text-align: center; }
+.fig .cap .dn { display: block; font-family: Arial, sans-serif; font-weight: 400; font-size: 7.5pt; color: #44546b; }
 .grid2 { display: block; }
 .calc { font-size: 8.5pt; }
 .calc .cs-h { font-weight: 700; color: #0b63b6; margin: 8px 0 3px; border-bottom: 1px solid #dbe2eb; page-break-after: avoid; }
@@ -86,15 +92,17 @@ table.res tr.tot td { font-weight: 700; background: #f6f8fb; }
 @media screen { body { background: #e6ebf2; padding: 14px 0; } .page { background: #fff; width: 210mm; min-height: 297mm; margin: 0 auto 14px; padding: 16mm 14mm; box-shadow: 0 2px 10px rgba(15,29,51,.18); } .cover { height: auto; min-height: 297mm; } }
 `;
 
+let FIG = 0;
+const figCap = (t, extra = '') => `<div class="cap">Figure ${++FIG}: ${esc(t)}${extra}</div>`;
 function staticize(nodes) {
   // convert page render output (DOM nodes) into report HTML: charts & drawings rendered statically
   const out = [];
   for (const n of nodes.flat(Infinity)) {
     if (!n) continue;
-    if (n._spec) { out.push(`<div class="fig">${chartToSVG(n._spec, 660)}<div class="cap">${esc(n._title || '')}</div></div>`); continue; }
-    if (n._dw) { out.push(`<div class="fig">${drawingSVG(n._dw, { statik: true, idPrefix: 'r' + Math.random().toString(36).slice(2, 7) }).svg.replace('<svg ', '<svg width="660" ')}<div class="cap">${esc(n._dw.title)}</div></div>`); continue; }
+    if (n._spec) { out.push(`<div class="fig">${chartToSVG(n._spec, 660)}${figCap(n._title || '')}</div>`); continue; }
+    if (n._dw) { out.push(`<div class="fig">${drawingSVG(n._dw, { statik: true, idPrefix: 'r' + Math.random().toString(36).slice(2, 7) }).svg.replace('<svg ', '<svg width="660" ')}${figCap(n._dw.title.replace(/ – (plan|section|longitudinal section|profile)(.*)$/i, (m, k, rest) => ' – ' + k[0].toUpperCase() + k.slice(1) + rest), `<span class="dn">Drawing ${drawingNumber(store.project.inputs.setup, n._dw.title)} · full A3 sheet in the drawing pack</span>`)}</div>`); continue; }
     if (n.classList?.contains('grid2')) { out.push(staticize([...n.children])); continue; }
-    if (n.classList?.contains('pfd') || n.querySelector?.('.pfd')) { out.push(`<div class="fig pfd">${pfdSVG(store.results, { width: 1000, interactive: false, statik: true })}</div>`); continue; }
+    if (n.classList?.contains('pfd') || n.classList?.contains('pfd2') || n.querySelector?.('.pfd, .pfd2')) { out.push(`<div class="fig pfd">${pfdSVG(store.results, { width: 1000, interactive: false, statik: true }).svg}${figCap('Process flow diagram – selected treatment train')}</div>`); continue; }
     if (n.outerHTML) out.push(n.outerHTML);
   }
   return out.join('\n');
@@ -131,7 +139,8 @@ function pageSection(page, r, opts, num) {
   if (page.enabled && !page.enabled(r)) return '';
   let body = '';
   try {
-    if (page.renderFull) body = staticize(page.renderFull(r));
+    if (page.report) body = staticize(page.report(r));
+    else if (page.renderFull) body = staticize(page.renderFull(r));
     else {
       const o = page.render(r);
       body = inputsTable(page) + '<h3>Results</h3>' + staticize([...(o.overview || []), ...(o.visuals || [])]);
@@ -143,15 +152,16 @@ function pageSection(page, r, opts, num) {
 }
 
 export function buildReport(opts = {}) {
+  FIG = 0;
   const o = { summary: true, basis: true, process: true, units: true, plant: true, cost: true, compliance: true, d2: true, d3: true, calc: true, refs: true, ...opts };
   const r = store.results;
   const s = store.project.inputs.setup;
   const d = r.demand;
   const base = location.href.replace(/[^/]*$/, '');
-  const logo = store.settings.logo ? `<img src="${store.settings.logo}" alt="logo">` : emblemSVG(64);
+  const logo = store.settings.logo ? `<img src="${store.settings.logo}" alt="logo">` : bannerImg(70, 'cover-banner');
   const parts = [];
   parts.push(`<section class="page cover">
-    <div class="band">${logo}<div><div class="org">National Water Supply &amp; Drainage Board</div><div class="org-l">ජාතික ජල සම්පාදන හා ජලාපවහන මණ්ඩලය<br>தேசிய நீர் வழங்கல் மற்றும் வடிகாலமைப்புச் சபை</div><div class="org-l">Sri Lanka</div></div></div>
+    <div class="band banner">${logo}</div>
     <h1>Water Treatment Plant – Design Report</h1>
     <h2>${esc(s.name)}</h2>
     <div><span class="cap">${f1(d.Qd / 1000)} MLD</span> <span class="muted">(${f0(d.Qd)} m³/d, design year ${d.inputs.designYear})</span></div>
@@ -162,7 +172,8 @@ export function buildReport(opts = {}) {
       <tr><td>Revision / date</td><td>${esc(s.revision)} / ${esc(s.date)}</td></tr>
     </table>
     <table class="sig"><tr><th>Designed by</th><th>Checked by</th><th>Approved by</th></tr><tr><td>${esc(s.designer)}</td><td>${esc(s.checker)}</td><td>${esc(s.approver)}</td></tr></table>
-    <p class="small muted" style="margin-top:8px">Generated by NWSDB WTP Designer on ${new Date().toLocaleString('en-GB')}. Indicative design – to be verified by a qualified engineer against current NWSDB design criteria.</p>
+    <p class="small muted" style="margin-top:8px">Generated by NWSDB WTP Designer v1.3 (${CREDIT}) on ${new Date().toLocaleString('en-GB')}. Indicative design – to be verified by a qualified engineer against current NWSDB design criteria.</p>
+    <div class="credit">NWSDB WTP Designer – ${CREDIT}</div>
   </section>`);
   const toc = [];
   let n = 1;
@@ -172,7 +183,7 @@ export function buildReport(opts = {}) {
     const k = sec('Executive summary');
     body.push(`<section class="page"><h1 class="sec">${k}. Executive summary</h1>
       <p>The ${esc(s.name)} is designed to treat <b>${f0(d.Qd)} m³/d</b> (${f1(d.Qd / 1000)} MLD) of ${esc(s.sourceType)} water from ${esc(s.source || 'the source')} in ${esc(s.district)} District, serving an estimated <b>${f0(d.design.served)}</b> people in ${d.inputs.designYear}. Raw-water turbidity peaks at ${r.quality.turbMax} NTU during the monsoon; the selected ${esc(r.process.route)} train delivers a predicted filtered turbidity of ${f2(r.filt.filteredAvg)}–${f2(r.filt.filteredPeak)} NTU and meets ${r.compliance.total - r.compliance.fails.length} of ${r.compliance.total} SLS 614:2013 parameters.</p>
-      <div class="fig pfd">${pfdSVG(r, { width: 1000, interactive: false, statik: true })}<div class="cap">Process flow diagram</div></div>
+      <div class="fig pfd">${pfdSVG(r, { width: 1000, interactive: false, statik: true }).svg}${figCap('Process flow diagram')}</div>
       <table class="res"><thead><tr><th>Item</th><th class="num">Value</th></tr></thead><tbody>
       ${[
         ['Design capacity', `${f0(d.Qd)} m³/d (${d.nTrains} streams)`], ['Population served (design year)', f0(d.design.served)], ['Average / maximum-day demand', `${f0(d.design.gross)} / ${f0(d.design.mdd)} m³/d`],
@@ -188,14 +199,20 @@ export function buildReport(opts = {}) {
   const byId = (id) => PAGES.find((p) => p.id === id);
   const group = (ids) => ids.map(byId).filter(Boolean);
   if (o.basis) for (const p of group(['setup', 'demand', 'quality', 'source'])) body.push(pageSection(p, r, o, sec(p.title)));
-  if (o.process) { const p = byId('process'); body.push(pageSection(p, r, o, sec(p.title))); }
+  if (o.process) { const p = byId('process'); body.push(pageSection(p, r, o, sec('Process selection (plant configuration)'))); const c = byId('chain'); if (c) body.push(pageSection(c, r, o, sec(c.title))); }
   if (o.units) for (const p of group(['intake', 'aeration', 'coag', 'rapidmix', 'floc', 'sed', 'filt', 'dis', 'stab'])) { if (p.enabled && !p.enabled(r)) continue; body.push(pageSection(p, r, o, sec(p.title))); }
   if (o.plant) {
     for (const p of group(['storage', 'sludge'])) body.push(pageSection(p, r, o, sec(p.title)));
     body.push(pageSection(byId('hyd'), r, o, sec('Hydraulic profile')));
     const kl = sec('Site layout');
-    body.push(`<section class="page"><h1 class="sec">${kl}. Site layout</h1><div class="fig">${drawingSVG(layoutPlan(r.layout), { statik: true, idPrefix: 'lp' }).svg.replace('<svg ', '<svg width="660" ')}</div><p>Land requirement ${f2(r.layout.ha)} ha = ${f2(r.layout.acres)} acres = ${f0(r.layout.perches)} perches (including ${r.layout.inputs.expansion} % reserve).</p></section>`);
+    body.push(`<section class="page"><h1 class="sec">${kl}. Site layout</h1><div class="fig">${drawingSVG(layoutPlan(r.layout), { statik: true, idPrefix: 'lp' }).svg.replace('<svg ', '<svg width="660" ')}${figCap('Site layout – Plan', `<span class="dn">Drawing ${drawingNumber(store.project.inputs.setup, 'Site layout – plan')}</span>`)}</div><p>Land requirement ${f2(r.layout.ha)} ha = ${f2(r.layout.acres)} acres = ${f0(r.layout.perches)} perches (including ${r.layout.inputs.expansion} % reserve).</p></section>`);
     const pe = byId('energy'); body.push(pageSection(pe, r, o, sec(pe.title)));
+    const kd = sec('Drawing register');
+    const dl = drawingList(r);
+    body.push(`<section class="page"><h1 class="sec">${kd}. Drawing register</h1><p>The drawings below are issued as NWSDB A3 landscape sheets (title block, notes, legend, graphic scale) in the drawing pack (PDF) and as AutoCAD DXF files with the same title block (layers per element). Concrete is shown in the NWSDB Design Manual D3 annex convention (red outline, cross-hatched).</p>
+      <table class="res"><thead><tr><th>Sheet</th><th>Drawing number</th><th>Title</th><th class="num">Scale (A3)</th></tr></thead><tbody>
+      <tr><td>1</td><td>${esc(drawingNumber(store.project.inputs.setup, 'Process flow diagram'))}</td><td>Process flow diagram</td><td class="num">NTS</td></tr>
+      ${dl.map((dw, i) => `<tr><td>${i + 2}</td><td>${esc(drawingNumber(store.project.inputs.setup, dw.title))}</td><td>${esc(dw.title)}</td><td class="num">1:${chooseScale(dw)}</td></tr>`).join('')}</tbody></table></section>`);
   }
   if (o.cost) { const p = byId('cost'); body.push(pageSection(p, r, o, sec(p.title))); }
   if (o.compliance) for (const p of group(['compliance', 'checks'])) {

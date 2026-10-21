@@ -1,12 +1,14 @@
 // Page registry (navigation order)
-import { setup, demand, quality, source, process } from './basis.js';
+import { setup, demand, quality, source } from './basis.js';
+import { process } from './configurator.js';
 import { intake, aeration, coag, rapidmix, floc, sed, filt, dis, stab } from './units.js';
 import { storage, sludge, hyd, layout, energy, cost } from './plant.js';
 import { dashboard, compliance, checks } from './outputs.js';
+import { chainPage } from '../chain.js';
 import { report, criteria, d2manual, d3manual, toolbox, help, settings } from './library.js';
 
 export const PAGES = [
-  dashboard, setup,
+  dashboard, setup, chainPage,
   demand, quality, source, process,
   intake, aeration, coag, rapidmix, floc, sed, filt, dis, stab,
   storage, sludge, hyd, layout, energy, cost,

@@ -94,14 +94,14 @@ def vs_string(key, val):
     return vs_node(key, v, 1, value_len=len(v) // 2)
 
 
-def version_block(old, ver, product, company, exe_name):
+def version_block(old, ver, product, company, exe_name, copyright=None):
     parts = [int(x) for x in (ver.split('.') + ['0', '0', '0'])[:4]]
     ms, ls = (parts[0] << 16) | parts[1], (parts[2] << 16) | parts[3]
     i = old.find(struct.pack('<I', 0xFEEF04BD))
     fixed = bytearray(old[i:i + 52]) if i >= 0 else bytearray(struct.pack('<13I', 0xFEEF04BD, 0x10000, 0, 0, 0, 0, 0x3F, 0, 0x40004, 1, 0, 0, 0))
     struct.pack_into('<IIII', fixed, 8, ms, ls, ms, ls)
     strings = [('CompanyName', company), ('FileDescription', product), ('FileVersion', ver), ('InternalName', 'WTPDesigner'),
-               ('LegalCopyright', f'(C) {company}'), ('OriginalFilename', exe_name), ('ProductName', product), ('ProductVersion', ver)]
+               ('LegalCopyright', copyright or f'(C) {company}'), ('OriginalFilename', exe_name), ('ProductName', product), ('ProductVersion', ver)]
     table = vs_node('040904b0', b'', 1, [vs_string(k, v) for k, v in strings])
     sfi = vs_node('StringFileInfo', b'', 1, [table])
     var = vs_node('Translation', struct.pack('<HH', 0x0409, 0x04B0), 0)
@@ -155,10 +155,14 @@ def main():
     vs = slot(res, 16, 1)
     old = bytes(d[vs['off']:vs['off'] + vs['size']])
     exe_name = exe.replace('\\', '/').split('/')[-1]
-    blk = version_block(old, ver, product, company, exe_name)
+    copyright = '(C) NWSDB. Developed by Eng. Imantha Dilshan'
+    blk = version_block(old, ver, product, company, exe_name, copyright)
     if len(blk) > vs['size']:
         company = 'NWSDB Sri Lanka'
-        blk = version_block(old, ver, product, company, exe_name)
+        blk = version_block(old, ver, product, company, exe_name, copyright)
+    if len(blk) > vs['size']:
+        copyright = 'Eng. Imantha Dilshan'
+        blk = version_block(old, ver, product, company, exe_name, copyright)
     put(d, vs, blk)
     print(f'  version resource {len(blk)}/{vs["size"]} B: {product} {ver} ({company})')
 

@@ -95,7 +95,8 @@ export const sludge = {
   id: 'sludge', title: 'Residuals management', sub: 'Sludge production, wash-water recovery, thickening, dewatering & disposal', icon: 'recycle', group: 'Plant-wide', mod: 'sludge',
   fields: [
     { sec: 'Solids balance' },
-    { k: 'sedCapture', l: 'Solids captured in clarifiers', u: '%' },
+    { k: 'sedCapture', l: 'Solids captured in clarifiers', u: '%', note: 'D3 §5.14.3.6: 90 %' },
+    { k: 'safety', l: 'Allowance on computed solids', u: '×', step: 0.05, note: 'D3: × 1.2–1.6 (1.4)' },
     { k: 'sedSolids', l: 'Clarifier sludge solids', u: '%', step: 0.1 },
     { k: 'recoveryWashes', l: 'Recovery tank capacity', u: 'washes', step: 0.5 },
     { sec: 'Thickening & dewatering' },
@@ -104,6 +105,8 @@ export const sludge = {
     { k: 'dewaterRate', l: 'Dewatering unit capacity', u: 'kg DS/h' },
     { k: 'dewaterHours', l: 'Dewatering hours', u: 'h/d' },
     { k: 'bedLoad', l: 'Drying-bed loading', u: 'kg DS/m²', crit: 'sl.bedLoad' },
+    { k: 'annualRain', l: 'Annual rainfall at site', u: 'mm', auto: true, autoVal: (r) => r.sludge.rain, note: 'D3 §5.14.8: open beds < 2,200 mm' },
+    { k: 'bedCover', l: 'Drying beds', t: 'sel', o: [['auto', 'Auto (covered if rainfall ≥ 2,200 mm)'], ['open', 'Open sand beds'], ['covered', 'Covered (solar) drying beds']] },
     { k: 'bedCycleDry', l: 'Drying cycle – dry months', u: 'days' },
     { k: 'bedCycleWet', l: 'Drying cycle – monsoon', u: 'days' },
     { k: 'cakeSolids', l: 'Cake solids', u: '%' },
