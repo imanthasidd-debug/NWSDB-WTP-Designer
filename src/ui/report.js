@@ -15,7 +15,7 @@ const f0 = (v) => fmt(v, 0), f1 = (v) => fmt(v, 1), f2 = (v) => fmt(v, 2);
 export const REPORT_SECTIONS = [
   ['summary', 'Executive summary'], ['basis', 'Design basis (demand & raw water)'], ['process', 'Process selection'],
   ['units', 'Treatment unit designs'], ['plant', 'Plant-wide design (storage, residuals, hydraulics, layout, power)'],
-  ['cost', 'Cost estimate'], ['compliance', 'Compliance & design checks'], ['d2', 'NWSDB Design Manual D2 compliance'], ['calc', 'Include calculation sheets'], ['refs', 'References & assumptions'],
+  ['cost', 'Cost estimate'], ['compliance', 'Compliance & design checks'], ['d2', 'NWSDB Design Manual D2 compliance'], ['d3', 'NWSDB Design Manual D3 compliance'], ['calc', 'Include calculation sheets'], ['refs', 'References & assumptions'],
 ];
 
 const REPORT_CSS = `
@@ -143,7 +143,7 @@ function pageSection(page, r, opts, num) {
 }
 
 export function buildReport(opts = {}) {
-  const o = { summary: true, basis: true, process: true, units: true, plant: true, cost: true, compliance: true, d2: true, calc: true, refs: true, ...opts };
+  const o = { summary: true, basis: true, process: true, units: true, plant: true, cost: true, compliance: true, d2: true, d3: true, calc: true, refs: true, ...opts };
   const r = store.results;
   const s = store.project.inputs.setup;
   const d = r.demand;
@@ -182,6 +182,7 @@ export function buildReport(opts = {}) {
         ['Maximum demand / transformer', `${f0(r.energy.kva)} kVA / ${r.energy.tx} kVA`], ['Capital cost (incl. VAT)', fmtMoney(r.cost.capex)], ['Production cost', `${f2(r.cost.fullPerM3)} LKR/m³ (O&M ${f2(r.cost.omPerM3)})`],
         ['Design checks', `${r.summary.ok} pass, ${r.summary.warn} to review, ${r.summary.fail} fail`],
         ['NWSDB Design Manual D2 (1989) clause checks', `${r.d2.ok} pass, ${r.d2.warn} to review, ${r.d2.fail} fail`],
+        ['NWSDB Design Manual D3 (2020) clause checks', `${r.d3.ok} pass, ${r.d3.warn} to review, ${r.d3.fail} fail, ${r.d3.info} advisory`],
       ].map(([a, b]) => `<tr><td>${a}</td><td class="num">${b}</td></tr>`).join('')}</tbody></table></section>`);
   }
   const byId = (id) => PAGES.find((p) => p.id === id);
@@ -205,8 +206,18 @@ export function buildReport(opts = {}) {
     const k = sec('Compliance with NWSDB Design Manual D2');
     const rows = r.d2.checks.map((c) => ({ ...c, moduleLabel: `${PAGES.find((pp) => pp.mod === c.module)?.title || c.module} · ${c.clause}` }));
     body.push(`<section class="page"><h1 class="sec">${k}. Compliance with NWSDB Design Manual D2</h1>
-      <p>The demand forecast, source assessment, intake, pumping stations, transmission mains, service reservoirs, site planning and cost estimate have been checked against <b>NWSDB Design Manual D2 – Urban Water Supply and Distribution (March 1989)</b>. Treatment-unit process design follows the scope of companion manual D3 (Water Quality and Treatment) using the criteria referenced in each section. Result: <b>${r.d2.ok}</b> clause checks pass, <b>${r.d2.warn}</b> require review and <b>${r.d2.fail}</b> fail.</p>
+      <p>The demand forecast, source assessment, intake, pumping stations, transmission mains, service reservoirs, site planning and cost estimate have been checked against <b>NWSDB Design Manual D2 – Urban Water Supply and Distribution (March 1989)</b>. Treatment-process design is checked against companion manual D3 (next section). Result: <b>${r.d2.ok}</b> clause checks pass, <b>${r.d2.warn}</b> require review and <b>${r.d2.fail}</b> fail.</p>
       ${checksTable(rows, { showModule: true }).outerHTML}</section>`);
+  }
+  if (o.d3) {
+    const k = sec('Compliance with NWSDB Design Manual D3');
+    const rows = r.d3.checks.map((c) => ({ ...c, moduleLabel: `${PAGES.find((pp) => pp.mod === c.module)?.title || c.module} · ${c.clause}` }));
+    const p = r.process;
+    body.push(`<section class="page"><h1 class="sec">${k}. Compliance with NWSDB Design Manual D3</h1>
+      <p>Raw- and treated-water quality, process selection, screens, aeration, coagulation and chemical feeding, rapid mixing, flocculation, clarification, filtration, disinfection, stabilisation, residuals and plant layout have been checked against <b>NWSDB Design Manual D3 – Water Quality &amp; Treatment Manual (Revision 01, November 2020)</b>. Result: <b>${r.d3.ok}</b> clause checks pass, <b>${r.d3.warn}</b> require review, <b>${r.d3.fail}</b> fail and <b>${r.d3.info}</b> are advisory.</p>
+      <p><b>Process selection (D3 Table 4-5, ${esc(p.typical.fig)}):</b> source category “${esc(p.typical.cat)}” – typical train ${esc(p.typical.steps.join(' → '))}. Essential processes for the raw-water characteristics: ${esc(p.t45.rows.map((x) => `${x.char} ${x.band}`).join('; '))}.</p>
+      ${checksTable(rows, { showModule: true }).outerHTML}
+      <p class="small">Printed inconsistencies in D3 and the interpretation adopted are listed in the application (Library → NWSDB Design Manual D3 → Errata); they should be confirmed with the NWSDB Planning &amp; Design Manual Review Committee.</p></section>`);
   }
   if (o.refs) {
     const k = sec('References, assumptions & criteria');
@@ -222,18 +233,21 @@ export function buildReport(opts = {}) {
       <li>USEPA (1991/2003). Guidance Manual for Compliance with the Surface Water Treatment Rule – CT values; Disinfection Profiling & Benchmarking.</li>
       <li>Great Lakes–Upper Mississippi River Board (2018). Recommended Standards for Water Works (Ten States Standards).</li>
       <li>Smet, J. & van Wijk, C. (2002). Small Community Water Supplies. IRC Technical Paper 40.</li>
+      <li>National Water Supply &amp; Drainage Board (2020). Design Manual D3 – Water Quality &amp; Treatment Manual, Revision 01 (November 2020). Ratmalana, Sri Lanka.</li>
+      <li>Sri Lanka Standards Institution. SLS 722:1985 – Tolerance limits for inland surface waters used as raw water for public water supply.</li>
       <li>National Water Supply & Drainage Board (1989). Design Manual D2 – Urban Water Supply and Distribution. Ministry of Local Government, Housing and Construction, Sri Lanka (with companion manuals D1, D3, D4, D5 and P1).</li>
       <li>British Standards Institution. BS 3680 Part 4 – Measurement of liquid flow in open channels: weirs and flumes; CP 2010 – Pipelines.</li></ol>
       <h3>Key assumptions</h3><ul class="small">
       <li>Water properties are evaluated at the design water temperature of ${r.quality.T} °C; carbonate chemistry assumes a closed system with activity coefficients of unity.</li>
-      <li>Coagulant demand follows D = a·Tuᵇ calibrated to jar tests; sludge production follows the AWWA mass balance.</li>
+      <li>Coagulant demand follows D = a·Tuᵇ calibrated to jar tests; sludge production follows the NWSDB D3 Method 02 mass balance (Table 5-44, ×1.4 allowance, 90 % capture).</li>
+      <li>Treatment-unit criteria, CT tables (Table 6-4/6-5, 25 °C values used above 25 °C), baffling factors, filter, clarifier, residuals and layout rules follow NWSDB Design Manual D3 (2020) as cited clause by clause; water properties follow D3 Annex I.</li>
       <li>Treated-water quality predictions are screening estimates for design and must be confirmed by pilot/jar testing and commissioning data.</li>
       <li>Demand, peaking, unaccounted-for water, intake, pumping, pipeline, service-reservoir and cost-estimate rules follow NWSDB Design Manual D2 (1989) as cited clause by clause; river-basin runoff is from D2 Table 4.1 and dry-weather flow / flood estimates are screening values unless gauged data are entered.</li>
       <li>Cost rates are indicative (2026) and must be updated with the current NWSDB schedule of rates and market prices; electricity tariffs follow the CEB tariff entered on the Power page.</li></ul>
       <h3>Design criteria used</h3><table class="res"><thead><tr><th>Criterion</th><th>Range</th><th>Unit</th><th>Source</th></tr></thead><tbody>${crit.map(([key, c]) => `<tr><td>${esc(c.label)}</td><td>${esc(c.range)}</td><td>${esc(c.unit || '')}</td><td class="small">${esc(c.src || '')}</td></tr>`).join('')}</tbody></table></section>`);
   }
   const tocHTML = `<section class="page"><h1 class="sec">Contents</h1><ol class="toc">${toc.map((t) => `<li>${esc(t.replace(/^\d+\.\s*/, ''))}</li>`).join('')}</ol>
-    <h3>Abbreviations</h3><p class="small">ADD – average-day demand; D2 – NWSDB Design Manual D2 (1989); EAC – equivalent annual cost; UFW – unaccounted-for water; BF – baffle factor; CT – concentration × time; CWR – clear-water reservoir; DS – dry solids; ES – effective size; HFL/LWL – highest flood / lowest water level; HRT – hydraulic retention time; LSI – Langelier saturation index; MDD – maximum-day demand; MLD – million litres per day; NRW – non-revenue water; SOR – surface overflow rate; TDH – total dynamic head; UC – uniformity coefficient; UFRV – unit filter run volume; WL – water level.</p></section>`;
+    <h3>Abbreviations</h3><p class="small">ADD – average-day demand; D2 – NWSDB Design Manual D2 (1989); D3 – NWSDB Design Manual D3 (2020); EAC – equivalent annual cost; UFW – unaccounted-for water; BF – baffle factor; CT – concentration × time; CWR – clear-water reservoir; DS – dry solids; ES – effective size; HFL/LWL – highest flood / lowest water level; HRT – hydraulic retention time; LSI – Langelier saturation index; MDD – maximum-day demand; MLD – million litres per day; NRW – non-revenue water; SOR – surface overflow rate; TDH – total dynamic head; UC – uniformity coefficient; UFRV – unit filter run volume; WL – water level.</p></section>`;
   void evaluate; void rangeText;
   return `<!doctype html><html><head><meta charset="utf-8"><base href="${base}"><title>${esc(s.name)} – Design Report</title><link rel="stylesheet" href="katex/katex.min.css"><style>${REPORT_CSS}</style></head><body>${parts.join('')}${tocHTML}${body.join('\n')}</body></html>`;
 }

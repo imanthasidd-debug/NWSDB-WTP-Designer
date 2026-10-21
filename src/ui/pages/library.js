@@ -1,6 +1,7 @@
 // Design report, criteria library, engineering toolbox, help and settings
 import { CRITERIA, rangeText } from '../../core/criteria.js';
 import * as D2M from '../../core/d2.js';
+import * as D3M from '../../core/d3.js';
 import { DN, G, fmt, fmtAuto, hwLoss, vel } from '../../core/util.js';
 import { DOsat, mu, nu, pHs, rho, stability, stokes, lsiText, pVap } from '../../core/water.js';
 import JSZip from 'jszip';
@@ -115,7 +116,14 @@ export const toolbox = {
       tool('Flow-unit converter', [{ k: 'v', l: 'Value', v: 42000 }, { k: 'u', l: 'From', v: 'm3d', o: [['m3d', 'm³/d'], ['m3h', 'm³/h'], ['lps', 'L/s'], ['mld', 'MLD'], ['mgd', 'Imp. MGD'], ['usmgd', 'US MGD']] }], (x) => { const toM3d = { m3d: 1, m3h: 24, lps: 86.4, mld: 1000, mgd: 4546.09, usmgd: 3785.41 }[x.u]; const q = x.v * toM3d; return [['m³/d', q], ['m³/h', q / 24], ['L/s', q / 86.4], ['MLD', q / 1000], ['Imperial MGD', q / 4546.09], ['US MGD', q / 3785.41]]; }),
       tool('Water properties', [{ k: 'T', l: 'Temperature', u: '°C', v: 28 }, { k: 'z', l: 'Elevation', u: 'm', v: 20 }], (x) => [['Density', rho(x.T), 'kg/m³'], ['Dynamic viscosity', mu(x.T) * 1000, 'mPa·s'], ['Kinematic viscosity', nu(x.T) * 1e6, 'mm²/s'], ['Vapour pressure', pVap(x.T), 'kPa'], ['DO saturation', DOsat(x.T, x.z), 'mg/L']]),
       tool('Stokes settling velocity', [{ k: 'd', l: 'Particle diameter', u: 'µm', v: 20 }, { k: 'rp', l: 'Particle density', u: 'kg/m³', v: 2650 }, { k: 'T', l: 'Temperature', u: '°C', v: 28 }, { k: 'H', l: 'Tank depth', u: 'm', v: 3.5 }], (x) => { const v = stokes(x.d * 1e-6, x.rp, x.T); const Re = v * x.d * 1e-6 / nu(x.T); return [['Settling velocity', v * 3600, 'm/h'], ['', v * 1000, 'mm/s'], ['Reynolds number', Re, Re < 1 ? '(Stokes valid)' : '(Stokes not valid)'], ['Time to settle depth', x.H / v / 3600, 'h'], ['Equivalent SOR', v * 86400, 'm³/m²·d']]; }),
-      tool('Chemical feed rate', [{ k: 'Q', l: 'Plant flow', u: 'm³/d', v: 42000 }, { k: 'D', l: 'Dose', u: 'mg/L', v: 30 }, { k: 'c', l: 'Solution strength', u: '% w/v', v: 8 }, { k: 'p', l: 'Product purity', u: '%', v: 100 }], (x) => { const kg = x.D * x.Q / 1000 / (x.p / 100); return [['Product required', kg, 'kg/d'], ['', kg / 24, 'kg/h'], ['Solution feed', kg / (x.c * 10) * 1000 / 24, 'L/h'], ['Monthly product', kg * 30.4 / 1000, 't/month']]; }),
+      tool('Chemical feed rate – D3 §6.1', [{ k: 'Q', l: 'Plant flow', u: 'm³/d', v: 42000 }, { k: 'D', l: 'Dose', u: 'mg/L', v: 30 }, { k: 'c', l: 'Stock solution strength', u: '% w/v', v: 10 }, { k: 'p', l: 'Product purity', u: '%', v: 100 }], (x) => { const kg = x.D * x.Q / 1000 / (x.p / 100); const qls = x.Q / 86.4; return [['Product required', kg, 'kg/d'], ['', kg / 24, 'kg/h'], ['Stock solution feed', kg / (x.c * 10) * 1000 / 24, 'L/h'], ['Carrier water to 1 % at diffuser', kg / (x.c * 10) * 1000 / 24 * (x.c - 1), 'L/h'], ['Calibration: time to draw 1 L', (x.c * 10000) / (x.D * qls), 's (D3 §6.1.5)'], ['Monthly product', kg * 30.4 / 1000, 't/month']]; }),
+      tool('CT & contact tank – D3 Tables 6-2/6-4/6-5', [{ k: 'Q', l: 'Peak hourly flow', u: 'm³/h', v: 2200 }, { k: 'V', l: 'Contact volume', u: 'm³', v: 1100 }, { k: 'bf', l: 'Baffling', v: '0.7', o: D3M.BAFFLING.map(([l, b]) => [String(b), `${l} (${b})`]) }, { k: 'C', l: 'Free chlorine', u: 'mg/L', v: 0.8 }, { k: 'pH', l: 'pH', v: 7.2 }, { k: 'T', l: 'Temperature', u: '°C', v: 28 }, { k: 'g', l: 'Giardia log required', v: 0.5 }, { k: 'vl', l: 'Virus log required', v: 2 }], (x) => { const T10 = (x.V / x.Q) * 60 * +x.bf; const ct = x.C * T10; const g = D3M.ctGiardiaD3(x.g, x.T, x.pH, x.C), v = D3M.ctVirusD3(x.vl, x.T); return [['T₁₀', T10, 'min'], ['CT provided', ct, 'mg·min/L'], ['CT required – Giardia', g, 'mg·min/L'], ['CT required – virus', v, 'mg·min/L'], ['CT ratio', ct / Math.max(g, v, 1e-6), ct >= Math.max(g, v) ? 'OK (≥ 1)' : 'insufficient'], ['Nominal contact', (x.V / x.Q) * 60, 'min (≥ 20, WHO 30)']]; }),
+      tool('Bleaching powder dose – D3 §6.4 / Annex G', [{ k: 'Q', l: 'Flow treated', u: 'm³/d', v: 500 }, { k: 'D', l: 'Chlorine dose', u: 'mg/L', v: 2 }, { k: 'a', l: 'Available chlorine', u: '%', v: 35 }, { k: 'c', l: 'Solution strength', u: '% av. Cl', v: 1 }], (x) => { const g = D3M.bleachingPowder(x.Q, x.D, x.a / 100); const lph = (x.Q * x.D) / (x.c * 10) / 24; return [['Bleaching powder', g / 1000, 'kg/d'], ['Per 1000 Imp gal (4.546 m³)', D3M.bleachingPowder(4.546, x.D, x.a / 100), 'g'], ['Solution feed', lph, 'L/h'], ['24 h solution tank', lph * 24 / 1000, 'm³'], ['Within hypochlorination limit', lph <= 42 ? 'yes (≤ 42 L/h)' : 'no – use gas chlorination', ''], ['Storage', '≤ 3 months; verify each batch', '']]; }),
+      tool('Rapid sand filters – D3 §5.9.2', [{ k: 'Q', l: 'Filtered-water flow', u: 'm³/d', v: 16125 }, { k: 'v', l: 'Filtration rate', u: 'm/h', v: 8 }, { k: 'N', l: 'Filters (0 = D3 rule)', v: 0 }], (x) => { const Nr = D3M.nFiltersD3(x.Q); const N = x.N > 0 ? x.N : Math.max(D3M.minFilters(x.Q), Math.ceil(Nr), Math.ceil(2 / (1 - x.v / 15))); const A = x.Q / 24 / x.v / N; return [['N = 1.2√Q (mgd)', Nr, ''], ['Filters adopted', N, `(≥ ${D3M.minFilters(x.Q)})`], ['Area of each filter', A, `m² (≤ ${D3M.filterAreaMax(x.Q)})`], ['L × B at L/B 1.3', `${fmt(Math.sqrt(A * 1.3), 2)} × ${fmt(Math.sqrt(A / 1.3), 2)}`, 'm'], ['Rate, one out + one washing', x.Q / 24 / ((N - 2) * A), 'm/h (≤ 15)'], ['Sand depth ≥ 1200 d₁₀ (ES 0.55)', D3M.sandDepthMin(0.55), 'm']]; }),
+      tool('Slow sand filters – D3 §5.12', [{ k: 'Q', l: 'Flow', u: 'm³/d', v: 2300 }, { k: 'v', l: 'Filtration rate', u: 'm/h', v: 0.15 }, { k: 't', l: 'Raw turbidity (max)', u: 'NTU', v: 18 }], (x) => { const su = D3M.ssfUnits(x.Q); const A = x.Q / 24 / x.v; const n2 = Math.max(2, Math.ceil(su.formula)); return [['Total bed area', A, 'm²'], ['Units n = 15√Q', su.formula, su.table ? `(Table 5-36: ${su.table})` : ''], ['Area per unit (n − 1 in service)', A / Math.max(1, n2 - 1), 'm²'], ['Rate with one unit scraped', x.Q / 24 / (A * (n2 - 1) / n2), 'm/h (≤ 0.4)'], ['Pre-treatment', x.t >= 20 ? (x.t > 50 ? 'unsuitable (> 50 NTU)' : 'necessary (≥ 20 NTU)') : x.t >= 10 ? 'consider (10–20 NTU)' : 'not required', ''], ['Box depth (min)', 2.7, 'm']]; }),
+      tool('Sludge production – D3 Method 02 (Annex H)', [{ k: 'Q', l: 'Flow', u: 'm³/d', v: 16125 }, { k: 'ntu', l: 'Turbidity', u: 'NTU', v: 17 }, { k: 'b', l: 'mg TSS per NTU', v: 1.0 }, { k: 'fe', l: 'Iron', u: 'mg/L', v: 0.7 }, { k: 'mn', l: 'Manganese', u: 'mg/L', v: 0.4 }, { k: 'alum', l: 'Alum', u: 'mg/L', v: 25 }, { k: 'lime', l: 'Lime', u: 'mg/L', v: 15 }, { k: 'pac', l: 'PAC', u: 'mg/L', v: 5 }, { k: 'slr', l: 'Thickener loading', u: 'kg/m²·d', v: 80 }], (x) => { const m = D3M.sludgeMethod2({ Q: x.Q, ntu: x.ntu, tssPerNtu: x.b, fe: x.fe, mn: x.mn, alum: x.alum, lime: x.lime, pac: x.pac }); const V = m.design / (0.02 * 1012); const A = m.design / x.slr; return [['Dry solids (sum of terms)', m.total, 'kg/d'], ['Design (× 1.4 × 90 %)', m.design, 'kg/d'], ['Specific', m.design / x.Q * 1000, 'kg/1000 m³ (8–210)'], ['Wet sludge at 2 %', V, 'm³/d'], ['Thickener area / diameter', `${fmt(A, 2)} m² / ${fmt(Math.sqrt(4 * A / Math.PI), 2)} m`, ''], ['Hydraulic loading', V / A, 'm³/m²·d (4–10)']]; }),
+      tool('Cascade aerator – D3 §5.3 / Annex B', [{ k: 'T', l: 'Temperature', u: '°C', v: 28 }, { k: 'h', l: 'Drop per step', u: 'm', v: 0.5 }, { k: 'n', l: 'Number of drops', v: 4 }, { k: 'C0', l: 'Initial DO', u: 'mg/L', v: 0 }, { k: 'fe', l: 'Fe²⁺', u: 'mg/L', v: 1.0 }, { k: 'mn', l: 'Mn²⁺', u: 'mg/L', v: 0.2 }], (x) => { const K = D3M.aerK(x.T, x.h); const Cs = DOsat(x.T); let C = x.C0; for (let i = 0; i < x.n; i++) C += K * (Cs - C); return [['K = 0.45(1 + 0.046T)h', K, x.h > 0.7 ? 'h > 0.7 m – past best efficiency' : ''], ['Cs', Cs, 'mg/L'], ['DO after aerator', C, 'mg/L'], ['O₂ demand (Table 7-1)', D3M.OXIDANT.O2.fe * x.fe + D3M.OXIDANT.O2.mn * x.mn, 'mg/L'], ['Tail-water depth (2/3 h)', 2 / 3 * x.h, 'm'], ['Cl₂ / KMnO₄ for Fe + Mn', `${fmt(D3M.OXIDANT.Cl2.fe * x.fe + D3M.OXIDANT.Cl2.mn * x.mn, 2)} / ${fmt(D3M.OXIDANT.KMnO4.fe * x.fe + D3M.OXIDANT.KMnO4.mn * x.mn, 2)}`, 'mg/L']]; }),
+      tool('Site area & stability – D3 §9.2.1 / Ch 8', [{ k: 'Q', l: 'Ultimate capacity', u: 'm³/d', v: 60000 }, { k: 'ca', l: 'Calcium (as Ca)', u: 'mg/L', v: 20 }, { k: 'alk', l: 'Alkalinity', u: 'mg/L CaCO₃', v: 50 }, { k: 'pH', l: 'pH', v: 7.8 }], (x) => { const ps = D3M.pHsEq83(x.ca, x.alk); return [['Minimum site area (campus)', D3M.siteAreaMinHa(x.Q), 'ha'], ['', D3M.siteAreaMinHa(x.Q) * 2.471, 'acres'], ['pHs (Eq 8.3, 25 °C)', ps, ''], ['LSI', x.pH - ps, x.pH - ps < -1.5 ? 'aggressive (< −1.5)' : 'acceptable (> −1.5)'], ['RSI', 2 * ps - x.pH, 2 * ps - x.pH < 10 ? 'acceptable (< 10)' : 'corrosive (≥ 10)']]; }),
       tool('Langelier & Ryznar indices', [{ k: 'pH', l: 'pH', v: 7.5 }, { k: 'T', l: 'Temperature', u: '°C', v: 28 }, { k: 'tds', l: 'TDS', u: 'mg/L', v: 120 }, { k: 'ca', l: 'Calcium hardness', u: 'mg/L CaCO₃', v: 40 }, { k: 'alk', l: 'Alkalinity', u: 'mg/L CaCO₃', v: 40 }], (x) => { const s = stability({ pH: x.pH, TDS: x.tds, T: x.T, caH: x.ca, alk: x.alk }); return [['pHs', s.pHs], ['LSI', s.LSI, lsiText(s.LSI)], ['Ryznar (RSI)', s.RSI], ['Aggressive index', s.AI, s.AI < 10 ? 'very aggressive' : s.AI < 12 ? 'moderately aggressive' : 'non-aggressive']]; }),
       tool('Weir & flume discharge – D2 §4.6', [{ k: 't', l: 'Structure', v: 'rectFull', o: Object.entries(D2M.WEIRS).map(([k, w]) => [k, w.label]) }, { k: 'h', l: 'Head (h or H)', u: 'mm', v: 250 }, { k: 'b', l: 'Crest / throat width', u: 'm', v: 1.0 }, { k: 'P', l: 'Crest height above floor', u: 'm', v: 0.6 }], (x) => { const q = D2M.WEIRS[x.t].Q(x.h / 1000, x.b, x.P); return [['Discharge', q * 1000, 'L/s'], ['', q * 86400, 'm³/d'], ['Head gauge upstream', `${fmt(4 * x.h / 1000, 2)}–${fmt(5 * x.h / 1000, 2)}`, 'm'], ['g (Sri Lanka)', D2M.G_SL, 'm/s²']]; }),
       tool('Rational flood & time of concentration – D2 §4.8', [{ k: 'A', l: 'Catchment area', u: 'ha', v: 500 }, { k: 'L', l: 'Longest watercourse', u: 'm', v: 3000 }, { k: 'H', l: 'Fall over length', u: 'm', v: 60 }, { k: 'C', l: 'Runoff coefficient (0 = by slope)', v: 0 }, { k: 'I', l: 'Rainfall intensity for tc', u: 'mm/h', v: 90 }], (x) => { const sl = (x.H / x.L) * 100; const C = x.C > 0 ? x.C : D2M.runoffCforCatchment(sl); return [['Average slope', sl, '%'], ['tc (Kirpich)', D2M.kirpich(x.L, x.H), 'min'], ['tc (stream velocity)', D2M.tcVelocity(x.L, sl, 10), 'min'], ['Runoff coefficient', C, ''], ['Peak flow Q = CIA/360', D2M.rational(C, x.I, x.A), 'm³/s'], ['Valid (≤ 50 km²)', x.A <= 5000 ? 'yes' : 'no – over-estimates', '']]; }),
@@ -188,13 +196,114 @@ export const d2manual = {
         { label: 'D2 checks', value: d2.total, sub: `${d2.ok} pass · ${d2.warn} review · ${d2.fail} fail · ${d2.info} info`, icon: 'landmark', accent: true, status: d2.fail ? 'fail' : d2.warn ? 'warn' : 'ok' },
         { label: 'Clauses applied', value: new Set(d2.checks.map((c) => c.clause)).size, sub: `${D2M.CLAUSES.length} clause groups indexed` },
         { label: 'Pages applying D2', value: new Set(d2.checks.map((c) => c.module)).size, sub: 'demand, source, intake, pumping, mains, storage, site, cost' },
-        { label: 'Treatment units', value: 'D3 scope', sub: 'process design: lecture notes, AWWA, Kawamura' },
+        { label: 'Treatment units', value: 'see D3', sub: 'process design → Library · NWSDB Design Manual D3' },
       ]),
       h('div', { style: { margin: '4px 0 12px' } }, seg),
       body,
     ];
   },
 };
+
+// ------------------------------------------------------------------ NWSDB Design Manual D3
+const MOD_PAGE3 = { quality: 'quality', process: 'process', intake: 'intake', aeration: 'aeration', coag: 'coag', rapidmix: 'rapidmix', floc: 'floc', sed: 'sed', filt: 'filt', dis: 'dis', stab: 'stab', sludge: 'sludge', hyd: 'hyd', storage: 'storage', layout: 'layout', compliance: 'compliance', source: 'source' };
+const tt = (cols, rows, sub, title) => card(title, table(cols.map((c, i) => (typeof c === 'string' ? { k: String(i), l: c } : c)), rows.map((r) => (Array.isArray(r) ? Object.fromEntries(r.map((v, i) => [String(i), v])) : r))), { flush: true, sub });
+export const d3manual = {
+  id: 'd3manual', title: 'NWSDB Design Manual D3', sub: 'Water Quality & Treatment Manual (Rev 01, Nov 2020) – clauses, tables, errata and project compliance', icon: 'landmark', group: 'Library', layout: 'full',
+  state: { tab: 'compliance' },
+  renderFull(r) {
+    const st = d3manual.state;
+    const d3 = r.d3;
+    const pageTitle = (mod) => PAGES.find((p) => p.mod === mod)?.title || mod;
+    const worst = (list) => (list.some((c) => c.status === 'fail') ? 'fail' : list.some((c) => c.status === 'warn') ? 'warn' : list.length ? 'ok' : 'na');
+    const body = h('div');
+    const tabs = [['compliance', 'Project compliance', 'checks'], ['clauses', 'Clause index', 'book'], ['process', 'Process selection (Ch 4)', 'workflow'], ['units', 'Unit design tables (Ch 5)', 'table'], ['dis', 'Chemicals & disinfection (Ch 6)', 'flask'], ['plant', 'Stability, layout & lab (Ch 7–9)', 'factory'], ['errata', 'Errata & interpretations', 'warn']];
+    const seg = h('div', { class: 'seg' }, tabs.map(([k, l, ic]) => h('button', { class: st.tab === k ? 'on' : '', onclick: () => { st.tab = k; navigate('d3manual'); } }, icon(ic), l)));
+    const clauseMatch = (c, cl) => {
+      if (!c) return false;
+      if (/^(Table|Fig|Annex|Eq)/.test(cl) || /^(Table|Fig|Annex)/.test(c)) return c.replace(/\s+/g, ' ').startsWith(cl.replace(/\s+/g, ' '));
+      const a = c.replace(/^§/, ''), b = cl.replace(/^§/, '');
+      return a === b || a.startsWith(b + '.') || b.startsWith(a + '.');
+    };
+    if (st.tab === 'compliance') {
+      body.append(card('Checks against D3 in this project', checksTable(d3.checks.map((c) => ({ ...c, moduleLabel: `${pageTitle(c.module)} · ${c.clause}` })), { showModule: true, onRow: (c) => MOD_PAGE3[c.module] && navigate(MOD_PAGE3[c.module]) }), { flush: true, sub: 'click a row to open the design page' }));
+    } else if (st.tab === 'clauses') {
+      const rows = D3M.CLAUSES.map(([cl, title, rule, mod]) => { const key = /^\d/.test(cl) ? '§' + cl : cl; const list = d3.checks.filter((c) => clauseMatch(c.clause, key) || (key.startsWith('§') && c.src && c.src.includes(cl.startsWith('Annex') ? cl : '§' + cl))); return { cl: key, title, rule, mod, n: list.length, st: worst(list) }; });
+      body.append(card('How D3 is applied in this application', table([
+        { k: 'cl', l: 'Clause', v: (x) => h('b', null, x.cl) }, { k: 'title', l: 'Subject' }, { k: 'rule', l: 'Rule applied', v: (x) => h('span', { class: 'small' }, x.rule) },
+        { k: 'mod', l: 'Applied in', v: (x) => h('a', { href: '#', onclick: (e) => { e.preventDefault(); navigate(MOD_PAGE3[x.mod] || x.mod); } }, pageTitle(x.mod)) },
+        { k: 'n', l: 'Checks', num: true }, { k: 'st', l: 'Status', v: (x) => (x.n ? statusBadge(x.st) : h('span', { class: 'small muted' }, 'guidance')) },
+      ], rows), { flush: true, sub: `${D3M.D3.title} (${D3M.D3.date}) · scope: ${D3M.D3.scope}` }));
+    } else if (st.tab === 'process') {
+      const p = r.process;
+      body.append(h('div', { class: 'grid2' },
+        card(`This project – Table 4-5 (${p.t45.rows.length} characteristics triggered)`, table([{ k: 'char', l: 'Characteristic' }, { k: 'band', l: 'Band' }, { k: 'E', l: 'Essential', v: (x) => h('span', { class: 'small' }, x.E.map((q) => D3M.PROC[q]).join(', ') || '—') }, { k: 'm', l: 'Missing', v: (x) => (x.hard.length ? h('b', null, x.hard.map((q) => D3M.PROC[q]).join(', ')) : x.soft.length ? h('span', { class: 'small muted' }, x.soft.map((q) => D3M.PROC[q]).join(', ') + ' (advisory)') : statusBadge('ok')) }], p.t45.rows), { flush: true, sub: 'E = essential, union of all triggered rows; D3 advises using the table with caution' }),
+        card(`Typical train – ${p.typical.fig}: ${p.typical.cat}`, h('div', { class: 'small', html: `<ol style="line-height:1.8;margin:0;padding-left:18px">${p.typical.steps.map((x) => `<li>${x}</li>`).join('')}</ol>${p.typical.alt ? `<p><b>Alternative:</b> ${p.typical.alt.join(' → ')}</p>` : ''}<p>Treatment shall be divided into two or more independent trains (§4.3.8). Pilot-plant studies are highly recommended where a process is not proven (§4.4).</p>` })),
+        tt(['Characteristic', 'Band', 'Essential', 'Optional'], D3M.TABLE_4_5.map((x) => [x.char, x.band, x.E.map((q) => D3M.PROC[q]).join(', ') || '—', x.O.map((q) => D3M.PROC[q]).join(', ') || '—']), 'NWSDB D3 Table 4-5 (as printed; app-specific thresholds noted)', 'Table 4-5 – Recommended treatment processes'),
+        tt(['Determinant', 'Unit', 'Tolerance limit', 'Note'], D3M.SLS722.map((x) => [x.name, x.unit, Array.isArray(x.limit) ? x.limit.join(' – ') : String(x.limit), x.note || '']), 'inland surface water used as raw water for public supply', 'Table 2-6 – SLS 722:1985 raw-water limits'),
+        tt(['Toxin', 'Desirable µg/L', 'Permissible µg/L'], D3M.CYANOTOXINS, 'SLS 614:2013 (D3 Table 2-5)', 'Table 2-5 – Cyanotoxins'),
+        tt(['Target', 'NTU'], [['NWSDB design target, filtered water (§2.3.1)', D3M.TURBIDITY_TARGETS.designFiltered], ['95 % of monthly samples (§5.8.3)', '< ' + D3M.TURBIDITY_TARGETS.ninetyFive], ['Never exceed (§5.8.3, §6.2.4)', D3M.TURBIDITY_TARGETS.never], ['Full-treatment plants (§6.2.4)', '< ' + D3M.TURBIDITY_TARGETS.fullTreatment]], '', 'Turbidity targets'),
+      ));
+    } else if (st.tab === 'units') {
+      body.append(h('div', { class: 'grid2' },
+        tt(['Screen', 'Clear opening', 'Velocity', 'Head loss'], [['Coarse (§5.1.5.1)', '50–100 mm, 22–45°', '≥ 0.4 (no deposition), ≤ 0.9 m/s peak', '≤ 150 mm'], ['Fine (§5.1.5.2)', '5–20 mm, 10–30° to vertical', '0.6–1.0 m/s (≤ 1.4 peak)', '0.05–0.15 m'], ['Formula', '', 'h = 0.0729 (V² − U²)', '']], 'duplicate fine screens; band screen ≈ 15 mm/s', 'Intake screens'),
+        tt(['Aerator', 'Typical criteria', 'Clause'], D3M.AERATORS.map((a) => [a.type, a.crit, '§' + a.clause]), 'K = 0.45 (1 + 0.046 T) h per drop; Cₑ = C₀ + K (Cs − C₀)', 'Aerators (§5.3)'),
+        tt(['Aerator', 'CO₂ %', 'VOC %', 'H₂S %', 'O₂ %'], D3M.AER_EFF, '', 'Table 5-8 – Removal efficiency'),
+        tt(['Coagulant', 'Formula', 'Strength', 'Form', 'SG'], D3M.COAGULANTS, 'dosing concentration (Table 5-11): alum 3–7 %, lime 2–10 %, PACl 2–10 %, KMnO₄ 2 %', 'Table 5-10 – Coagulants'),
+        tt(['Item', 'Criterion'], [['Detention', '< 1 min (mechanical 30–60 s)'], ['G', '500–1,000 s⁻¹ (up to 3,500)'], ['Gt', '30,000–60,000'], ['Tanks', '≥ 2, square, depth/width = 2'], ['Impeller', '50–80 % of tank width; 4 baffles 8–10 % wide'], ['Static mixer', 'L = 2–4 D, head loss ≈ 0.5 m'], ['Jet mixing', 'jet flow ≈ 10 % of water flow']], 'order of preference: jet diffusion, static, in-line mechanical, hydraulic, mechanical flash', 'Rapid mixing (§5.5)'),
+        tt(['Impeller', 'k'], D3M.POWER_NUMBER, 'P = k ρ n³ d⁵ (turbulent)', 'Table 5-13 – Power numbers'),
+        tt(['Parameter', 'Hydraulic', 'Paddle', 'Turbine'], [['G (s⁻¹)', '10–75 (≤ 100 → ≥ 10)', '50–10', '70–10'], ['Time (min)', '≥ 20 (20–30)', '30–40', '20–40'], ['Stages', '12–20 baffles', '3–6', '2–4'], ['Velocity', '0.1–0.3 m/s', 'tip ≤ 0.4 m/s rel.', '2–3 m/s max'], ['Paddle area', '–', '5–20 %', '0.1–0.2 %'], ['D / width', '–', '0.5–0.75', '0.2–0.4'], ['Baffles', 'spacing ≥ 45 cm, end clear 1–1.5 s ≥ 60 cm, depth ≥ 1 m', '', '']], 'Tables 5-15, 5-16; Annex D.1/D.2', 'Flocculators (§5.6)'),
+        tt(['Type', 'Normal', 'Easy', 'Very bad'], [['No pre-treatment', ...D3M.SOR_TABLE.none], ['With chemical coagulation', ...D3M.SOR_TABLE.coag], ['With coagulant aids', ...D3M.SOR_TABLE.aids]], 'm³/m²·h; depth 2.5–4 m, L/W 3–6, 2–4 h, v < 0.02 m/s, weir < 18 m³/m·h, ≥ 2 basins', 'Table 5-20 – Surface overflow rate'),
+        tt(['Settler / clarifier', 'Criteria'], [['Tube / plate (§5.7.7)', 'settling zone 2.5–7.5 m/h; tubes 50 mm at 60°, plates ≥ 55° at 50 mm; length 1–2 m; coverage ≤ 0.75 (0.95 plates); clear depth ≥ 3 m below; launders 1.5 m c/c'], ['Sludge blanket (§5.7.4)', 'SOR 1.25–2.5 m/h, ≈ 2 h, weir < 9 m³/m·h'], ['Solids contact (§5.7.5)', 'recirculation 1–4 × (turbine 8–20 ×), 1.5–2.5 h'], ...D3M.PULSATOR.map(([a, b, c]) => [a + ' (Table 5-24)', `${b} m/h (settling) · ${c} m/h`]), ['DAF (§5.7.8)', 'floc 15–30 min, 10–20 min, rise 5–15 m/h, 450–620 kPa, recycle 5–15 %, ≤ 100 NTU']], '', 'High-rate clarification'),
+        tt(['Parameter', 'Rapid gravity', 'Slow sand'], [['Rate', '5–15 m/h', '0.1–0.4 m/h'], ['Bed', '0.6–1.0 m sand, ES 0.4–1.2, UC 1.2–2.0', '1.0–1.4 m, ES 0.15–0.35, UC 1.5–3'], ['Gravel', '0.3–0.6 m, 2–50 mm', '4 layers ≈ 0.3 m'], ['Water over media', '≥ 1.0 m (1.5 modern)', '1.0–1.5 m'], ['Units', 'N = 1.2√Q (mgd), ≥ 2 (≥ 4 > 15 mgd)', 'n = 15√Q (m³/s), ≥ 2'], ['Unit area', '≈ 50 / 100 m² (≤ 140)', '—'], ['Head loss', '≤ 2.5 m (backwash at 2.4–3.0)', '0.6–1.2 m'], ['Run', '1–3 d', '1–6 months'], ['Wash water', '1–6 %', '0.2–0.6 %'], ['Backwash', '36–54 m/h, ≥ 5 min; air 54–90 m/h 2–3 min', 'scrape 1–2.5 cm']], 'Table 5-26, §5.9.1, §5.12.5', 'Filters'),
+        tt(['Medium', 'Sequence', 'Air m/h', 'Water m/h'], D3M.AIR_WATER, '', 'Tables 5-27 / 5-32 – Air-scour & water backwash'),
+        tt(['Medium', 'ES mm', 'SG', 'Porosity', 'Sphericity'], D3M.MEDIA, '', 'Table 5-28 – Filter media'),
+        tt(['Rule (§5.9.3.5)'], D3M.GRAVEL_RULES.map((x) => [x]), '', 'Support gravel grading'),
+        tt(['Parameter', 'Limit'], D3M.SSF_LIMITS.map(([, a, b]) => [a, b]), 'pre-treat when max ≥ 20 NTU; ≤ 50 NTU with pre-treatment', 'Table 5-35 – Source water for SSF'),
+        tt(['RF type', '1st', '2nd', '3rd'], D3M.ROUGHING_MEDIA, 'HRF 0.3–1.5 m/h (Table 5-41), 5–7 m long, 1–1.5 m high, 2–5 m wide; VRF 0.3–1.0 m/h; effluent ≤ 10 NTU', 'Table 5-40 – Roughing-filter media (mm)'),
+        tt(['Source', 'kg / kg'], [['Turbidity removed', '0.5–2 mg TSS/L per NTU'], ['Alum (14H₂O)', SLUDGE_TXT(D3M.SLUDGE_K.alum)], ['Ferric sulphate', '0.54'], ['Ferrous sulphate', '0.39'], ['Ferric chloride', '0.66'], ['PACl (product)', '≈ 0.8'], ['Polymer / PAC', '1'], ['Fe / Mn', '106.9/55.9 · 87.9/54.9'], ['Lime (20 % → CaCO₃)', '0.27']], 'Method 02 total × 1.4 × 90 % capture; thickener 20–80 kg/m²·d, 4–10 m³/m²·d, 4.5–6.5 m; beds 100–300 kg/m²·yr (< 2,200 mm rain)', 'Table 5-44 – Sludge production'),
+        tt(['Parameter', 'Limit'], D3M.CEA_DISCHARGE, 'dilution ≥ 8:1 assumed', 'Table 5-42 – CEA discharge limits (selected)'),
+      ));
+    } else if (st.tab === 'dis') {
+      const T = D3M.CT_GIARDIA_1LOG;
+      body.append(h('div', { class: 'grid2' },
+        tt(['pH', ...T.T.map((t) => `${t} °C (1 / 2 / 3 mg/L)`)], T.pH.map((ph) => [ph === 6 ? '≤ 6' : ph, ...T.T.map((_, i) => T.v[ph].map((row) => row[i]).join(' / '))]), 'CT for 1-log Giardia, mg·min/L – multiply by the log required; app uses 25 °C values above 25 °C', 'Table 6-4 – CT, Giardia (free chlorine)'),
+        tt(['Log', ...D3M.CT_VIRUS.T.map((t) => t + ' °C')], [2, 3, 4].map((l) => [l + '-log', ...D3M.CT_VIRUS[l]]), 'pH 6–9', 'Table 6-5 – CT, viruses (free chlorine)'),
+        tt(['Baffling', 't₁₀/τ', 'Description'], D3M.BAFFLING, '', 'Table 6-2 – Baffling factors'),
+        tt(['Process', 'Removal G', 'Removal V', 'Disinfection G', 'Disinfection V'], [['Conventional', ...D3M.CREDITS.conventional], ['Direct filtration', ...D3M.CREDITS.direct], ['Slow sand', ...D3M.CREDITS.ssf], ['Diatomaceous earth', ...D3M.CREDITS.de], ['No filtration', ...D3M.CREDITS.none]], 'log credits (SWTR: 3-log Giardia, 4-log virus)', 'Table 6-7 – Disinfection credits'),
+        tt(['Location', 'Free chlorine mg/L'], [['Clear water / contact basin', '0.5–0.8'], ['Consumer taps / stand posts', '≥ 0.2'], ['Distribution dead ends', '≥ 0.1'], ['Avoid at the WTP', '> 1.0'], ['Design dose, clear water', '2'], ['Contact time', '≥ 20 min (WHO 30 min)']], '§6.2.7, §6.3.5–6.3.6', 'Residual chlorine'),
+        tt(['Cl₂ kg/d', 'm³/d', '98 kg in use', 'reserve', '900 kg in use', 'reserve'], D3M.CYL_INVENTORY, '≥ 30 days at 2 mg/L', 'Table 6-12 – Cylinder inventory'),
+        tt(['Type', 'Max feed kg/d', 'Water / kg Cl₂', 'Accuracy'], D3M.CHLORINATOR_TYPES, '1 duty + 1 standby; ≤ 180 kg/d per drum (gas); > 680 kg/d evaporators; 1 air change/min; 20 % NaOH scrubber', 'Table 6-11 – Chlorinators'),
+        tt(['Log', ...D3M.UV_DOSE.logs], [['Cryptosporidium', ...D3M.UV_DOSE.crypto], ['Giardia', ...D3M.UV_DOSE.giardia], ['Virus', ...D3M.UV_DOSE.virus]], 'mJ/cm²', 'Table 6-16 – UV dose'),
+        tt(['Item', 'Value'], [['Alum dose', '20–100 mg/L'], ['Stock solution', '10 % (2–10 %), ≤ 1 % at diffuser'], ['Day tanks', '2 × 24 h'], ['Storage', '≥ 1 month'], ['Lime slurry', '50–100 g/L; silo ≥ 50 m³'], ['PAC', '1–20 mg/L, ≥ 15 min, slurry ≥ 1.5 m/s'], ['PACl', 'pH 5–8, residual Al 0.01–0.05, 2–3 × alum cost'], ['Bleaching powder', '35 % av. Cl (design), 1 % solution, ≤ 3 months storage, ≤ 42 L/h'], ['DBPs', 'TTHM ≤ 100, HAA5 ≤ 80 µg/L']], '§6.1, §6.4, §6.10', 'Chemical feeding'),
+        tt(['Supply (Imp gal)', 'Bleaching powder g', 'Water L (1 %)'], [1000, 2000, 5000, 10000].map((g) => [g, Math.round(D3M.bleachingPowder(g * 0.004546, 2, 0.25)), +(g * 0.004546 * 2 / 10).toFixed(2)]), 'Annex G – 2 ppm on 25 % available chlorine', 'Annex G – Bleaching powder dosage'),
+      ));
+    } else if (st.tab === 'plant') {
+      body.append(h('div', { class: 'grid2' },
+        tt(['Reaction', 'mg oxidant / mg Fe', 'mg oxidant / mg Mn', 'Solids Fe / Mn'], Object.entries(D3M.OXIDANT).map(([k, v]) => [k, v.fe, v.mn, `${v.sfe} / ${v.smn}`]), 'Mn by aeration only at pH ≥ 9.5; ≥ 20 min detention before filtration', 'Table 7-1 – Fe & Mn oxidant demand'),
+        tt(['Mean max air temp °C', 'Fluoride mg/L'], D3M.FLUORIDE_OPT.map(([t, f]) => ['≤ ' + t, f]), 'SLS 614: 1.0 mg/L', 'Table 7-3 – Fluoride'),
+        tt(['Index', 'Acceptable', 'Formula'], [['LSI', '> −1.5', 'pH − pHs; pHs = 11.5 − log Ca − log Alk (25 °C)'], ['RSI', '< 10', '2 pHs − pH'], ['CCPP', '> −5 (target ≈ +4)', 'Ca − Ca(sat)'], ['Aggressiveness index', '> 10', 'pH + log(Alk × CaH)'], ['Alkalinity / calcium', '≥ 50 mg/L as CaCO₃', ''], ['(Cl + SO₄)/Alk', '≤ 0.2 (equivalents)', 'or each ≤ 50 mg/L']], 'Ch 8, Tables 8-2/8-3', 'Water stability'),
+        tt(['Clause', 'Design-review item'], D3M.LAYOUT_CHECKLIST, `minimum site area A (acres) ≥ Q^0.7 (mgd) – this project ${fmt(r.layout?.siteMinHa ?? 0, 2)} ha`, 'Plant layout checklist (Ch 9)'),
+        tt(['Unit', 'Typical criteria'], D3M.REFERENCE_PLANT, '', 'Table 9-1 – Reference 48,000 m³/d works'),
+        card('Table 9-3 – Minimum laboratory equipment', h('div', { class: 'small', html: D3M.LAB_EQUIPMENT.join(' · ') })),
+        card('§9.8 Instrumentation', h('div', { class: 'small', html: '<ul style="margin:0;padding-left:18px;line-height:1.7">' + D3M.INSTRUMENTS.map((x) => `<li>${x}</li>`).join('') + '</ul>' })),
+        tt(['T °C', 'ρ kg/m³', 'μ mPa·s', 'ν mm²/s', 'pv kPa'], D3M.WATER_PROPS.filter((x) => x[0] <= 40).map((x) => [x[0], x[2], x[3], x[4], x[7]]), 'used for every hydraulic calculation (interpolated)', 'Annex I – Properties of water'),
+      ));
+    } else {
+      body.append(card('Printed inconsistencies and the value used by the app', table([{ k: '0', l: 'Location' }, { k: '1', l: 'As printed' }, { k: '2', l: 'Interpretation used' }], D3M.ERRATA.map((x) => ({ 0: x[0], 1: x[1], 2: x[2] }))), { flush: true, sub: 'confirm with the NWSDB Planning & Design Manual Review Committee before relying on these items' }));
+    }
+    return [
+      kpis([
+        { label: 'D3 checks', value: d3.total, sub: `${d3.ok} pass · ${d3.warn} review · ${d3.fail} fail · ${d3.info} info`, icon: 'landmark', accent: true, status: d3.fail ? 'fail' : d3.warn ? 'warn' : 'ok' },
+        { label: 'Clauses applied', value: new Set(d3.checks.map((c) => c.clause)).size, sub: `${D3M.CLAUSES.length} clause groups indexed` },
+        { label: 'Pages applying D3', value: new Set(d3.checks.map((c) => c.module)).size, sub: 'quality, process, every treatment unit, residuals, layout' },
+        { label: 'Errata recorded', value: D3M.ERRATA.length, sub: 'printed inconsistencies resolved' },
+      ]),
+      h('div', { style: { margin: '4px 0 12px' } }, seg),
+      body,
+    ];
+  },
+};
+const SLUDGE_TXT = (v) => `${v} (theoretical 0.44)`;
 
 // ------------------------------------------------------------------ Help
 export const help = {
@@ -204,9 +313,9 @@ export const help = {
       card('Workflow', h('div', { html: `<ol style="line-height:1.8;margin:0;padding-left:18px">
         <li><b>Project setup</b> – name, district (sets water temperature, monsoon pattern and regional alerts), source type and site level.</li>
         <li><b>Demand forecast</b> – census-based projection, NWSDB Design Manual D2 per-capita, UFW and peaking rules → adopted capacity.</li>
-        <li><b>Raw water quality</b> – laboratory results compared with SLS 614:2013.</li>
+        <li><b>Raw water quality</b> – laboratory results compared with SLS 614:2013 and the SLS 722 raw-water limits (D3 Ch 2).</li>
         <li><b>Source & hydrology</b> – D2 river-basin data, dry-weather availability, reservoir mass diagram and flood estimate.</li>
-        <li><b>Process selection</b> – the expert system recommends the train; override any unit.</li>
+        <li><b>Process selection</b> – the expert system recommends the train (D3 Table 4-5, Fig 4-3/4-4); override any unit.</li>
         <li><b>Treatment units</b> – intake → aeration → chemical dosing → rapid mix → flocculation → sedimentation → filtration → disinfection → stabilisation.</li>
         <li><b>Plant-wide</b> – storage & pumping, residuals, hydraulic profile, site layout, power & cost.</li>
         <li><b>Outputs</b> – compliance, design-check register and the PDF/Excel/DXF exports.</li></ol>` })),
@@ -215,19 +324,20 @@ export const help = {
         { k: 'Ctrl + Z / Ctrl + Y', a: 'Undo / redo' }, { k: 'Ctrl + P', a: 'Design report' }, { k: 'Ctrl + E', a: 'Export Excel workbook' }, { k: 'Ctrl + 1…9', a: 'Jump to pages' }, { k: 'F11', a: 'Full screen' }, { k: 'Ctrl + / −', a: 'Zoom' },
       ]), { flush: true }),
       card('Methods implemented', h('div', { class: 'small', html: `<ul style="line-height:1.7;margin:0;padding-left:18px">
+        <li><b>NWSDB Design Manual D3 (2020)</b>: SLS 614 / SLS 722 screening, Table 4-5 process selection and Fig 4-3/4-4 trains, screens (Annex A), aeration K-chain (Annex B), coagulant feeding & PAC (§5.2, §6.1), mixing & flocculation (Tables 5-13, 5-15, 5-16), SOR Table 5-20 & settlers, filters (N = 1.2√Q, N−2 rate, gravel rules, backwash, troughs, UFRV), slow sand & roughing filters, Method 02 sludge balance and thickeners, CT Tables 6-2/6-4/6-5/6-7, residuals, bleaching powder & gas chlorination, stability (LSI, RSI, CCPP), plant layout, laboratory and Annex I water properties – see Library → NWSDB Design Manual D3.</li>
         <li><b>NWSDB Design Manual D2 (1989)</b>: design periods, community demand table, non-domestic unit demands, UFW, peaking, river-basin data, BS 3680 weirs & flumes, rational formula, Rippl yield, intake & screen rules, NPSH (storm), stand-by pumps, pump efficiencies, pipe classes & design C, economic main size, valves & thrust, service-reservoir rules, cost-estimate format, PV & EAC – see Library → NWSDB Design Manual D2.</li>
         <li>Population: arithmetic, geometric and incremental-increase projections from census data.</li>
         <li>Screens: D2 head loss h = 0.0729(V² − v²) with clogging allowance; Joukowsky surge, NPSH, Hazen–Williams, pump/system curves.</li>
-        <li>Aeration: lecture gravity-aerator efficiency K = 0.45(1+0.046T)h, Cₙ = Cs − (Cs − C₀)(1 − K/n)ⁿ.</li>
+        <li>Aeration: gravity-aerator efficiency K = 0.45(1+0.046T)h per drop (D3 Annex B.1), Cₙ = Cs − (Cs − C₀)(1 − K)ⁿ.</li>
         <li>Coagulation: closed-system carbonate equilibrium for coagulation pH, alkalinity consumption, Al(OH)₃ solubility.</li>
         <li>Mixing: G = √(P/μV), P = Nₚn³D⁵ρ, hydraulic-jump sequent depth & head loss.</li>
         <li>Flocculation: Schulz & Okun baffle equations, paddle power P = C<sub>D</sub>Aρv³/2, v = 2πkrn (k = 0.75).</li>
         <li>Sedimentation: ideal basin (lecture), log-normal floc distribution, Camp scour velocity, Re & Fr stability, Yao tube settlers.</li>
         <li>Filtration: Carman–Kozeny stratified head loss, Wen–Yu fluidisation, Richardson–Zaki expansion, manifold–lateral underdrain, trough equation Q = 1.376bh^1.5.</li>
-        <li>Disinfection: USEPA SWTR CT (Smith et al.), baffle factors, breakpoint chlorination, HOCl speciation.</li>
+        <li>Disinfection: D3 Table 6-4/6-5 CT values (USEPA SWTR), Table 6-2 baffle factors, Table 6-7 credits, breakpoint chlorination, HOCl speciation.</li>
         <li>Stabilisation: Langelier & Ryznar indices with iterative post-lime solution.</li>
-        <li>Residuals: AWWA mass balance; mass-curve service-reservoir sizing; quantity-based BOQ.</li></ul>` })),
-      card('Important', h('div', { class: 'small', html: `This application supports – it does not replace – professional engineering judgement. Demand, source, intake, pumping, mains, storage and costing follow NWSDB Design Manual D2 (1989); treatment-unit criteria follow the supplied lecture notes and AWWA/Kawamura (the D3 scope). Confirm all criteria, unit rates and tariffs against the current NWSDB Design Manual, specifications and schedules of rates before issue. Predicted water quality is a screening estimate; verify with jar tests and pilot data.` })),
+        <li>Residuals: D3 Method 02 mass balance (Table 5-44) with Method 01 cross-check; mass-curve service-reservoir sizing; quantity-based BOQ.</li></ul>` })),
+      card('Important', h('div', { class: 'small', html: `This application supports – it does not replace – professional engineering judgement. Demand, source, intake, pumping, mains, storage and costing follow NWSDB Design Manual D2 (1989); water quality, process selection and treatment-unit design follow NWSDB Design Manual D3 (2020), supplemented by the lecture notes and AWWA/Kawamura where D3 is silent. Printed D3 inconsistencies and the interpretation adopted are listed under Library → D3 → Errata. Confirm all criteria, unit rates and tariffs against the current NWSDB Design Manual, specifications and schedules of rates before issue. Predicted water quality is a screening estimate; verify with jar tests and pilot data.` })),
     )];
   },
 };
@@ -249,7 +359,7 @@ export const settings = {
         h('p', { class: 'small muted', style: { margin: '0 0 8px' } }, 'Load the official NWSDB logo (PNG/SVG) to show it in the title bar and on the report cover. The built-in emblem is used otherwise.'),
         h('div', { class: 'flex' }, h('button', { class: 'btn', onclick: () => file.click() }, icon('upload'), 'Choose logo…'), s.logo ? h('button', { class: 'btn ghost', onclick: () => { delete s.logo; saveSettings(); window.dispatchEvent(new Event('wtp-theme')); navigate('settings'); } }, 'Use built-in emblem') : null), file))),
       card('Defaults', h('div', { class: 'field' }, h('label', null, 'Designer name for new projects'), h('div', { class: 'inp' }, designer))),
-      card('About', h('div', { class: 'small', html: `<b>NWSDB WTP Designer</b> v1.1 – conventional water treatment plant design suite, incorporating NWSDB Design Manual D2 (1989).<br>Built with Electron, d3 (ISC), KaTeX (MIT), JSZip (MIT) and Lucide icons (ISC).<br>Calculation engine: ${f2(store.calcMs)} ms per full plant recalculation.` })),
+      card('About', h('div', { class: 'small', html: `<b>NWSDB WTP Designer</b> v1.2 – conventional water treatment plant design suite, incorporating NWSDB Design Manuals D2 (1989) and D3 (2020).<br>Built with Electron, d3 (ISC), KaTeX (MIT), JSZip (MIT) and Lucide icons (ISC).<br>Calculation engine: ${f2(store.calcMs)} ms per full plant recalculation.` })),
     ];
   },
 };

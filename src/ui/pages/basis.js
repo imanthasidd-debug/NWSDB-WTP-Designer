@@ -1,6 +1,7 @@
 // Project setup, demand forecast, raw-water quality and process selection pages
 import { BASINS, COMMUNITY, DESIGN_PERIODS, EVAPORATION, NON_DOMESTIC, lpcdRange } from '../../core/d2.js';
 import { PARAMS, limitText, rawGlText } from '../../core/standards.js';
+import { PROC as D3PROC } from '../../core/d3.js';
 import { AREA_PRESETS, DISTRICTS, ZONE_LABEL, elevationOf, provinceOf, waterTempOf } from '../../core/srilanka.js';
 import { MONTHS, esc, fmt, fmtAuto } from '../../core/util.js';
 import { LABELS } from '../../engine/process.js';
@@ -256,12 +257,12 @@ export const quality = {
         ]),
         notes([...q.alerts, ...q.notes]),
         chartCard('Monthly mean raw-water turbidity', { type: 'bar', data: monthData, x: { key: 'm', label: 'Month' }, y: { label: 'Turbidity (NTU)' }, series: [{ key: 'turb', label: 'Monthly mean turbidity' }], refs: [{ value: q.turbAvg, label: `Annual mean ${q.turbAvg} NTU`, kind: 'info' }, { value: q.turbMax, label: `Design (storm) peak ${q.turbMax} NTU` }], unit: 'NTU', height: 250 }, { sub: q.inputs.profileMode === 'auto' ? 'district monsoon pattern – drives chemical use & sludge' : 'user data' }),
-        card('Raw water vs SLS 614:2013 and the proposed raw-water source guideline', table([
+        card('Raw water vs SLS 614:2013 and SLS 722:1985 raw-water limits (NWSDB D3 Tables 2-4, 2-6)', table([
           { k: 'name', l: 'Parameter' }, { k: 'unit', l: 'Unit' },
           { k: 'avg', l: 'Average', num: true, fmt: (v, rr) => fmt(v, rr.dec) }, { k: 'des', l: 'Design', num: true, fmt: (v, rr) => fmt(v, rr.dec) },
           { k: 'lim', l: 'SLS 614 (treated)', v: (rr) => limitText(rr) },
           { k: 'st', l: 'Raw vs SLS', v: (rr) => rr.exc ? h('span', { class: 'badge warn' }, 'Treatment needed') : h('span', { class: 'badge ok' }, 'Within') },
-          { k: 'gl', l: 'Raw-source guideline', v: (rr) => rawGlText(rr) },
+          { k: 'gl', l: 'SLS 722 raw limit', v: (rr) => rawGlText(rr) },
           { k: 'gls', l: '', v: (rr) => rr.rawGlExc === null ? '' : rr.rawGlExc ? statusBadge('warn') : statusBadge('ok') },
         ], rows), { flush: true, sub: 'SLS 614 values as tabulated in the lecture notes' }),
       ],
@@ -283,6 +284,7 @@ export const process = {
     { k: 'presed', l: 'Pre-sedimentation', t: 'sel', o: (r) => [['auto', `Auto (${r.process.presed === 'yes' ? 'yes' : 'no'})`], ['yes', 'Yes'], ['no', 'No']] },
     { k: 'aeration', l: 'Aeration', t: 'sel', o: autoOpt('aeration', LABELS.aeration) },
     { k: 'prechlor', l: 'Pre-chlorination', t: 'sel', o: (r) => [['auto', `Auto (${r.process.prechlor === 'yes' ? 'yes' : 'no'})`], ['yes', 'Yes'], ['no', 'No']] },
+    { k: 'pac', l: 'Powdered activated carbon', t: 'sel', o: (r) => [['auto', `Auto (${r.process.pac === 'yes' ? 'yes' : 'no'})`], ['yes', 'Yes'], ['no', 'No']], note: 'D3 §5.2.3 – algae, T&O, toxins' },
     { sec: 'Unit types' },
     { k: 'rapidMix', l: 'Rapid mixing', t: 'sel', o: autoOpt('rapidMix', LABELS.rapidMix) },
     { k: 'floc', l: 'Flocculator', t: 'sel', o: autoOpt('floc', LABELS.floc) },
@@ -308,6 +310,10 @@ export const process = {
         card('Process flow diagram', pfd, { sub: 'click a unit to open its design' }),
         notes(pr.notes),
         card('Why this train? (decision log)', h('div', { class: 'notes', style: { margin: 0 } }, pr.reasons.map((x) => h('div', { class: 'note info' }, icon('bulb'), h('div', { html: `<b>${esc(x.unit)}.</b> ${esc(x.txt)}` }))))),
+        h('div', { class: 'grid2' },
+          card(`NWSDB D3 ${pr.typical.fig} – ${pr.typical.cat}`, h('div', { class: 'small', html: `<ol style="line-height:1.8;margin:0;padding-left:18px">${pr.typical.steps.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>${pr.typical.alt ? `<p style="margin:8px 0 0"><b>Alternative:</b> ${esc(pr.typical.alt.join(' → '))}</p>` : ''}` }), { sub: 'typical treatment train for this source' }),
+          card('NWSDB D3 Table 4-5 – essential processes', table([{ k: 'char', l: 'Characteristic', v: (x) => `${x.char} ${x.band}` }, { k: 'E', l: 'Essential', v: (x) => h('span', { class: 'small' }, x.E.map((q) => D3PROC[q]).join(', ') || '—') }, { k: 's', l: '', v: (x) => (x.hard.length ? statusBadge('warn') : x.soft.length ? statusBadge('info') : statusBadge('ok')) }], pr.t45.rows), { flush: true, sub: 'union of essential processes; advisory where Table 4-5 conflicts with Fig 4-3/4-4' }),
+        ),
       ],
     };
   },

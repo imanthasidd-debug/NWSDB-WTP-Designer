@@ -2,6 +2,7 @@
 // NWSDB Design Manual D2 §5 (intakes & screens), §6 (pumping stations), §7 (rising main)
 import { Calc, n } from '../core/calc.js';
 import { INTAKE, ref, screenLoss } from '../core/d2.js';
+import { SCREENS } from '../core/d3.js';
 import { G, ceilTo, hwLoss, rad, selectDN, selectDNRange, vel } from '../core/util.js';
 import { mainChecks, pumpSystem } from './pumps.js';
 
@@ -11,9 +12,11 @@ export const DEFAULTS = {
   portV: 0.15, portW: 1.2, portH: 1.0, portLevels: 2,
   // coarse screen (bar rack) – D2 §5.4: 75–100 mm openings, bars ≈ 25 mm
   cOpen: 75, cBar: 25, cAngle: 75, cVmax: 0.5, cClog: 50,
-  // fine screen – D2 §5.4: about 6 mm, two sets (one in service while the other is cleaned)
-  fOpen: 6, fBar: 6, fAngle: 70, fVmax: 0.7, fClog: 50,
+  // fine screen – D2 §5.4: about 6 mm (D3 §5.1.5.2: 5–20 mm), wedge-wire bars, two sets (one in service while the other is cleaned)
+  fOpen: 6, fBar: 3, fAngle: 70, fVmax: 0.7, fClog: 50,
   sill: 1.0,             // screen sill / bell-mouth above bed – D2 §5.3.1 ≥ 1 m
+  // screen channel – NWSDB D3 Annex A: approach velocity 0.4 m/s, flow depth D = Q/(V·B)
+  chanU: 0.4, chanW: 0,  // m/s, m (0 = auto, ≥ 0.6 m for raking)
   // intake conduit (river intake → jack well) – D2 §5.3.1 velocity 0.6–0.9 m/s
   conduitL: 30, conduitC: 120,
   // wet well
@@ -72,36 +75,48 @@ export function compute(inp, ctx) {
     calc.section('Coarse bar screen (D2 §5.4)');
     calc.step('Submerged depth at LWL', 'h = LWL - (z_{bed}+s)', `${n(d.LWL)} - (${n(d.bedLevel)}+${n(d.sill)})`, subDepth, 'm');
     if (subDepth < 0.5) calc.note('fail', 'Screen sill is too close to low water level – lower the sill or provide a weir to pond the river (D2 §5.2).');
+    // screen channel (NWSDB D3 Annex A): approach velocity U, width B, flow depth D = Q/(U·B) ≤ submerged depth
+    calc.section('Screen channel (NWSDB D3 §5.1.5, Annex A)');
+    const Ach = Q / d.chanU;
+    let chW = d.chanW > 0 ? d.chanW : Math.max(0.6, ceilTo(Math.sqrt(Ach), 0.1));
+    if (!(d.chanW > 0) && Ach / chW > Math.max(subDepth, 0.3)) chW = ceilTo(Ach / Math.max(subDepth, 0.3), 0.1);
+    const chD = Ach / chW;
+    calc.step('Channel area at design approach velocity', 'A = Q/U', `${n(Q, 4)}/${n(d.chanU)}`, Ach, 'm²', 'NWSDB D3 Annex A – U = 0.4 m/s');
+    calc.step('Screen channel width', 'B', d.chanW > 0 ? '\\text{user}' : '\\max(0.6,\\ \\sqrt{A})', chW, 'm');
+    calc.step('Flow depth in screen channel', 'D = \\frac{Q}{U\\,B}', `\\frac{${n(Q, 4)}}{${n(d.chanU)}\\times${n(chW)}}`, chD, 'm', 'NWSDB D3 Annex A');
+    if (chD > subDepth + 1e-6 && subDepth >= 0.3) calc.note('warn', 'Screen channel flow depth exceeds the submerged depth at LWL – widen the channel or lower the channel invert.');
     const screen = (open, bar, ang, vmax, clog, label) => {
       const b = open / 1000, t = bar / 1000;
-      const h = Math.max(subDepth, 0.3);
-      const netA = Q / vmax;
-      const vertH = h / Math.sin(rad(ang));
-      const W = ceilTo((netA / h) * ((b + t) / b), 0.1);
+      const h = chD;
+      const W = chW;
+      const vertH = Math.max(subDepth, h) / Math.sin(rad(ang));
       const vClear = Q / (h * W * (b / (b + t)));
       const vApp = Q / (h * W);
       const hClean = screenLoss(vClear, vApp);
       const vClog = vClear / (1 - clog / 100);
       const hClog = screenLoss(vClog, vApp);
-      const nBars = Math.ceil(W / (b + t)) - 1;
-      calc.step(label + ' – net clear area', 'A_n = Q/v_{max}', `${n(Q, 4)}/${n(vmax)}`, netA, 'm²');
-      calc.step(label + ' – screen width', 'W = \\frac{A_n}{h}\\cdot\\frac{b+t}{b}', `\\frac{${n(netA)}}{${n(h)}}\\cdot\\frac{${n(b + t, 3)}}{${n(b, 3)}}`, W, 'm');
-      calc.step(label + ' – velocity through openings', 'V = \\frac{Q}{h W\\,b/(b+t)}', '', vClear, 'm/s', ref('5.4') + ' – ≤ about 1 m/s');
-      calc.step(label + ' – head loss, clean', 'h = 0.0729\\,(V^2 - v^2)', `0.0729\\,(${n(vClear)}^2-${n(vApp)}^2)`, hClean, 'm', ref('5.4'));
-      calc.step(label + ` – head loss, ${clog} % clogged`, "h' = 0.0729\\,(V'^2 - v^2)", `V' = ${n(vClog)}`, hClog, 'm', ref('5.4') + ' – ≤ about 150 mm');
-      calc.step(label + ' – number of bars', 'n = W/(b+t) - 1', '', nBars, '');
-      return { W, vClear, vApp, hClean, hClog, nBars, inclinedLen: vertH, netA };
+      const nBars = Math.max(0, Math.ceil(W / (b + t)) - 1);
+      const netA = h * W * (b / (b + t));
+      calc.step(label + ' – net clear area', 'A_n = D\\,B\\,\\frac{b}{b+t}', `${n(h)}\\times${n(W)}\\times\\frac{${n(b, 3)}}{${n(b + t, 3)}}`, netA, 'm²', 'NWSDB D3 Annex A');
+      calc.step(label + ' – velocity through openings', 'V = Q/A_n', `${n(Q, 4)}/${n(netA)}`, vClear, 'm/s', 'NWSDB D3 §5.1.5; ' + ref('5.4') + ' – ≤ about 1 m/s');
+      calc.step(label + ' – head loss, clean', 'h = 0.0729\\,(V^2 - U^2)', `0.0729\\,(${n(vClear)}^2-${n(vApp)}^2)`, hClean, 'm', 'NWSDB D3 §5.1.5.2; ' + ref('5.4'));
+      calc.step(label + ` – head loss, ${clog} % clogged`, "h' = 0.0729\\,(V'^2 - U^2)", `V' = ${n(vClog)}`, hClog, 'm', 'NWSDB D3 §5.1.5.1 – ≤ 150 mm; ' + ref('5.4'));
+      calc.step(label + ' – number of bars', 'n = B/(b+t) - 1', '', nBars, '');
+      return { W, vClear, vApp, hClean, hClog, nBars, inclinedLen: vertH, netA, depth: h };
     };
+    calc.section('Coarse bar screen (NWSDB D3 §5.1.5.1; D2 §5.4)');
     const cs = screen(d.cOpen, d.cBar, d.cAngle, d.cVmax, d.cClog, 'Coarse screen');
     calc.check('scr.coarseOpen', d.cOpen);
     calc.check('scr.coarseV', cs.vClear);
     calc.check('scr.headloss', cs.hClog, `Coarse screen head loss (${d.cClog} % clogged)`);
-    calc.section('Fine screen (D2 §5.4)');
+    calc.section('Fine screen (NWSDB D3 §5.1.5.2; D2 §5.4)');
     const fs = screen(d.fOpen, d.fBar, d.fAngle, d.fVmax, d.fClog, 'Fine screen');
     calc.check('scr.fineOpen', d.fOpen);
     calc.check('scr.fineV', fs.vClear);
     calc.check('scr.headloss', fs.hClog, `Fine screen head loss (${d.fClog} % clogged)`);
-    calc.text('Two sets of removable fine screens are provided so that one can be cleaned while the other is in place (D2 §5.4).');
+    const fAng = 90 - d.fAngle;
+    calc.flag('Fine-screen inclination to vertical', fAng >= SCREENS.fine.angle[0] - 1e-9 && fAng <= SCREENS.fine.angle[1] + 1e-9, `${fAng.toFixed(0)}°`, `${SCREENS.fine.angle[0]}–${SCREENS.fine.angle[1]}°`, '', 'warn', 'NWSDB D3 §5.1.5.2');
+    calc.text('Two sets of removable fine screens are provided so that one can be cleaned while the other is in place (D2 §5.4; duplicate screens, D3 §5.1.5.2).');
     // ---- conduit (D2 §5.3.1)
     calc.section('Intake pipe / conduit to jack well');
     const cdn = selectDNRange(Q, INTAKE.pipeV[0], INTAKE.pipeV[1], 0.75);
@@ -158,7 +173,7 @@ export function compute(inp, ctx) {
     calc.step('NPSH required at duty', 'NPSH_r', d.npshr > 0 ? '\\text{manufacturer}' : '\\text{indicative}', npshr, 'm');
     calc.check('pump.npshMargin', pumps.npsha - npshr, 'NPSH margin under storm conditions (NPSHa − NPSHr)');
     calc.text('Provide a low-level cut-out on the pump side of the screens, valves on suction and delivery, lifting gear for items > 45 kg and an engine-driven generator for essential pumping (D2 §6.2.2, §6.4).');
-    Object.assign(out, { deck, range, portA, nPorts, subDepth, cs, fs, cdn, cv, chl, subPipe, Vw, Dw, wellRatio, wellLWL, floor, inletWL, deliver, Hs, pumps, pumpCL, npshr, sdn, sv,
+    Object.assign(out, { deck, range, portA, nPorts, subDepth, cs, fs, screenW: chW, screenD: chD, cdn, cv, chl, subPipe, Vw, Dw, wellRatio, wellLWL, floor, inletWL, deliver, Hs, pumps, pumpCL, npshr, sdn, sv,
       kw: pumps.motor * d.nDuty, kWhD: pumps.kWhD, footprint: { L: Dw + 6, W: Dw + 4 } });
   }
   return { ...out, ...calc.result() };

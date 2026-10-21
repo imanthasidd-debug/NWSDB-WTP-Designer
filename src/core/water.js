@@ -1,12 +1,16 @@
 // Physical & chemical properties of water and carbonate-system chemistry.
 import { bisect, clamp, isNum } from './util.js';
 
-/** density of pure water, kg/m3 (Tanaka/Thiesen form), T in °C */
+import { waterProp } from './d3.js';
+
+/** density of water, kg/m3 – NWSDB D3 Annex I table (0–100 °C, linear interpolation); Thiesen form outside */
 export function rho(T) {
+  if (T >= 0 && T <= 100) return waterProp(T, 2);
   return 1000 * (1 - ((T + 288.9414) / (508929.2 * (T + 68.12963))) * (T - 3.9863) ** 2);
 }
-/** dynamic viscosity, Pa·s (Vogel equation) */
+/** dynamic viscosity, Pa·s – NWSDB D3 Annex I table (0–100 °C); Vogel equation outside */
 export function mu(T) {
+  if (T >= 0 && T <= 100) return waterProp(T, 3) * 1e-3;
   return 2.414e-5 * 10 ** (247.8 / (T + 273.15 - 140));
 }
 /** kinematic viscosity, m2/s */

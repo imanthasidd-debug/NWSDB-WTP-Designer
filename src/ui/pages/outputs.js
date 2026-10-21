@@ -39,7 +39,7 @@ export const dashboard = {
       { label: 'Energy', value: f2(r.energy.spec), unit: 'kWh/m³', sub: `${r.energy.tx} kVA · alum ${f0((r.coag?.annualKg || 0) / 1000)} t/yr`, icon: 'zap' },
       { label: 'SLS 614 compliance', value: `${r.compliance.total - r.compliance.fails.length}/${r.compliance.total}`, sub: 'predicted treated water', icon: 'badge', status: r.compliance.fails.length ? 'fail' : 'ok' },
       { label: 'Design checks', value: `${sum.ok}/${sum.total}`, sub: `${sum.warn} to review · ${sum.fail} failing`, icon: 'checks', status: sum.fail ? 'fail' : sum.warn ? 'warn' : 'ok' },
-      { label: 'NWSDB D2 checks', value: `${r.d2.ok}/${r.d2.total - r.d2.info}`, sub: `clause checks · ${r.d2.warn} review · ${r.d2.fail} fail`, icon: 'landmark', status: r.d2.fail ? 'fail' : r.d2.warn ? 'warn' : 'ok' },
+      { label: 'NWSDB D2 + D3 checks', value: `${r.d2.ok + r.d3.ok}/${r.d2.total - r.d2.info + r.d3.total - r.d3.info}`, sub: `D2 ${r.d2.ok}/${r.d2.total - r.d2.info} · D3 ${r.d3.ok}/${r.d3.total - r.d3.info} · ${r.d2.warn + r.d3.warn} review · ${r.d2.fail + r.d3.fail} fail`, icon: 'landmark', status: r.d2.fail + r.d3.fail ? 'fail' : r.d2.warn + r.d3.warn ? 'warn' : 'ok' },
     ]);
     const pfd = h('div', { class: 'pfd', html: pfdSVG(r, { width: 1100 }) });
     pfd.addEventListener('click', (e) => { const g = e.target.closest('[data-page]'); if (g) navigate(g.dataset.page); });
@@ -126,10 +126,11 @@ export const checks = {
   renderFull(r) {
     const st = checks.state;
     const all = r.checks.map((c) => ({ ...c, moduleLabel: PAGES.find((p) => p.mod === c.module)?.title || c.module }));
-    const isD2 = (c) => String(c.src || '').includes('D2');
-    const list = st.filter === 'all' ? all : st.filter === 'issues' ? all.filter((c) => c.status !== 'ok' && c.status !== 'info') : st.filter === 'd2' ? all.filter(isD2) : all.filter((c) => c.status === st.filter);
+    const isD2 = (c) => /\bD2\b/.test(String(c.src || ''));
+    const isD3 = (src) => /\bD3\b/.test(String(src || ''));
+    const list = st.filter === 'all' ? all : st.filter === 'issues' ? all.filter((c) => c.status !== 'ok' && c.status !== 'info') : st.filter === 'd2' ? all.filter(isD2) : st.filter === 'd3' ? all.filter((c) => isD3(c.src)) : all.filter((c) => c.status === st.filter);
     const box = h('div');
-    const seg = h('div', { class: 'seg' }, [['issues', 'Issues'], ['fail', 'Failing'], ['warn', 'To review'], ['ok', 'Passing'], ['d2', 'NWSDB D2'], ['all', 'All']].map(([k, l]) => h('button', { class: st.filter === k ? 'on' : '', onclick: () => { st.filter = k; navigate('checks'); } }, l)));
+    const seg = h('div', { class: 'seg' }, [['issues', 'Issues'], ['fail', 'Failing'], ['warn', 'To review'], ['ok', 'Passing'], ['d2', 'NWSDB D2'], ['d3', 'NWSDB D3'], ['all', 'All']].map(([k, l]) => h('button', { class: st.filter === k ? 'on' : '', onclick: () => { st.filter = k; navigate('checks'); } }, l)));
     box.append(checksTable(list, { showModule: true, onRow: (c) => navigate(PAGES.find((p) => p.mod === c.module)?.id || 'dashboard') }));
     return [
       kpis([

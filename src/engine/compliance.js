@@ -1,8 +1,9 @@
 // Predicted treated-water quality vs SLS 614:2013, turbidity through the train, multi-barrier log credits
 import { Calc } from '../core/calc.js';
 import { PARAMS, exceeds } from '../core/standards.js';
+import { TURBIDITY_TARGETS } from '../core/d3.js';
 
-const REMOVAL = { as: 0.5, pb: 0.7, cd: 0.3, cr: 0.3, hg: 0.3, cu: 0.5, zn: 0.3, ni: 0.2, cod: 0.6, po4: 0.8, toc: 0.4, cn: 0.2, se: 0.1 };
+const REMOVAL = { as: 0.5, pb: 0.7, cd: 0.3, cr: 0.3, hg: 0.3, cu: 0.5, zn: 0.3, ni: 0.2, cod: 0.6, po4: 0.8, toc: 0.4, cn: 0.2, se: 0.1, albnh3: 0.5, mbas: 0.3, oil: 0.7, phenol: 0.3, mclr: 0.6 };
 
 export function compute(inp, ctx) {
   const calc = new Calc(ctx.crit);
@@ -49,6 +50,9 @@ export function compute(inp, ctx) {
   rows.push({ key: 'femn', name: 'Iron + manganese (combined)', unit: 'mg/L', sls: 0.3, type: 'max', v: feMn, raw: pred.fe.raw + pred.mn.raw, how: 'SLS 614 footnote', exc: feMn > 0.3, group: 'chem', dec: 3 });
   const fails = rows.filter((x) => x.exc);
   for (const f of fails) calc.note('fail', `Predicted ${f.name} ${f.v.toFixed(f.dec ?? 2)} ${f.unit} does not meet SLS 614 (${f.type === 'range' ? f.sls.join('–') : '≤ ' + f.sls}).`);
+  calc.flag('Predicted treated water meets SLS 614:2013', !fails.length, `${rows.length - fails.length}/${rows.length} parameters`, 'all parameters (D3 Table 2-4)', fails.map((f) => f.name).join(', '), 'fail', 'NWSDB D3 §2.3.1 Table 2-4');
+  const tAvg = r.filt?.filteredAvg ?? NaN;
+  calc.flag('Filtered water vs NWSDB design target', tAvg <= TURBIDITY_TARGETS.designFiltered + 1e-9, `${Number.isFinite(tAvg) ? tAvg.toFixed(2) : '–'} NTU (average)`, '≤ 0.2 NTU (full treatment target < 0.1 NTU)', '', 'info', 'NWSDB D3 §2.3.1, §6.2.4');
   // turbidity through train
   const train = [{ stage: 'Raw water', avg: q.turbAvg, peak: q.turbMax }];
   if (sed?.enabled) train.push({ stage: 'Settled', avg: sed.settledAvg, peak: sed.settledPeak });
@@ -62,6 +66,8 @@ export function compute(inp, ctx) {
     { org: 'Cryptosporidium', physical: crypto, disinf: 0, req: 2 },
   ];
   for (const l of logs) { l.total = l.physical + l.disinf; l.ok = l.total >= l.req; }
+  const lg = logs.filter((l) => l.org !== 'Cryptosporidium');
+  calc.flag('Multi-barrier log removal (Giardia 3-log, virus 4-log)', lg.every((l) => l.ok), lg.map((l) => `${l.org} ${l.total.toFixed(1)}`).join(' · '), '≥ 3 / ≥ 4 log', 'Physical removal credits + CT inactivation', 'fail', 'NWSDB D3 §6.2.4, Table 6-7');
   const passCount = rows.filter((x) => x.exc === false).length;
   return { rows, pred, fails, passCount, total: rows.length, train, logs, ...calc.result() };
 }

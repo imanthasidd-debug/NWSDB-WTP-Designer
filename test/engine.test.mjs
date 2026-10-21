@@ -5,6 +5,8 @@ import { CTfrom, DOsat, ctGiardia, mu, pHfrom, rho, stability } from '../src/cor
 import { gradation } from '../src/engine/filtration.js';
 import { SAMPLES } from '../src/ui/samples.js';
 import * as D2 from '../src/core/d2.js';
+import * as D3 from '../src/core/d3.js';
+import { gravelRuleCheck } from '../src/engine/filtration.js';
 
 let pass = 0, fail = 0;
 const near = (a, b, tol, msg) => {
@@ -118,6 +120,61 @@ pr.inputs.setup.sourceType = 'reservoir';
 const qd = computeAll(pr).demand.Qd;
 pr.inputs.source.inflows = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31].map((dd) => (qd * dd) / 1e6);
 near(computeAll(pr).source.Kreq, 0, 1e-9, 'Rippl: inflow = demand needs no storage');
+
+// ---- NWSDB Design Manual D3 (2020) – tables, formulae and annex design examples
+near(D3.screenLoss(0.477, 0.40), 0.00492, 0.0001, 'D3 Annex A coarse screen head loss 4.92 mm');
+near(D3.screenLoss(0.667, 0.40), 0.02077, 0.0002, 'D3 Annex A fine screen head loss 20.77 mm');
+near(0.187 / (0.467 - 16 * 0.010 * 0.47), 0.477, 0.002, 'D3 Annex A coarse screen velocity 0.477 m/s');
+near(D3.aerK(28, 0.75), 0.77, 0.005, 'D3 Annex B.1 aeration coefficient K = 0.77');
+{ let C = 0; const out = []; for (let i = 0; i < 3; i++) { C = C + +D3.aerK(28, 0.75).toFixed(2) * (7.81 - C); out.push(C); } near(out[0], 6.01, 0.02, 'D3 Annex B.1 DO after step 1'); near(out[1], 7.40, 0.02, 'D3 Annex B.1 DO after step 2'); near(out[2], 7.72, 0.02, 'D3 Annex B.1 DO after step 3'); }
+near((0.187 / (1.833 * 9)) ** (2 / 3), 0.0505, 0.0005, 'D3 Annex B.2 head over step H0 = 0.05 m');
+near(D3.OXIDANT.O2.fe * 0.13 + 0.27 * 0.05, 0.0317, 0.0005, 'D3 Annex B.1 O2 demand (Table 7-1)');
+{ const V = 0.187 * 40 / 2; const B = Math.cbrt(V / 2); near(B, 1.23, 0.01, 'D3 Annex C.2 flash-mixer side 1.23 m'); near(950 ** 2 * 0.001 * 4.394, 3966, 10, 'D3 Annex C.2 power P = G²μV'); }
+near(D3.parshallSubmergence(0.61), 0.7, 0, 'D3 Annex C.1 Table A4 submergence');
+near((0.187 / (2.273 * 0.61)) ** (1 / (1.4757 * 0.61 ** 0.026)), 0.252, 0.002, 'D3 Annex C.1 Parshall Ha = 252 mm');
+near(0.75 * Math.PI * 0.0767 * 2.2, 0.398, 0.002, 'D3 Annex D.2 paddle relative velocity 0.398 m/s');
+near(60 ** 2 * 56.8 * 0.001, 204.5, 0.2, 'D3 Annex D.2 stage-1 power 204.5 W');
+near(D3.nFiltersD3(16125), 2.48, 0.01, 'D3 §5.9.2.2 / Annex F.1 N = 1.2√Q = 2.48');
+near(D3.sandDepthMin(0.55), 0.66, 1e-9, 'D3 Annex F.1 sand depth = 1200 d10');
+near(D3.filterAreaMax(16125), 50, 0, 'D3 §5.9.2.3 practical maximum filter area (< 10 mgd)');
+ok(D3.minFilters(16125) === 2 && D3.minFilters(70000) === 4, 'D3 §5.9.2 minimum number of filters');
+ok(gravelRuleCheck([{ from: 2.5, to: 5, depth: 0.075 }, { from: 5, to: 10, depth: 0.075 }, { from: 10, to: 20, depth: 0.075 }, { from: 20, to: 40, depth: 0.12 }, { from: 40, to: 65, depth: 0.2 }], 0.55, 12).length === 0, 'D3 §5.9.3.5 default gravel satisfies Huisman rules');
+ok(gravelRuleCheck([{ from: 2, to: 5, depth: 0.075 }, { from: 40, to: 65, depth: 0.1 }], 0.55, 12).length >= 2, 'D3 §5.9.3.5 gravel rule violations detected');
+{ const ss = D3.ssfUnits(2300); ok(ss.table === 2, 'D3 Table 5-36 SSF units < 3,000 m³/d'); near(D3.ssfUnits(86400).formula, 15, 1e-9, 'D3 §5.12.5 n = 15√Q'); }
+{ const m = D3.sludgeMethod2({ Q: 16125, ntu: 17, tssPerNtu: 1.0, fe: 0.7, mn: 0.4, alum: 25, polymer: 0.05, lime: 15, kmno4: 0.4, pac: 5 }); near(m.total, 561.23, 0.6, 'D3 Annex H sludge Method 02 total 561.23 kg/d'); near(m.design, 707.4, 0.8, 'D3 Annex H design solids 707.4 kg/d'); near(m.design / (0.02 * 1012), 34.95, 0.05, 'D3 Annex H wet sludge 34.95 m³/d'); near(Math.sqrt(4 * (m.design / 80) / Math.PI), 3.35, 0.01, 'D3 Annex H thickener diameter 3.35 m'); }
+near(D3.sludgeMethod1(5000 / 86400, 25, 17), 86.4 * (5000 / 86400) * (0.44 * 25 + 17), 1e-9, 'D3 §5.14.3.5 Method 01');
+near(D3.ctGiardiaD3(1, 20, 7, 1), 19, 1e-9, 'D3 Table 6-4 CT 1-log Giardia pH 7 20 °C 1 mg/L');
+near(D3.ctGiardiaD3(2, 25, 8, 2), 40, 1e-9, 'D3 Table 6-4 CT 2-log Giardia pH 8 25 °C 2 mg/L');
+near(D3.ctGiardiaD3(0.5, 30, 7, 0.8), 6, 1e-9, 'D3 Table 6-4 – 25 °C / 1 mg/L used above the table (conservative)');
+near(D3.ctGiardiaD3(1, 15, 7.5, 1.5), ((((37 + 19) / 2 + (41 + 21) / 2) / 2) + (((54 + 27) / 2 + (61 + 30) / 2) / 2)) / 2, 1e-9, 'D3 Table 6-4 trilinear interpolation');
+near(D3.ctVirusD3(2, 10), 4, 1e-9, 'D3 Table 6-5 virus 2-log 10 °C');
+near(D3.ctVirusD3(4, 25), 2, 1e-9, 'D3 Table 6-5 virus 4-log 25 °C');
+near(D3.baffleFactorFor(45), 0.7, 0, 'D3 Table 6-2 superior baffling'); near(D3.baffleFactorFor(15), 0.5, 0, 'D3 Table 6-2 average baffling');
+near(D3.bleachingPowder(4.546, 2, 0.25), 36.4, 0.1, 'D3 Annex G – 36–40 g BP per 1000 Imp gal at 2 ppm');
+near(D3.doseCheck(10, 10, 100), 100, 1e-9, 'D3 §6.1.5 dose check formula');
+near(D3.pHsEq83(7.9, 15) - 0, 9.43, 0.01, 'D3 Eq 8.3 Rochester example pHs 9.43');
+near(7.6 - D3.pHsEq83(7.9, 15), -1.83, 0.01, 'D3 §8.4 example LSI −1.83');
+near(2 * D3.pHsEq83(7.9, 15) - 7.6, 11.25, 0.02, 'D3 §8.4 example RSI 11.25');
+near(D3.siteAreaMinHa(3785.4), 0.404686, 1e-6, 'D3 §9.2.1 1 mgd → 1 acre');
+near(D3.waterProp(25, 3), 0.89, 1e-9, 'D3 Annex I viscosity 25 °C'); near(D3.waterProp(27.5, 2), (997 + 995.7) / 2, 1e-9, 'D3 Annex I density interpolation');
+near(rho(28), D3.waterProp(28, 2), 1e-9, 'water.js density uses D3 Annex I');
+near(D3.fluorideOptimum(28), 0.7, 0, 'D3 Table 7-3 fluoride optimum (hot climate)');
+ok(D3.hardnessClass(150) === 'Hard', 'D3 Table 7-5 hardness classes');
+ok(D3.clauseOf('NWSDB D3 §5.9.1 – x; NWSDB D2 §5.4', 'D2') === '§5.4' && D3.clauseOf('NWSDB D3 Table 5-20 – y', 'D3') === 'Table 5-20' && D3.clauseOf('NWSDB D3 Annex F.1', 'D3') === 'Annex F.1', 'clause extraction per manual tag');
+ok(!D2.isD2('NWSDB D3 §5.9') && D2.isD2('NWSDB D2 §5.4') && D3.isD3('NWSDB D3 §5.9') && !D3.isD3('NWSDB D2 §3.2.1'), 'D2/D3 source discrimination');
+{ const t = D3.table45({ surface: true, gw: false, turb: 150, colour: 20, algae: 0, hard: 50, fe: 0.1, cl: 10, tc: 10000, toc: 2, taste: false, toxic: false }, { scr: true, coag: true, settle: true, rapidF: true, postCl: true, preCl: true });
+  ok(t.E.includes('preSet') && t.rows.find((r) => r.id === 't100').soft.includes('preSet') && !t.rows.some((r) => r.hard.length), 'D3 Table 4-5 essential/soft evaluation'); }
+ok(D3.typicalTrain('river', { turb: 1, tc: 5, algae: 0, colour: 5 }).steps.length === 1, 'D3 Fig 4-4 protected hill stream → post-chlorination only');
+{ const p = newProject(); const r = computeAll(p);
+  ok(r.d3.total > 80 && r.d3.fail === 0, `D3 register populated without failures (${r.d3.total})`);
+  ok(r.d3.checks.every((c) => c.clause && c.clause !== 'D3'), 'every D3 check carries a clause');
+  ok(r.process.t45.rows.length > 0 && r.process.typical.steps.length > 0, 'process selection reports D3 Table 4-5 and Fig 4-4');
+  ok(r.filt.rateTwo <= 15 + 1e-9, 'filtration rate with one out + one washing ≤ 15 m/h (D3 §5.9.2.2)');
+  ok(r.dis.inputs.residual === 0.8 && r.dis.BF === 0.7, 'D3 residual 0.8 mg/L and superior baffling');
+  ok(r.sludge.terms && r.sludge.dsDes > 0, 'sludge by D3 Method 02');
+  const pr = newProject(); pr.inputs.setup.sourceType = 'groundwater'; pr.inputs.intake.type = 'wells'; Object.assign(pr.inputs.quality.values, { fe: [1.5, 2.5], mn: [0.2, 0.3], turb: [2, 5], do: [1, 0.5] });
+  const rg = computeAll(pr); ok(rg.process.aeration !== 'none' && rg.process.prechlor === 'yes' && rg.aeration.checks.some((c) => /D3/.test(c.src)), 'groundwater Fe > 1 → aeration + pre-oxidation (D3 Table 4-5)');
+  const ps = newProject(); ps.inputs.demand.nTrains = 1; ok(computeAll(ps).checks.some((c) => /D3 §4.3.8/.test(c.src) && c.status === 'fail'), 'single train fails D3 §4.3.8'); }
 
 // ---- samples
 for (const s of SAMPLES) {

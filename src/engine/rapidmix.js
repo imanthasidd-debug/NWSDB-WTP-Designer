@@ -1,28 +1,32 @@
-// Rapid (flash) mixing: mechanical back-mix tank or hydraulic jump in a rectangular channel
+// Rapid (flash) mixing: mechanical back-mix tank (NWSDB D3 §5.5.5, Annex C.2) or hydraulic jump (D3 §5.5.2–5.5.3)
 import { Calc, n } from '../core/calc.js';
 import { G, MOTOR_KW, nextStd } from '../core/util.js';
+import { RAPID_MIX } from '../core/d3.js';
 
+// power numbers – NWSDB D3 Table 5-13 (Qasim)
 export const IMPELLERS = {
-  rushton: { label: 'Disc turbine, 6 flat blades (Rushton)', Np: 5.0 },
-  flat: { label: 'Flat-blade turbine, 6 blades', Np: 3.0 },
-  pbt: { label: 'Pitched-blade turbine 45°, 4 blades', Np: 1.27 },
-  prop: { label: 'Marine propeller (3-blade)', Np: 0.32 },
+  rushton: { label: 'Disc turbine, 6 blades, w/d 0.25 (Rushton)', Np: 6.2 },
+  flat: { label: 'Straight-blade turbine, 4 blades, w/d 0.20', Np: 3.3 },
+  pbt: { label: '45° pitched-blade turbine, 4 blades, w/d 0.20', Np: 1.94 },
+  prop: { label: 'Propeller, pitch 1:1', Np: 0.3 },
 };
 
 export const DEFAULTS = {
   type: 'auto',          // auto | mechanical | jump
   G: 800,
-  t: 30,
-  nBasins: 1,
-  hRatio: 1.1,           // depth / side
-  impeller: 'rushton',
-  dRatio: 0.35,          // impeller dia / tank side
+  t: 45,                 // s – D3 §5.5.5 30–60 s; Gt 30,000–60,000
+  nBasins: 2,            // D3 §5.5.5 – minimum 2 tanks
+  hRatio: 2.0,           // depth / side – D3: water depth / tank width = 2
+  impeller: 'flat',
+  dRatio: 0.5,           // impeller dia / tank side – D3: 50–80 %
   driveEff: 0.75,
   // hydraulic jump
   chanWidth: 0,          // 0 = auto
   y1: 0,                 // supercritical depth after weir/sluice (m); 0 = auto
   jumpLenFactor: 6.0,    // L = k y2
 };
+
+const n2 = (v) => (+v).toFixed(2);
 
 export function compute(inp, ctx) {
   const d = { ...DEFAULTS, ...inp };
@@ -38,13 +42,13 @@ export function compute(inp, ctx) {
     calc.section('Mechanical flash mixer');
     const Qb = Q / d.nBasins;
     const V = Qb * d.t;
-    calc.step('Volume of each basin', 'V = Q\\,t', `${n(Qb, 4)} \\times ${n(d.t)}`, V, 'm³', 'LN: t = 30–60 s');
+    calc.step('Volume of each basin', 'V = Q\\,t', `${n(Qb, 4)} \\times ${n(d.t)}`, V, 'm³', 'NWSDB D3 §5.5.5 – t = 30–60 s');
     const B = Math.cbrt(V / d.hRatio);
     const H = B * d.hRatio;
     calc.step('Square basin side', 'B = \\sqrt[3]{V/(H/B)}', `\\sqrt[3]{${n(V)}/${n(d.hRatio)}}`, B, 'm');
     calc.step('Liquid depth', 'H = (H/B)\\,B', `${n(d.hRatio)}\\times${n(B)}`, H, 'm');
     const P = d.G * d.G * mu * V;
-    calc.step('Power imparted to water', 'P = G^2 \\mu V', `${n(d.G)}^2 \\times ${n(mu, 6)} \\times ${n(V)}`, P, 'W', 'LN: G = (P/μV)^½');
+    calc.step('Power imparted to water', 'P = G^2 \\mu V', `${n(d.G)}^2 \\times ${n(mu, 6)} \\times ${n(V)}`, P, 'W', 'NWSDB D3 §5.5 – G = (P/μV)^½ (P in W)');
     const Pm = P / d.driveEff / 1000;
     const motor = nextStd(Pm * 1.15, MOTOR_KW);
     calc.step('Motor power (drive efficiency, 15 % margin)', 'P_m = \\frac{P}{\\eta}\\times1.15', `\\frac{${n(P, 0)}}{${n(d.driveEff)}}\\times1.15`, Pm * 1.15, 'kW');
@@ -52,14 +56,22 @@ export function compute(inp, ctx) {
     const Di = d.dRatio * B;
     const nRps = Math.cbrt(P / (imp.Np * rho * Di ** 5));
     calc.step('Impeller diameter', 'D_i = k\\,B', `${n(d.dRatio)}\\times${n(B)}`, Di, 'm');
-    calc.step('Rotational speed', 'n = \\left(\\frac{P}{N_p\\rho D_i^5}\\right)^{1/3}', `\\left(\\frac{${n(P, 0)}}{${n(imp.Np)}\\times${n(rho, 1)}\\times${n(Di)}^5}\\right)^{1/3}`, nRps * 60, 'rpm', 'LN: P = N_p n³ D⁵ ρ');
+    calc.step('Rotational speed', 'n = \\left(\\frac{P}{N_p\\rho D_i^5}\\right)^{1/3}', `\\left(\\frac{${n(P, 0)}}{${n(imp.Np)}\\times${n(rho, 1)}\\times${n(Di)}^5}\\right)^{1/3}`, nRps * 60, 'rpm', 'NWSDB D3 §5.5.5 – P = k ρ n³ d⁵ (Table 5-13)');
     const Re = (Di * Di * nRps * rho) / mu;
     calc.step('Impeller Reynolds number', 'Re = \\frac{D_i^2 n \\rho}{\\mu}', `\\frac{${n(Di)}^2\\times${n(nRps)}\\times${n(rho, 0)}}{${n(mu, 6)}}`, Re, '');
     const tip = Math.PI * Di * nRps;
     calc.step('Impeller tip speed', 'v_t = \\pi D_i n', `\\pi\\times${n(Di)}\\times${n(nRps)}`, tip, 'm/s');
+    const bw = 0.09 * B;
+    calc.step('Baffle width (4 baffles, square tank)', 'w_b = 0.08\\text{–}0.10\\,B', `0.09\\times${n(B)}`, bw, 'm', 'NWSDB D3 §5.5.5');
+    calc.step('Gt', 'G\\,t', `${n(d.G)}\\times${n(d.t)}`, d.G * d.t, '', 'NWSDB D3 §5.5.5 – 30,000–60,000');
     calc.check('rm.G', d.G);
-    calc.check('rm.t', d.t);
+    calc.check('rm.t', d.t, 'Rapid-mix detention time', { crit: { min: RAPID_MIX.t[0], max: RAPID_MIX.t[1], hardMin: 10, hardMax: 90 }, src: 'NWSDB D3 §5.5.5 – mechanical flash mixer 30–60 s' });
+    calc.check('rm.Gt', d.G * d.t);
     calc.check('rm.Re', Re);
+    calc.flag('Number of flash-mixing tanks', d.nBasins >= RAPID_MIX.minTanks, `${d.nBasins}`, `≥ ${RAPID_MIX.minTanks}`, '', 'warn', 'NWSDB D3 §5.5.5');
+    calc.flag('Water depth / tank width', Math.abs(d.hRatio - RAPID_MIX.depthWidth) <= 0.5, n2(d.hRatio), '≈ 2', 'Square tanks; avoid round chambers or baffle them', 'info', 'NWSDB D3 §5.5.1, §5.5.5');
+    calc.flag('Impeller diameter / tank width', d.dRatio >= RAPID_MIX.impeller[0] - 1e-9 && d.dRatio <= RAPID_MIX.impeller[1] + 1e-9, `${Math.round(d.dRatio * 100)} %`, '50–80 %', '', 'warn', 'NWSDB D3 §5.5.5');
+    calc.text('Mixing devices shall be able to adjust the intensity – variable-speed drives (NWSDB D3 §5.5.5).');
     Object.assign(out, { V, B, H, P, Pm, motor, Di, rpm: nRps * 60, Re, tip, Gact: d.G, tAct: d.t, imp, nBasins: d.nBasins, headloss: 0.15, kw: motor * d.nBasins, freeboard: 0.5 });
   } else {
     calc.section('Hydraulic jump mixer (rectangular channel)');
@@ -89,9 +101,10 @@ export function compute(inp, ctx) {
     calc.step('Head over the drop weir forming the jump', 'H_w = \\left(\\frac{Q}{1.84\\,b}\\right)^{2/3}', `\\left(\\frac{${n(Q, 4)}}{1.84\\times${n(b)}}\\right)^{2/3}`, Hw, 'm');
     const drop = Math.max(0.3, y2 + hL - Hw + 0.15);
     calc.check('rm.Fr', Fr1);
-    calc.check('rm.G', Gj, 'Velocity gradient G (in-line jump)', { crit: { min: 700, max: 5000, hardMin: 300, hardMax: 8000 }, range: '700 – 5000' , note: 'LN: back-mix 700–1000 s⁻¹; in-line 3000–5000 s⁻¹ for 1–2 s' });
-    calc.check('rm.t', t, 'Mixing time in jump', { crit: { min: 1, max: 10, hardMax: 60 }, range: '1 – 10 (in-line)' });
+    calc.check('rm.G', Gj, 'Velocity gradient G (in-line jump)', { crit: { min: 500, max: 3500, hardMin: 300, hardMax: 5000 }, range: '500 – 3500', note: 'In-line jumps run at higher G for 1–2 s (LN 3000–5000 s⁻¹)', src: 'NWSDB D3 §5.5 – 500–1,000 s⁻¹, up to 3,500 s⁻¹' });
+    calc.check('rm.t', t, 'Mixing time in jump', { crit: { min: 1, max: 60, hardMax: 60 }, range: '1 – 60', src: 'NWSDB D3 §5.5 – detention in the mixer < 1 min; LN in-line 1–10 s' });
     if (Fr1 < 4.5) calc.note('warn', 'Fr₁ < 4.5 gives an oscillating/weak jump – reduce channel width or y₁.');
+    calc.text('Coagulant is dosed across the full width just upstream of the jump so that it is dispersed instantly (hydrolysis 10⁻⁴–1 s, NWSDB D3 §5.4.4, §5.5.2–5.5.3). A Parshall flume (D3 Annex C.1) is an equivalent hydraulic-jump mixer that also meters the flow.');
     Object.assign(out, { b, v1, Fr1, y2, hL, Lj, v2, tAct: t, Gact: Gj, Hw, drop, headloss: hL + 0.1 + Hw, kw: 0 });
   }
   return { ...out, ...calc.result() };

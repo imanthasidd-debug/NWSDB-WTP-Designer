@@ -1,6 +1,6 @@
-// SLS 614:2013 (Sri Lanka Standard for Potable Water, 1st revision) – as tabulated in the lecture notes,
-// plus WHO GDWQ (4th ed.) values and the proposed SLSI/CEA ambient guideline for raw water used for drinking
-// (conventional treatment). Raw-water defaults are typical of a wet-zone Sri Lankan river intake.
+// SLS 614:2013 (Sri Lanka Standard for Potable Water) as tabulated in NWSDB D3 Table 2-4 (and the lecture notes),
+// WHO GDWQ (4th ed.) values, and the SLS 722:1985 tolerance limits for inland surface water used as raw water for
+// public supply (NWSDB D3 Table 2-6, field rawGl). Raw-water defaults are typical of a wet-zone Sri Lankan river.
 
 // type: 'max' | 'range' | 'nd' (not detected) | 'info'
 // group: phys | chem | tox | bact | info
@@ -8,7 +8,7 @@
 export const PARAMS = [
   // Physical / organoleptic
   { key: 'turb', name: 'Turbidity', unit: 'NTU', group: 'phys', sls: 2, type: 'max', who: null, raw: [25, 150], dec: 1 },
-  { key: 'colour', name: 'Colour', unit: 'Hazen', group: 'phys', sls: 15, type: 'max', rawGl: 100, raw: [25, 60], dec: 0 },
+  { key: 'colour', name: 'Colour', unit: 'Hazen', group: 'phys', sls: 15, type: 'max', raw: [25, 60], dec: 0 },
   { key: 'pH', name: 'pH', unit: '–', group: 'phys', sls: [6.5, 8.5], type: 'range', rawGl: [6, 9], raw: [6.9, 6.6], dec: 2 },
   { key: 'temp', name: 'Temperature', unit: '°C', group: 'info', type: 'info', raw: [28, 28], dec: 1 },
   { key: 'tds', name: 'Total dissolved solids', unit: 'mg/L', group: 'chem', sls: 500, type: 'max', raw: [70, 90], dec: 0 },
@@ -18,33 +18,39 @@ export const PARAMS = [
   { key: 'ca', name: 'Calcium (as Ca)', unit: 'mg/L', group: 'chem', sls: 100, type: 'max', raw: [9, 8], dec: 1, worstLow: true },
   { key: 'mg', name: 'Magnesium (as Mg)', unit: 'mg/L', group: 'chem', sls: 30, type: 'max', raw: [3, 4], dec: 1 },
   { key: 'na', name: 'Sodium (as Na)', unit: 'mg/L', group: 'chem', sls: 200, type: 'max', who: null, raw: [8, 12], dec: 1 },
-  { key: 'cl', name: 'Chloride (as Cl⁻)', unit: 'mg/L', group: 'chem', sls: 250, type: 'max', raw: [12, 30], dec: 1 },
+  { key: 'cl', name: 'Chloride (as Cl⁻)', unit: 'mg/L', group: 'chem', sls: 250, type: 'max', rawGl: 1200, raw: [12, 30], dec: 1 },
   { key: 'so4', name: 'Sulphate (as SO₄²⁻)', unit: 'mg/L', group: 'chem', sls: 250, type: 'max', raw: [6, 10], dec: 1 },
   { key: 'fe', name: 'Iron (as Fe)', unit: 'mg/L', group: 'chem', sls: 0.3, type: 'max', raw: [0.5, 1.2], dec: 2 },
   { key: 'mn', name: 'Manganese (as Mn)', unit: 'mg/L', group: 'chem', sls: 0.1, type: 'max', raw: [0.04, 0.12], dec: 3 },
   { key: 'nh3', name: 'Free ammonia (as NH₃)', unit: 'mg/L', group: 'chem', sls: 0.06, type: 'max', raw: [0.05, 0.15], dec: 3 },
-  { key: 'no3', name: 'Nitrate (as NO₃⁻)', unit: 'mg/L', group: 'chem', sls: 50, type: 'max', who: 50, rawGl: 5, raw: [1.5, 3], dec: 1 },
+  { key: 'albnh3', name: 'Albuminoid ammonia', unit: 'mg/L', group: 'chem', sls: 0.15, type: 'max', raw: [0.08, 0.15], dec: 3 },
+  { key: 'no3', name: 'Nitrate (as NO₃⁻)', unit: 'mg/L', group: 'chem', sls: 50, type: 'max', who: 50, rawGl: 44.3, raw: [1.5, 3], dec: 1 },
   { key: 'no2', name: 'Nitrite (as NO₂⁻)', unit: 'mg/L', group: 'chem', sls: 3, type: 'max', who: 3, raw: [0.02, 0.05], dec: 3 },
-  { key: 'f', name: 'Fluoride (as F⁻)', unit: 'mg/L', group: 'chem', sls: 1.0, type: 'max', who: 1.5, raw: [0.15, 0.25], dec: 2 },
-  { key: 'po4', name: 'Total phosphates (as PO₄³⁻)', unit: 'mg/L', group: 'chem', sls: 2.0, type: 'max', rawGl: 0.7, raw: [0.15, 0.3], dec: 2 },
+  { key: 'f', name: 'Fluoride (as F⁻)', unit: 'mg/L', group: 'chem', sls: 1.0, type: 'max', who: 1.5, rawGl: 1.5, raw: [0.15, 0.25], dec: 2 },
+  { key: 'po4', name: 'Total phosphates (as PO₄³⁻)', unit: 'mg/L', group: 'chem', sls: 2.0, type: 'max', raw: [0.15, 0.3], dec: 2 },
+  { key: 'mbas', name: 'Anionic detergents (as MBAS)', unit: 'mg/L', group: 'chem', sls: 0.2, type: 'max', raw: [0.02, 0.05], dec: 3 },
+  { key: 'oil', name: 'Oil & grease', unit: 'mg/L', group: 'chem', sls: 0.2, type: 'max', rawGl: 0.1, raw: [0.02, 0.05], dec: 3 },
+  { key: 'phenol', name: 'Phenolic compounds (as C₆H₅OH)', unit: 'mg/L', group: 'tox', sls: 0.001, type: 'max', rawGl: 0.005, raw: [0.0002, 0.0005], dec: 4 },
   { key: 'cod', name: 'Chemical oxygen demand', unit: 'mg/L', group: 'chem', sls: 10, type: 'max', raw: [12, 25], dec: 0 },
-  { key: 'al', name: 'Aluminium (as Al)', unit: 'mg/L', group: 'chem', sls: 0.2, type: 'max', rawGl: 0.2, raw: [0.05, 0.1], dec: 3 },
+  { key: 'al', name: 'Aluminium (as Al)', unit: 'mg/L', group: 'chem', sls: 0.2, type: 'max', raw: [0.05, 0.1], dec: 3 },
   { key: 'cu', name: 'Copper (as Cu)', unit: 'mg/L', group: 'chem', sls: 1.0, type: 'max', who: 2, raw: [0.005, 0.01], dec: 3 },
   { key: 'zn', name: 'Zinc (as Zn)', unit: 'mg/L', group: 'chem', sls: 3.0, type: 'max', raw: [0.01, 0.03], dec: 3 },
   { key: 'ni', name: 'Nickel (as Ni)', unit: 'mg/L', group: 'tox', sls: 0.02, type: 'max', who: 0.07, raw: [0.002, 0.005], dec: 4 },
-  { key: 'as', name: 'Arsenic (as As)', unit: 'mg/L', group: 'tox', sls: 0.01, type: 'max', who: 0.01, raw: [0.001, 0.002], dec: 4 },
-  { key: 'cd', name: 'Cadmium (as Cd)', unit: 'mg/L', group: 'tox', sls: 0.003, type: 'max', who: 0.003, raw: [0.0003, 0.0005], dec: 4 },
-  { key: 'cr', name: 'Chromium (as Cr)', unit: 'mg/L', group: 'tox', sls: 0.05, type: 'max', who: 0.05, raw: [0.002, 0.005], dec: 4 },
-  { key: 'pb', name: 'Lead (as Pb)', unit: 'mg/L', group: 'tox', sls: 0.01, type: 'max', who: 0.01, raw: [0.002, 0.004], dec: 4 },
-  { key: 'hg', name: 'Mercury (as Hg)', unit: 'mg/L', group: 'tox', sls: 0.001, type: 'max', who: 0.006, raw: [0.0001, 0.0002], dec: 5 },
-  { key: 'se', name: 'Selenium (as Se)', unit: 'mg/L', group: 'tox', sls: 0.01, type: 'max', who: 0.04, raw: [0.001, 0.001], dec: 4 },
-  { key: 'cn', name: 'Cyanide (as CN⁻)', unit: 'mg/L', group: 'tox', sls: 0.05, type: 'max', raw: [0.001, 0.002], dec: 4 },
+  { key: 'as', name: 'Arsenic (as As)', unit: 'mg/L', group: 'tox', sls: 0.01, type: 'max', who: 0.01, rawGl: 0.05, raw: [0.001, 0.002], dec: 4 },
+  { key: 'cd', name: 'Cadmium (as Cd)', unit: 'mg/L', group: 'tox', sls: 0.003, type: 'max', who: 0.003, raw: [0.0003, 0.0005], dec: 4, note: 'D3 Table 2-4 prints 0.03 (misprint – Table 2-13: 3 µg/L)' },
+  { key: 'cr', name: 'Chromium (as Cr)', unit: 'mg/L', group: 'tox', sls: 0.05, type: 'max', who: 0.05, rawGl: 0.05, raw: [0.002, 0.005], dec: 4 },
+  { key: 'pb', name: 'Lead (as Pb)', unit: 'mg/L', group: 'tox', sls: 0.01, type: 'max', who: 0.01, rawGl: 0.1, raw: [0.002, 0.004], dec: 4 },
+  { key: 'hg', name: 'Mercury (as Hg)', unit: 'mg/L', group: 'tox', sls: 0.001, type: 'max', who: 0.006, rawGl: 0.001, raw: [0.0001, 0.0002], dec: 5 },
+  { key: 'se', name: 'Selenium (as Se)', unit: 'mg/L', group: 'tox', sls: 0.01, type: 'max', who: 0.04, rawGl: 0.05, raw: [0.001, 0.001], dec: 4 },
+  { key: 'cn', name: 'Cyanide (as CN⁻)', unit: 'mg/L', group: 'tox', sls: 0.05, type: 'max', rawGl: 0.05, raw: [0.001, 0.002], dec: 4 },
+  { key: 'mclr', name: 'Microcystin-LR (cyanotoxin)', unit: 'µg/L', group: 'tox', sls: 1, type: 'max', who: 1, raw: [0, 0.3], dec: 2, note: 'D3 Table 2-5: desirable 1, permissible 3 µg/L' },
   // Bacteriological
   { key: 'tc', name: 'Total coliforms', unit: 'MPN/100 mL', group: 'bact', sls: 3, type: 'max', rawGl: 5000, raw: [2400, 16000], dec: 0, note: 'Treatment works: ≤ 3 in any sample, ND in consecutive samples' },
   { key: 'ec_', name: 'E. coli (thermotolerant coliforms)', unit: 'MPN/100 mL', group: 'bact', sls: 0, type: 'nd', raw: [240, 1600], dec: 0 },
   // Information / process parameters (no SLS limit)
   { key: 'toc', name: 'Total organic carbon', unit: 'mg/L', group: 'info', type: 'info', raw: [3, 6], dec: 1 },
-  { key: 'do', name: 'Dissolved oxygen', unit: 'mg/L', group: 'info', type: 'info', raw: [6.5, 5], dec: 1, worstLow: true },
+  { key: 'do', name: 'Dissolved oxygen', unit: 'mg/L', group: 'info', type: 'info', rawGl: { min: 4 }, raw: [6.5, 5], dec: 1, worstLow: true },
+  { key: 'bod', name: 'BOD (5 d, 20 °C)', unit: 'mg/L', group: 'info', type: 'info', rawGl: 5, raw: [2, 4], dec: 1 },
   { key: 'co2', name: 'Free carbon dioxide', unit: 'mg/L', group: 'info', type: 'info', raw: [5, 10], dec: 1 },
   { key: 'h2s', name: 'Hydrogen sulphide', unit: 'mg/L', group: 'info', type: 'info', raw: [0, 0], dec: 2 },
   { key: 'algae', name: 'Algae count', unit: 'cells/mL', group: 'info', type: 'info', raw: [300, 1500], dec: 0 },
@@ -65,11 +71,16 @@ export function limitText(p) {
   if (p.type === 'nd') return 'Not detected';
   return '—';
 }
+/** SLS 722:1985 raw-water tolerance limit (NWSDB D3 Table 2-6): number = max, [lo, hi] = range, {min} = minimum */
 export function rawGlText(p) {
   if (p.rawGl === undefined) return '—';
-  return Array.isArray(p.rawGl) ? `${p.rawGl[0]} – ${p.rawGl[1]}` : `≤ ${p.rawGl}`;
+  if (Array.isArray(p.rawGl)) return `${p.rawGl[0]} – ${p.rawGl[1]}`;
+  if (typeof p.rawGl === 'object') return `≥ ${p.rawGl.min}`;
+  return `≤ ${p.rawGl}`;
 }
 export function rawGlExceeds(p, v) {
-  if (p.rawGl === undefined || v === undefined) return null;
-  return Array.isArray(p.rawGl) ? v < p.rawGl[0] || v > p.rawGl[1] : v > p.rawGl;
+  if (p.rawGl === undefined || v === undefined || Number.isNaN(v)) return null;
+  if (Array.isArray(p.rawGl)) return v < p.rawGl[0] || v > p.rawGl[1];
+  if (typeof p.rawGl === 'object') return v < p.rawGl.min;
+  return v > p.rawGl;
 }

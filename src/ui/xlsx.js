@@ -35,7 +35,7 @@ export async function buildWorkbook() {
     ['Treatment route', r.process.route, ''], ['Train', r.process.train.map((t) => t.label).join(' > '), ''],
     ['Capital cost', Math.round(r.cost.capex), 'LKR'], ['O&M cost', +r.cost.omPerM3.toFixed(2), 'LKR/m3'], ['Full production cost', +r.cost.fullPerM3.toFixed(2), 'LKR/m3'],
     ['Land', +r.layout.ha.toFixed(3), 'ha'], ['Max demand', Math.round(r.energy.kva), 'kVA'], ['Checks pass/review/fail', `${r.summary.ok}/${r.summary.warn}/${r.summary.fail}`, ''],
-    ['NWSDB D2 checks pass/review/fail', `${r.d2.ok}/${r.d2.warn}/${r.d2.fail}`, ''], ['Present value (20 yr)', Math.round(r.cost.pvTotal), 'LKR'],
+    ['NWSDB D2 checks pass/review/fail', `${r.d2.ok}/${r.d2.warn}/${r.d2.fail}`, ''], ['NWSDB D3 checks pass/review/fail/info', `${r.d3.ok}/${r.d3.warn}/${r.d3.fail}/${r.d3.info}`, ''], ['Present value (20 yr)', Math.round(r.cost.pvTotal), 'LKR'],
   ], [34, 60, 12]]);
   // inputs
   const inRows = [['Module', 'Parameter', 'Value', 'Unit']];
@@ -63,6 +63,7 @@ export async function buildWorkbook() {
   }
   sheets.push(['Calculations', cRows, [22, 30, 46, 40, 40, 14, 14, 30]]);
   sheets.push(['NWSDB D2 compliance', [['Clause', 'Module', 'Check', 'Value', 'Unit', 'Criterion', 'Status', 'Source'], ...r.d2.checks.map((c) => [c.clause, PAGES.find((p) => p.mod === c.module)?.title || c.module, c.label, typeof c.value === 'number' ? +c.value.toPrecision(6) : c.value, c.unit, c.range, c.status.toUpperCase(), c.src || ''])], [12, 24, 46, 14, 12, 22, 10, 50]]);
+  sheets.push(['NWSDB D3 compliance', [['Clause', 'Module', 'Check', 'Value', 'Unit', 'Criterion', 'Status', 'Source'], ...r.d3.checks.map((c) => [c.clause, PAGES.find((p) => p.mod === c.module)?.title || c.module, c.label, typeof c.value === 'number' ? +c.value.toPrecision(6) : c.value, c.unit, c.range, c.status.toUpperCase(), c.src || ''])], [12, 24, 46, 14, 12, 22, 10, 50]]);
   sheets.push(['Design checks', [['Module', 'Check', 'Value', 'Unit', 'Criterion', 'Status', 'Source'], ...r.checks.map((c) => [PAGES.find((p) => p.mod === c.module)?.title || c.module, c.label, typeof c.value === 'number' ? +c.value.toPrecision(6) : c.value, c.unit, c.range, c.status.toUpperCase(), c.src || ''])], [24, 44, 14, 14, 18, 10, 40]]);
   sheets.push(['Demand', [['Year', 'Population', 'Coverage %', 'Domestic', 'Non-domestic', 'Floating+bulk', 'Net', 'NRW', 'Avg production', 'Max day', 'Plant required'], ...r.demand.table.map((t) => [t.year, Math.round(t.P), +t.cov.toFixed(1), Math.round(t.dom), Math.round(t.nonDom), Math.round(t.flt + t.bulk), Math.round(t.net), Math.round(t.nrwQ), Math.round(t.gross), Math.round(t.mdd), Math.round(t.plant)])], [8, 12, 11, 11, 12, 13, 10, 10, 14, 10, 14]]);
   sheets.push(['Water quality', [['Parameter', 'Unit', 'Raw average', 'Raw design', 'Treated (predicted)', 'SLS 614', 'Meets SLS'], ...r.compliance.rows.map((x) => [x.name, x.unit, x.raw ?? '', '', +(+x.v).toPrecision(4), x.type === 'range' ? x.sls.join('-') : x.type === 'nd' ? 'ND' : x.sls, x.exc ? 'NO' : 'YES'])], [34, 14, 12, 12, 16, 10, 10]]);

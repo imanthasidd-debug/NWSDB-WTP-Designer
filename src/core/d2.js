@@ -12,7 +12,7 @@ export const D2 = {
   companions: [['D1', 'Rural Water Supply'], ['D3', 'Water Quality and Treatment'], ['D4', 'Ground Water'], ['D5', 'Mechanical, Electrical & Instrumentation Aspects of Water Supply Design'], ['P1', 'Project Planning & Feasibility']],
 };
 export const ref = (clause) => `NWSDB D2 §${clause}`;
-export const isD2 = (src) => typeof src === 'string' && src.includes('D2');
+export const isD2 = (src) => typeof src === 'string' && /\bD2\b/.test(src);
 
 // ------------------------------------------------------------------ §2.4 Design period
 export const DESIGN_PERIODS = [

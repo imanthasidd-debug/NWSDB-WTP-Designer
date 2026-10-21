@@ -16,7 +16,7 @@ export const SAMPLES = [
       Object.assign(i.intake, { type: 'tower', bedLevel: 80, LWL: 84, NWL: 87, HFL: 89.5, mainLength: 2200 });
       Object.assign(i.source, { basin: 90, catchment: 250, liveStorage: 30, waterArea: 4, evapStation: 'Colombo', otherUse: 10000, releases: 0.05, L: 26000, H: 95 });
       Object.assign(i.sed, { depth: 3.0 });
-      i.floc.stages = [{ G: 50, t: 10 }, { G: 35, t: 10 }, { G: 25, t: 10 }];
+      i.floc.stages = [{ G: 40, t: 10 }, { G: 30, t: 10 }, { G: 25, t: 10 }];
       Object.assign(i.storage, { srTWL: 128, mainLength: 6500, gwlDepth: 4 });
       return p;
     },
@@ -26,9 +26,9 @@ export const SAMPLES = [
       const p = newProject();
       const i = p.inputs;
       Object.assign(i.setup, { name: 'Sample Rural Water Supply – Slow Sand Filter', code: 'WTP-SMP-SSF', district: 'Badulla', source: 'Upland stream', sourceType: 'river', siteGL: 690, siteElevation: 690, rsc: 'RSC – Uva' });
-      Object.assign(i.demand, { method: 'rate', basePop: 13500, growthRate: 0.8, areaType: 'rural', lpcd: 90, nonDomPct: 10, bulk: 50, floatPop: 300, coverageNow: 55, coverageDesign: 90, roundStep: 100, nTrains: 1 });
+      Object.assign(i.demand, { method: 'rate', basePop: 13500, growthRate: 0.8, areaType: 'rural', lpcd: 90, nonDomPct: 10, bulk: 50, floatPop: 300, coverageNow: 55, coverageDesign: 90, roundStep: 100, nTrains: 2 });
       const v = i.quality.values;
-      Object.assign(v, { turb: [5, 18], colour: [12, 25], pH: [7.0, 6.8], alk: [40, 35], fe: [0.15, 0.3], mn: [0.02, 0.05], cod: [5, 9], toc: [2, 3], tc: [500, 2400], ec_: [50, 240], algae: [100, 400] });
+      Object.assign(v, { turb: [5, 18], colour: [12, 25], pH: [7.0, 6.8], alk: [40, 35], fe: [0.12, 0.25], mn: [0.02, 0.05], cod: [5, 9], toc: [2, 3], tc: [500, 2400], ec_: [50, 240], algae: [60, 150] });
       Object.assign(i.intake, { type: 'weir', bedLevel: 674.5, LWL: 677, NWL: 677.6, HFL: 680.5, mainLength: 450, nDuty: 1, nStandby: 1 });
       Object.assign(i.source, { basin: 60, catchment: 28, dwf: 0.12, releases: 0.02, L: 9000, H: 420, evapStation: 'Peradeniya' });
       Object.assign(i.storage, { srTWL: 735, mainLength: 1800, nDuty: 1, nStandby: 1 });

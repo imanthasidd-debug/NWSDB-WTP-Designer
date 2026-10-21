@@ -3,6 +3,7 @@ import { Calc, n } from '../core/calc.js';
 import { SITE_CHECKLIST, rational, ref } from '../core/d2.js';
 import { ACRE_M2, PERCH_M2 } from '../core/srilanka.js';
 import { ceilTo } from '../core/util.js';
+import { LAB_EQUIPMENT, LAYOUT, LAYOUT_CHECKLIST, siteAreaMinHa } from '../core/d3.js';
 
 export const DEFAULTS = {
   road: 6,            // internal road / spacing between structures (m)
@@ -124,9 +125,23 @@ export function compute(inp, ctx) {
   calc.flag('Access road to plant and intake', !!d.roadAccess, d.roadAccess ? 'yes' : 'no', 'all-weather access', '', 'warn', ref('2.3'));
   calc.flag('Electric power available (else generator cost compared)', !!d.powerAvailable, d.powerAvailable ? 'yes' : 'no', 'grid supply', '', 'warn', ref('2.3'));
   calc.flag('Foundation investigation (trial pits / boreholes)', !!d.soilInvestigated, d.soilInvestigated ? 'done' : 'pending', 'before final design', '', 'info', ref('2.3'));
+  // ---- NWSDB D3 Chapter 9 – plant design & layout
+  calc.section('Plant design & layout (NWSDB D3 Ch 9)');
+  const Qult = r.demand.Qd * (1 + d.expansion / 100);
+  const aMin = siteAreaMinHa(Qult);
+  calc.step('Minimum site area for a conventional campus-layout plant (ultimate capacity)', 'A_{acre} \\ge Q_{mgd}^{0.7}', `(${n(Qult / 3785.4, 2)})^{0.7}\\ \\text{acres}`, aMin, 'ha', 'NWSDB D3 §9.2.1 (Kawamura) – excludes source / clear-water storage, pipelines and lagoons');
+  calc.flag('Land provided vs D3 minimum site area', landArea / 1e4 >= aMin - 1e-9, `${(landArea / 1e4).toFixed(2)} ha`, `≥ ${aMin.toFixed(2)} ha (campus layout)`, 'Compact layouts with common walls need less land (D3 Table 9-2)', 'info', 'NWSDB D3 §9.2.1');
+  const units = [['flocculators', r.floc?.enabled !== false && r.floc ? nT : null], ['clarifiers', r.sed?.enabled ? r.sed.N : null], ['filters', r.filt ? r.filt.N : null], ['clear-water compartments', r.storage?.inputs?.cwrCompartments ?? null]].filter(([, v]) => v !== null && v !== undefined);
+  const single = units.filter(([, v]) => v < 2);
+  calc.flag('Redundancy – remaining units carry the flow with one out of service', !single.length, units.map(([k, v]) => `${v} ${k}`).join(', '), '≥ 2 of each unit; standby pumps & chlorinators', single.map(([k]) => k).join(', '), 'warn', 'NWSDB D3 §9.4.1, §4.3.8');
+  const chemDays = [r.coag?.inputs?.storageDays, r.dis?.inputs?.storageDays, r.stab?.inputs?.storageDays].filter((x) => x !== undefined);
+  const minDays = chemDays.length ? Math.min(...chemDays) : 30;
+  calc.flag('Chemical storage at the plant', minDays >= LAYOUT.chemStorageDays, `${minDays} days (minimum of all chemicals)`, '≥ 1 month', '', 'warn', 'NWSDB D3 §9.1');
+  calc.flag('Laboratory facilities', true, `${LAB_EQUIPMENT.length} equipment items (Table 9-3)`, 'central, vibration-free, separate HVAC', 'Process laboratory plus full laboratory for large plants', 'info', 'NWSDB D3 §9.7.2');
   const checklist = SITE_CHECKLIST;
+  const d3checklist = LAYOUT_CHECKLIST;
   return {
-    inputs: d, items, checklist, Cw, Qdr, drainB: ceilTo(bd, 0.05), siteW: ceilTo(siteW, 1), siteH: ceilTo(siteH, 1), builtArea, siteArea, landArea,
+    inputs: d, items, checklist, d3checklist, siteMinHa: aMin, lab: LAB_EQUIPMENT, Cw, Qdr, drainB: ceilTo(bd, 0.05), siteW: ceilTo(siteW, 1), siteH: ceilTo(siteH, 1), builtArea, siteArea, landArea,
     ha: landArea / 1e4, acres: landArea / ACRE_M2, perches: landArea / PERCH_M2,
     ...calc.result(),
   };

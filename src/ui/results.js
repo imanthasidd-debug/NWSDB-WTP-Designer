@@ -41,7 +41,7 @@ export function checksTable(checks, { showModule = false, onRow } = {}) {
   const cols = [
     { k: 'status', l: '', v: (r) => statusBadge(r.status) },
     ...(showModule ? [{ k: 'module', l: 'Unit', v: (r) => r.moduleLabel || r.module }] : []),
-    { k: 'label', l: 'Check' },
+    { k: 'label', l: 'Check', v: (r) => (r.note && r.src ? h('span', null, r.label, h('div', { class: 'small muted' }, r.note)) : r.label) },
     { k: 'value', l: 'Design value', num: true, fmt: (v) => (isNum(v) ? fmtAuto(v) : v) },
     { k: 'unit', l: 'Unit' },
     { k: 'range', l: 'Criterion' },

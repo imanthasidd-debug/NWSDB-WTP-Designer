@@ -1,6 +1,7 @@
 // Orchestrates the whole design: runs every module in dependency order on the project inputs.
 import { CRITERIA } from '../core/criteria.js';
 import { isD2 } from '../core/d2.js';
+import { clauseOf, isD3 } from '../core/d3.js';
 import { mu, nu, rho } from '../core/water.js';
 import { deepClone } from '../core/util.js';
 import * as demand from './demand.js';
@@ -101,8 +102,12 @@ export function computeAll(project) {
     fail: all.filter((c) => c.status === 'fail').length,
     total: all.length,
   };
-  // NWSDB Design Manual D2 compliance register (every check that cites a D2 clause)
-  const d2c = all.filter((c) => isD2(c.src)).map((c) => { const m = String(c.src).match(/§\s?(\d+(?:\.\d+)*(?:[–-]\d+(?:\.\d+)+)?)|Table\s*\d+(?:\.\d+)?|Fig\s*\d+(?:\.\d+)?/); return { ...c, clause: m ? (m[1] ? '§' + m[1] : m[0]) : 'D2' }; });
-  const d2 = { checks: d2c, ok: d2c.filter((c) => c.status === 'ok').length, warn: d2c.filter((c) => c.status === 'warn').length, fail: d2c.filter((c) => c.status === 'fail').length, info: d2c.filter((c) => c.status === 'info').length, total: d2c.length };
-  return { ...res, checks: all, summary, d2, errors, water: ctx.water };
+  // NWSDB Design Manual D2 / D3 compliance registers (every check that cites a clause of the manual)
+  const register = (test, tag) => {
+    const list = all.filter((c) => test(c.src)).map((c) => ({ ...c, clause: clauseOf(c.src, tag) || tag }));
+    return { checks: list, ok: list.filter((c) => c.status === 'ok').length, warn: list.filter((c) => c.status === 'warn').length, fail: list.filter((c) => c.status === 'fail').length, info: list.filter((c) => c.status === 'info').length, total: list.length };
+  };
+  const d2 = register(isD2, 'D2');
+  const d3 = register(isD3, 'D3');
+  return { ...res, checks: all, summary, d2, d3, errors, water: ctx.water };
 }

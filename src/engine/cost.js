@@ -134,6 +134,7 @@ export function compute(inp, ctx) {
   }
   const co = r.coag;
   if (co) addME('Chemical dosing systems (coagulant, lime, polymer)', 1, 'lot', d.chemSystem + co.nDosingPumps * 2e6, 'Chemicals');
+  if (co?.pac) addME('Powdered activated carbon dosing (slurry tank, mixer, feeders, contact provision)', 1, 'lot', 6e6 + co.pac.kgD * 2000, 'Chemicals');
   if (dis) addME(dis.key === 'gas' ? 'Gas chlorination system (chlorinators, leak detection, scrubber)' : 'Hypochlorite dosing system', 1, 'lot', dis.key === 'gas' ? d.chlorGas + dis.chlorinator * 0.15e6 : d.chlorHypo, 'Chemicals');
   const sl = r.sludge;
   if (sl) {
@@ -175,7 +176,7 @@ export function compute(inp, ctx) {
     fitter: Q > 30000 ? 3 : 2, labourer: 4 + Math.round(Q / 10000) + (r.filt?.type === 'ssf' ? 2 : 0), security: 3,
   };
   const staffCost = Object.entries(staff).reduce((a, [k, nn]) => a + nn * d.salaries[k] * 13, 0);
-  const chemBase = (co ? co.costs.coag + co.costs.lime + co.costs.soda + co.costs.poly : 0) + (r.stab?.cost || 0) + (dis?.annualCost || 0);
+  const chemBase = (co ? co.costs.coag + co.costs.lime + co.costs.soda + co.costs.poly + (co.costs.pac || 0) : 0) + (r.stab?.cost || 0) + (dis?.annualCost || 0);
   const chem = chemBase * (1 + d.chemTransportPct / 100);
   const power = en ? en.annualBill + (en.fuelCost || 0) : 0;
   const maint = (meTot * d.maintMEPct) / 100 + (civilTot * d.maintCivilPct) / 100;

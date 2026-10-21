@@ -1,11 +1,12 @@
-// Sedimentation: rectangular horizontal-flow, circular radial-flow, or tube-settler clarifiers
+// Sedimentation: rectangular horizontal-flow, circular radial-flow, or tube-settler clarifiers (NWSDB D3 §5.7)
 import { Calc, n } from '../core/calc.js';
+import { SED_RECT, SETTLERS, SOR_TABLE } from '../core/d3.js';
 import { G, ceilTo, rad } from '../core/util.js';
 
 export const DEFAULTS = {
   type: 'auto',
   nTanks: 0,            // 0 = one per train
-  sor: 30,              // m3/m2/d
+  sor: 24,              // m3/m2/d – D3 Table 5-20: 1.0 m/h (alum floc design 1.0 m/h, p 5-63)
   depth: 3.5,           // side water depth (settling zone)
   LW: 5,
   sludgeDepth: 0.5,
@@ -25,7 +26,7 @@ export const DEFAULTS = {
   tubeLoad: 4.0,        // m/h on covered area
   tubeD: 0.05, tubeL: 1.0, tubeAngle: 60, tubeS: 1.375, coverFrac: 0.75,
   // plain pre-sedimentation
-  presedSor: 20, presedDepth: 3.0,
+  presedSor: 12, presedDepth: 2.8,  // D3 Table 5-20 no pre-treatment 0.5 m/h; detention 4–6 h
   plainV50: 1.0, plainSigma: 3.0, // un-coagulated silt/clay population for plain sedimentation
 };
 
@@ -63,14 +64,14 @@ export function compute(inp, ctx) {
     const H = d.depth;
     if (type === 'rect') {
       A = Qd / d.sor;
-      calc.step('Required surface area', 'A = \\frac{Q_t}{SOR}', `\\frac{${n(Qd, 0)}}{${n(d.sor)}}`, A, 'm²', 'LN: V_o = Q/A');
+      calc.step('Required surface area', 'A = \\frac{Q_t}{SOR}', `\\frac{${n(Qd, 0)}}{${n(d.sor)}}`, A, 'm²', 'NWSDB D3 §5.7.1, Table 5-20; LN: V_o = Q/A');
       W = Math.max(2, Math.round(Math.sqrt(A / d.LW) * 10) / 10);
       L = ceilTo(A / W, 0.5);
     } else {
       const Ac = Qh / d.tubeLoad;
       calc.step('Area covered by tube modules', 'A_c = \\frac{Q_t}{q_{tube}}', `\\frac{${n(Qh, 1)}}{${n(d.tubeLoad)}}`, Ac, 'm²');
       A = Ac / d.coverFrac;
-      calc.step('Tank plan area (front ¼ free of modules)', 'A = A_c / f_c', `${n(Ac)}/${n(d.coverFrac)}`, A, 'm²', 'LN – front one-quarter free for inlet');
+      calc.step('Tank plan area (front ¼ free of modules)', 'A = A_c / f_c', `${n(Ac)}/${n(d.coverFrac)}`, A, 'm²', 'NWSDB D3 §5.7.7 – coverage < 0.75, stilling zone 25 %; LN');
       W = Math.max(2, Math.round(Math.sqrt(A / 3) * 10) / 10);
       L = ceilTo(A / W, 0.5);
     }
@@ -137,17 +138,30 @@ export function compute(inp, ctx) {
       calc.step('Critical settling velocity (Yao)', 'v_{sc} = \\frac{S v_0}{\\sin\\theta + L\'\\cos\\theta}', `\\frac{${n(d.tubeS)}\\times${n(v0 * 3600)}}{\\sin${d.tubeAngle}^\\circ + ${n(Lr)}\\cos${d.tubeAngle}^\\circ}`, vscT * 3600, 'm/h');
       calc.check('tube.loading', d.tubeLoad);
       calc.check('tube.Re', ReT);
+      calc.flag('Tube inclination', d.tubeAngle >= SETTLERS.angleTube - 1e-9, `${d.tubeAngle}°`, '≥ 60° (tubes), ≥ 55° (plates)', 'Self-cleaning at 50–60°', 'warn', 'NWSDB D3 §5.7.7');
+      calc.flag('Tube size / plate spacing', d.tubeD >= SETTLERS.spacing[0] - 1e-9, `${(d.tubeD * 1000).toFixed(0)} mm`, '≥ 40 mm (50 mm typical)', '', 'warn', 'NWSDB D3 §5.7.7');
+      calc.flag('Fraction of basin covered by tubes', d.coverFrac <= SETTLERS.coverTube + 1e-9, `${(d.coverFrac * 100).toFixed(0)} %`, '≤ 75 % (plates ≤ 95 %)', '', 'warn', 'NWSDB D3 §5.7.7');
+      calc.flag('Velocity in tubes vs D3 criteria list', v0 >= SETTLERS.velocity[0] - 1e-9 && v0 <= SETTLERS.velocity[1] + 1e-9, `${(v0 * 1000).toFixed(2)} mm/s`, '2.5–3.3 mm/s', 'Advisory – the D3 list is inconsistent with Re < 50', 'info', 'NWSDB D3 §5.7.7');
       Object.assign(out, { v0, ReT, vscT: vscT * 3600, Ac });
     }
     // checks
-    if (type === 'rect' && !plain) calc.check('sed.sor', sorAct);
-    calc.check('sed.hrt', hrt, null, type === 'tube' ? { crit: { min: 0.75, max: 2.5, hardMin: 0.5, hardMax: 4 }, range: '0.75 – 2.5' } : {});
+    if (type === 'rect' && !plain) {
+      calc.check('sed.sor', sorAct);
+      const tbl = SOR_TABLE.coag, mh = sorAct / 24;
+      calc.flag('SOR vs Table 5-20 (with chemical coagulation)', mh <= tbl[0] + 1e-9, `${mh.toFixed(2)} m/h`, `normal ${tbl[0]} · easy ${tbl[1]} · very bad ${tbl[2]} m/h`, mh <= tbl[1] + 1e-9 ? 'Within the "easy" value – confirm floc settles well (jar / column test)' : 'Above the "easy" value – use coagulant aids (≤ 1.5 m/h) or tube settlers', mh <= tbl[1] + 1e-9 ? 'info' : 'warn', 'NWSDB D3 Table 5-20');
+    }
+    if (plain) {
+      calc.check('sed.sor', sorAct, 'Surface overflow rate (plain sedimentation)', { crit: { min: 2.4, max: 12, hardMax: 24 }, src: 'NWSDB D3 Table 5-20 – no pre-treatment 0.5 m/h normal, 1.0 easy' });
+      calc.check('sed.hrt', hrt, 'Detention time (pre-settling)', { crit: { min: SED_RECT.hrtPre[0], max: SED_RECT.hrtPre[1], hardMin: 2, hardMax: 8 }, src: 'NWSDB D3 §5.7.1 – 4–6 h pre-settling' });
+    } else calc.check('sed.hrt', hrt, null, type === 'tube' ? { crit: { min: 0.75, max: 2.5, hardMin: 0.5, hardMax: 4 }, range: '0.75 – 2.5', src: 'NWSDB D3 §5.7.7 – tube settling ≈ 45 min (Annex E.2: > 45 min)' } : {});
     calc.check('sed.depth', H);
     if (type === 'rect') { calc.check('sed.LW', L / W); if (!plain) calc.check('sed.LD', L / H); }
     calc.check('sed.vh', vh * 60);
     calc.check('sed.weir', weirLoadAct);
     calc.check('sed.Re', Re);
     calc.check('sed.Fr', Fr);
+    calc.flag('Number of sedimentation basins', N >= SED_RECT.minBasins, `${N}`, '≥ 2', '', 'fail', 'NWSDB D3 §5.7.1');
+    if (!plain) calc.flag('Sludge removal', true, Aact > SED_RECT.scraperArea[1] ? 'mechanical scrapers' : 'manual / hopper', Aact > SED_RECT.scraperArea[1] ? 'scrapers when > 30–40 m²' : '≤ 30–40 m² manual', `Floor ≥ 5 % (≥ 2 % with scrapers); de-sludging pipes ≥ 200–300 mm, sludge-drain velocity > 1.4 m/s${Aact > SED_RECT.scraperArea[1] ? '; flight-and-chain ≤ 1 cm/s (≤ 6 m wide) or travelling bridge 3–4.5 cm/s' : '; manual cleaning needs 1.2–1.5 m extra depth'}`, 'info', 'NWSDB D3 §5.7.1');
     const totalDepth = H + d.sludgeDepth + 0.5;
     Object.assign(out, { A: Aact, W, L, H, sorAct, V, hrt, vh, R, Re, Fr, vsc, weirReq, Llaund, nL, weirAct, weirLoadAct, nNotch, hNotch, h0, launderDepth, nPorts, portHl, totalDepth,
       footprint: { L: L + 1.5, W: W }, headloss: portHl + hNotch + 0.1 });
@@ -191,6 +205,7 @@ export function compute(inp, ctx) {
   const settledAvg = Math.max(0.8, q.turbAvg * (1 - rem.R));
   calc.step('Predicted settled-water turbidity at design peak', 'T_s = T_0(1-R)', `${n(q.turbMax)}(1-${n(rem.R, 3)})`, settledPeak, 'NTU');
   if (settledPeak > 10) calc.note('warn', `Settled turbidity at the monsoon peak (${settledPeak.toFixed(1)} NTU) exceeds ~10 NTU – filter runs will be short; reduce SOR or improve flocculation.`);
+  if (!plain) calc.flag('Settled water (filter influent) turbidity – average', settledAvg <= 5 + 1e-9, `${settledAvg.toFixed(1)} NTU`, '≤ 5 NTU (< 2 preferred)', 'RSF must have efficient pre-treatment; pretreated water ≤ about 4–5 NTU', 'warn', 'NWSDB D3 §5.9.1, §5.9.13.6');
   // curve for chart
   const curve = [];
   for (let i = 0; i <= 60; i++) {
