@@ -1,0 +1,15 @@
+# dependencies and build output
+node_modules/
+dist/
+release/
+*.map
+# local / test artefacts
+*.log
+.DS_Store
+Thumbs.db
+/r*.png
+test/out/
+# never commit licence signing keys or the key generator
+*private*.json
+*Key-Generator*.html
+keys/

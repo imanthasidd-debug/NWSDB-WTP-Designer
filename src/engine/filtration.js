@@ -1,0 +1,381 @@
+// Filtration: rapid gravity (single/dual media) or slow sand filters.
+// Media gradation, Carman–Kozeny clean-bed head loss, run length, backwash (Wen–Yu fluidisation,
+// Richardson–Zaki expansion), air scour, wash troughs, manifold–lateral underdrain, gallery pipework.
+import { Calc, n } from '../core/calc.js';
+import { DN, G, MOTOR_KW, ceilTo, clamp, nextStd, selectDN, vel } from '../core/util.js';
+
+export const DEFAULTS = {
+  type: 'auto',            // auto | rsf | dual | ssf
+  rate: 0,                 // m/h, 0 = type default
+  nFilters: 0,             // 0 = auto
+  layout: 'twin',          // twin (two beds + central gullet) | single
+  bedRatio: 2.0,           // bed length / bed width
+  gulletW: 0.9,
+  sandDepth: 0.7,
+  sandSG: 2.65,
+  sandPorosity: 0.42,
+  sandPsi: 0.8,
+  sieve: [                 // sieve opening (mm) vs % passing
+    { size: 1.18, pass: 100 }, { size: 1.0, pass: 96 }, { size: 0.85, pass: 84 }, { size: 0.71, pass: 62 },
+    { size: 0.6, pass: 38 }, { size: 0.5, pass: 11 }, { size: 0.425, pass: 3 }, { size: 0.3, pass: 0 },
+  ],
+  // anthracite (dual)
+  anthDepth: 0.45, anthES: 1.0, anthUC: 1.4, anthSG: 1.6, anthPorosity: 0.5, anthPsi: 0.65,
+  gravel: [
+    { from: 2, to: 5, depth: 0.075 }, { from: 5, to: 10, depth: 0.075 }, { from: 10, to: 20, depth: 0.075 },
+    { from: 20, to: 40, depth: 0.1 }, { from: 40, to: 65, depth: 0.125 },
+  ],
+  waterDepth: 1.5,
+  underdrainDepth: 0.45,
+  freeboard: 0.5,
+  termHead: 2.0,           // available terminal head loss (m)
+  solidsCap: 1.0,          // kg/m2 per run before terminal head loss
+  // backwash
+  bwMethod: 'airwater',    // airwater | water
+  bwFactor: 1.4,           // × Vmf(d90)  (AWWA: wash must fluidise the coarse d90 grains)
+  bwRate: 0,               // m/h, 0 = auto
+  bwMinutes: 8,
+  ftwMinutes: 5,           // filter-to-waste
+  airRate: 55,             // m/h (m3/m2.h)
+  airMinutes: 3,
+  bwSupply: 'pump',        // pump | tank
+  // underdrain & troughs
+  orificeDia: 12,          // mm
+  orificeRatio: 0.3,       // % of bed area
+  lateralSpacing: 0.25,    // m
+  latOrif: 3,
+  manLat: 2,
+  orificeCd: 0.62,
+  troughSpacing: 1.8,
+  troughWidth: 0.45,
+  // slow sand
+  ssfMaxBed: 250,          // m2
+  ssfDepth: 1.0, ssfMinDepth: 0.6, ssfScrape: 0.025, ssfCleanWeeks: 6, ssfSupernatant: 1.2, ssfES: 0.25, ssfUC: 2.0,
+};
+
+/** gradation statistics from sieve table */
+export function gradation(sieve) {
+  const s = [...sieve].filter((r) => r.size > 0).sort((a, b) => a.size - b.size);
+  const at = (p) => {
+    for (let i = 1; i < s.length; i++) {
+      if (s[i].pass >= p && s[i - 1].pass <= p) {
+        if (s[i].pass === s[i - 1].pass) return s[i].size;
+        const f = (p - s[i - 1].pass) / (s[i].pass - s[i - 1].pass);
+        return Math.exp(Math.log(s[i - 1].size) + f * (Math.log(s[i].size) - Math.log(s[i - 1].size)));
+      }
+    }
+    return p <= (s[0]?.pass ?? 0) ? s[0]?.size : s[s.length - 1]?.size;
+  };
+  const fractions = [];
+  for (let i = 1; i < s.length; i++) {
+    const x = (s[i].pass - s[i - 1].pass) / 100;
+    if (x > 0) fractions.push({ d: Math.sqrt(s[i].size * s[i - 1].size) / 1000, x });
+  }
+  const d10 = at(10), d60 = at(60), d90 = at(90);
+  return { d10, d60, d90, UC: d60 / d10, fractions, sorted: s };
+}
+/** synthesise a log-normal gradation for given ES & UC */
+export function synthGradation(ES, UC, nPts = 7) {
+  // ln d ~ N(mu, s): d10 = ES, d60 = UC*ES  => z10=-1.2816, z60=0.2533
+  const s = Math.log(UC) / (0.2533 + 1.2816);
+  const mu = Math.log(ES) + 1.2816 * s;
+  const sizes = [];
+  for (let i = 0; i < nPts; i++) sizes.push(Math.exp(mu + (-2.2 + (4.4 * i) / (nPts - 1)) * s));
+  const phi = (x) => 0.5 * (1 + erf(x / Math.SQRT2));
+  return sizes.map((d) => ({ size: +d.toFixed(3), pass: +(phi((Math.log(d) - mu) / s) * 100).toFixed(1) }));
+}
+function erf(x) { const t = 1 / (1 + 0.3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return x >= 0 ? y : -y; }
+
+/** Carman–Kozeny stratified head loss (m) */
+function ckLoss(L, fr, eps, psi, v, rho, mu) {
+  let s = 0;
+  for (const { d, x } of fr) {
+    const Re = (psi * rho * d * v) / mu;
+    const f = (150 * (1 - eps)) / Re + 1.75;
+    s += (f * x) / d;
+  }
+  return (L * (1 - eps) * v * v * s) / (psi * eps ** 3 * G);
+}
+/** Wen & Yu minimum fluidisation velocity (m/s) */
+function vmf(d, rhoP, rho, mu) {
+  const Ga = (d ** 3 * rho * (rhoP - rho) * G) / (mu * mu);
+  const Re = Math.sqrt(33.7 ** 2 + 0.0408 * Ga) - 33.7;
+  return (Re * mu) / (rho * d);
+}
+/** Ferguson & Church (2004) terminal velocity of natural (non-spherical) grains, m/s */
+export function vtGrain(d, rhoP, nu, C2 = 1.0) {
+  const R = rhoP / 1000 - 1;
+  return (R * G * d * d) / (18 * nu + Math.sqrt(0.75 * C2 * R * G * d ** 3));
+}
+/** Richardson–Zaki expanded depth (m) for backwash velocity vb (m/s) */
+function expanded(L, fr, eps0, rhoP, T, vb, nu) {
+  let sum = 0;
+  for (const { d, x } of fr) {
+    const vt = vtGrain(d, rhoP, nu, rhoP < 2000 ? 1.2 : 1.0);
+    const Ret = (vt * d) / nu;
+    const nRZ = Ret < 0.2 ? 4.65 : Ret < 1 ? 4.35 * Ret ** -0.03 : Ret < 500 ? 4.45 * Ret ** -0.1 : 2.39;
+    let ee = (vb / vt) ** (1 / nRZ);
+    if (ee < eps0) ee = eps0;
+    ee = Math.min(ee, 0.95);
+    sum += x / (1 - ee);
+  }
+  return L * (1 - eps0) * sum;
+}
+
+export function compute(inp, ctx) {
+  const d = { ...DEFAULTS, ...inp };
+  const calc = new Calc(ctx.crit);
+  const proc = ctx.res.process;
+  const dem = ctx.res.demand;
+  const q = ctx.res.quality;
+  const sed = ctx.res.sed;
+  const T = q.T;
+  const { rho, mu, nu } = ctx.water;
+  let type = d.type === 'auto' ? (proc.filter && proc.filter !== 'auto' ? proc.filter : 'rsf') : d.type;
+  if (proc.ssf && d.type === 'auto') type = 'ssf';
+  const Qh = dem.Qh;
+  const Qs = dem.Qs;
+  const out = { inputs: d, type, enabled: true };
+  const rate = d.rate > 0 ? d.rate : type === 'dual' ? 10 : type === 'ssf' ? 0.15 : 6;
+
+  // influent turbidity to filters
+  let infAvg, infPeak;
+  if (sed && sed.enabled) { infAvg = sed.settledAvg; infPeak = sed.settledPeak; }
+  else { infAvg = q.turbAvg; infPeak = q.turbMax; }
+
+  if (type === 'ssf') {
+    calc.section('Slow sand filters');
+    const A = Qh / rate;
+    calc.step('Total filter area', 'A = Q/v_f', `${n(Qh, 1)}/${n(rate)}`, A, 'm²', 'LN: 0.1–0.3 m/h');
+    const nDuty = Math.max(2, Math.ceil(A / d.ssfMaxBed));
+    const N = d.nFilters > 0 ? d.nFilters : nDuty + 1;
+    const Af = A / Math.max(1, N - 1);
+    const B = Math.round(Math.sqrt(Af / 1.5) * 10) / 10;
+    const Lb = ceilTo(Af / B, 0.1);
+    calc.step('Number of beds (incl. one standby for scraping)', 'N = \\lceil A/A_{max} \\rceil + 1', `\\lceil ${n(A)}/${n(d.ssfMaxBed)} \\rceil + 1`, N, '');
+    calc.step('Bed area (N−1 in service)', 'A_f = A/(N-1)', `${n(A)}/${N - 1}`, Af, 'm²');
+    const scrapesPerYr = 52 / d.ssfCleanWeeks;
+    const resandYrs = (d.ssfDepth - d.ssfMinDepth) / (d.ssfScrape * scrapesPerYr);
+    calc.step('Re-sanding interval', 't_r = \\frac{L_0-L_{min}}{\\Delta L\\,n_s}', `\\frac{${n(d.ssfDepth)}-${n(d.ssfMinDepth)}}{${n(d.ssfScrape)}\\times${n(scrapesPerYr)}}`, resandYrs, 'years', 'LN: scrape top layer every 4–6 weeks');
+    const fr = gradation(synthGradation(d.ssfES, d.ssfUC)).fractions;
+    const h0 = ckLoss(d.ssfDepth, fr, 0.38, 0.8, rate / 3600, rho, mu);
+    calc.step('Clean-bed head loss (Carman–Kozeny)', 'h_0', '', h0, 'm');
+    calc.check('f.rateSSF', rate);
+    calc.check('f.ssfDepth', d.ssfDepth);
+    calc.check('f.ssfES', d.ssfES);
+    calc.check('f.ssfTurb', infAvg, 'Average turbidity applied to SSF');
+    const boxDepth = 0.3 + 0.3 + d.ssfDepth + d.ssfSupernatant + 0.3;
+    Object.assign(out, { rate, A, N, Af, B, Lb, h0, resandYrs, boxDepth, infAvg, infPeak,
+      filteredAvg: Math.max(0.3, infAvg * 0.1), filteredPeak: Math.max(0.5, infPeak * 0.12),
+      bwPct: 0, bwDailyM3: 0, footprint: { L: Lb + 0.6, W: (B + 0.3) * N }, headloss: d.ssfSupernatant + 0.3, kw: 0 });
+    return { ...out, ...calc.result() };
+  }
+
+  // ---------------- Rapid gravity filters ----------------
+  calc.section('Filter area and number');
+  const A = Qh / rate;
+  calc.step('Total filtration area', 'A = \\frac{Q}{v_f}', `\\frac{${n(Qh, 1)}}{${n(rate)}}`, A, 'm²', `LN: rapid sand 5–10 m/h`);
+  const Nrule = 0.0195 * Math.sqrt(dem.Qd);
+  let N = d.nFilters > 0 ? d.nFilters : Math.max(4, Math.ceil(Nrule));
+  if (d.nFilters <= 0 && N % 2 === 1) N += 1;
+  calc.step('Number of filters (Kawamura N = 0.0195√Q; min 4, even)', 'N = 0.0195\\sqrt{Q}', `0.0195\\sqrt{${n(dem.Qd, 0)}}`, d.nFilters > 0 ? N : Nrule, '');
+  const Af = A / N;
+  calc.step('Area of each filter', 'A_f = A/N', `${n(A)}/${N}`, Af, 'm²');
+  const beds = d.layout === 'twin' ? 2 : 1;
+  const Abed = Af / beds;
+  const B = Math.max(1.5, Math.round(Math.sqrt(Abed / d.bedRatio) * 10) / 10);
+  const Lb = ceilTo(Abed / B, 0.1);
+  const AfAct = beds * B * Lb;
+  const rateAct = Qh / (N * AfAct);
+  const rateOne = Qh / ((N - 1) * AfAct);
+  calc.step(`Bed dimensions (${beds} bed${beds > 1 ? 's' : ''} per filter)`, 'B \\times L_b', `${n(B)} \\times ${n(Lb)}`, B * Lb, 'm² per bed');
+  calc.step('Actual filtration rate', 'v_f = \\frac{Q}{N A_f}', `\\frac{${n(Qh, 1)}}{${N}\\times${n(AfAct)}}`, rateAct, 'm/h');
+  calc.step('Rate with one filter backwashing', "v_f' = \\frac{Q}{(N-1) A_f}", `\\frac{${n(Qh, 1)}}{${N - 1}\\times${n(AfAct)}}`, rateOne, 'm/h');
+  calc.check(type === 'dual' ? 'f.rateDual' : 'f.rate', rateAct);
+  calc.check('f.rateMax', rateOne, null, type === 'dual' ? { crit: { max: 15, hardMax: 18 }, range: '≤ 15' } : {});
+  calc.check('f.area', AfAct);
+
+  // ---- media
+  calc.section('Filter media');
+  const g = gradation(d.sieve);
+  calc.step('Effective size of sand', 'ES = d_{10}', '\\text{from sieve analysis}', g.d10, 'mm', 'LN: ES = sieve size passing 10 %');
+  calc.step('Uniformity coefficient', 'UC = d_{60}/d_{10}', `${n(g.d60)}/${n(g.d10)}`, g.UC, '', 'LN: UC = 60 % size / 10 % size');
+  calc.check('f.ES', g.d10);
+  calc.check('f.UC', g.UC);
+  const sandL = type === 'dual' ? Math.min(d.sandDepth, 0.3) : d.sandDepth;
+  if (type !== 'dual') calc.check('f.depth', sandL);
+  const v = rateAct / 3600;
+  const h0sand = ckLoss(sandL, g.fractions, d.sandPorosity, d.sandPsi, v, rho, mu);
+  calc.step('Clean-bed head loss – sand (Carman–Kozeny, stratified)', 'h_0 = \\frac{L(1-\\varepsilon)v^2}{\\psi\\varepsilon^3 g}\\sum\\frac{f_i x_i}{d_i},\\ f_i=\\frac{150(1-\\varepsilon)}{Re_i}+1.75', `L=${n(sandL)},\\ \\varepsilon=${n(d.sandPorosity)},\\ v=${n(v, 5)}`, h0sand, 'm');
+  let anth = null, h0anth = 0;
+  if (type === 'dual') {
+    anth = gradation(synthGradation(d.anthES, d.anthUC));
+    h0anth = ckLoss(d.anthDepth, anth.fractions, d.anthPorosity, d.anthPsi, v, rho, mu);
+    calc.step('Clean-bed head loss – anthracite', 'h_{0,a}', `L=${n(d.anthDepth)},\\ ES=${n(d.anthES)}`, h0anth, 'm');
+  }
+  let h0gravel = 0;
+  for (const lay of d.gravel) h0gravel += ckLoss(lay.depth, [{ d: Math.sqrt(lay.from * lay.to) / 1000, x: 1 }], 0.4, 0.9, v, rho, mu);
+  calc.step('Head loss – gravel support layers', 'h_{0,g}', '', h0gravel, 'm');
+  // underdrain
+  calc.section('Underdrain (manifold & laterals, per bed)');
+  const aO = (Math.PI * (d.orificeDia / 1000) ** 2) / 4;
+  const AoTot = (d.orificeRatio / 100) * B * Lb;
+  const nO = Math.ceil(AoTot / aO);
+  calc.step('Total orifice area', 'A_o = r_o A_{bed}', `${n(d.orificeRatio / 100, 4)}\\times${n(B * Lb)}`, AoTot, 'm²');
+  calc.step('Number of orifices', 'n_o = A_o/a_o', `${n(AoTot, 4)}/${n(aO, 6)}`, nO, '');
+  const nLat = 2 * Math.floor(Lb / d.lateralSpacing);
+  const latLen = (B - 0.3) / 2;
+  const oPerLat = Math.ceil(nO / nLat);
+  const latArea = d.latOrif * oPerLat * aO;
+  const latDia = nextStd(Math.sqrt((4 * latArea) / Math.PI) * 1000, [40, 50, 65, 75, 80, 90, 100, 110, 125, 150]);
+  const manArea = d.manLat * nLat * Math.PI * (latDia / 1000) ** 2 / 4;
+  const manDia = nextStd(Math.sqrt((4 * manArea) / Math.PI) * 1000, DN);
+  calc.step('Laterals per bed (both sides of manifold)', 'n_l = 2 L_b / s_l', `2\\times${n(Lb)}/${n(d.lateralSpacing)}`, nLat, '');
+  calc.step('Orifices per lateral', 'n_o/n_l', `${nO}/${nLat}`, oPerLat, '');
+  calc.step('Lateral diameter (area = k × orifice area served)', 'd_l', `A_l=${n(d.latOrif)}\\times${oPerLat}\\times a_o`, latDia, 'mm');
+  calc.step('Manifold diameter', 'd_m', `A_m=${n(d.manLat)}\\times\\sum A_l`, manDia, 'mm');
+  calc.check('f.orificeRatio', d.orificeRatio);
+  calc.check('f.latOrif', d.latOrif);
+  calc.check('f.manLat', d.manLat);
+  calc.check('f.latLD', latLen / (latDia / 1000));
+  const vOrifFilt = (Qh / 3600 / N / beds) / AoTot;
+  const hUnderFilt = (vOrifFilt / d.orificeCd) ** 2 / (2 * G);
+  const h0 = h0sand + h0anth + h0gravel + hUnderFilt;
+  calc.step('Total clean filter head loss', 'h_{0,tot}', `${n(h0sand)}+${n(h0anth)}+${n(h0gravel)}+${n(hUnderFilt, 4)}`, h0, 'm');
+
+  // ---- run length
+  calc.section('Filter run');
+  const tssPerNtu = q.inputs.tssPerNtu || 1.4;
+  const tssAvg = infAvg * tssPerNtu;
+  const tssPeak = infPeak * tssPerNtu;
+  const runAvg = (d.solidsCap * 1000) / (rateAct * tssAvg);
+  const runPeak = (d.solidsCap * 1000) / (rateAct * tssPeak);
+  calc.step('Applied solids (settled water, average)', 'C = k\\,T_s', `${n(tssPerNtu)}\\times${n(infAvg)}`, tssAvg, 'mg/L');
+  calc.step('Run length (average)', 't_r = \\frac{\\sigma}{v_f\\,C}', `\\frac{${n(d.solidsCap)}\\times1000}{${n(rateAct)}\\times${n(tssAvg)}}`, runAvg, 'h');
+  calc.step('Run length at monsoon peak', "t_r' = \\frac{\\sigma}{v_f\\,C_{peak}}", `\\frac{${n(d.solidsCap)}\\times1000}{${n(rateAct)}\\times${n(tssPeak)}}`, runPeak, 'h');
+  const runUsed = Math.min(runAvg, 96);
+  const UFRV = rateAct * runUsed;
+  calc.step('Unit filter run volume', 'UFRV = v_f\\,t_r', `${n(rateAct)}\\times${n(runUsed)}`, UFRV, 'm³/m²');
+  calc.check('f.run', runPeak, 'Filter run at monsoon peak', { crit: { min: 24, max: 1e9, hardMin: 12 }, range: '≥ 24' });
+  if (runAvg > 72) calc.note('info', `Average-season run length is ${runAvg.toFixed(0)} h – in practice filters are washed at least every 72 h (biological growth), so the 72 h cycle is used for wash-water estimates.`);
+  calc.check('f.UFRV', UFRV);
+  if (runPeak < 12) calc.note('warn', `At the monsoon peak the filter run drops to ${runPeak.toFixed(1)} h – check settled-water quality, consider polymer as filter aid or more filters.`);
+
+  // ---- backwash
+  calc.section('Backwash');
+  const d90 = g.d90 / 1000;
+  const rhoP = d.sandSG * 1000;
+  const Vmf = vmf(d90, rhoP, rho, mu);
+  calc.step('Minimum fluidisation velocity of d₉₀ (Wen & Yu)', 'V_{mf} = \\frac{\\mu}{\\rho d}\\left[\\sqrt{33.7^2+0.0408\\,Ga}-33.7\\right],\\ Ga=\\frac{d^3\\rho(\\rho_p-\\rho)g}{\\mu^2}', `d_{90}=${n(g.d90)}\\,mm`, Vmf * 3600, 'm/h');
+  let VmfA = 0;
+  if (type === 'dual') { VmfA = vmf((anth.d90 / 1000), d.anthSG * 1000, rho, mu); }
+  const vbAuto = d.bwFactor * Math.max(Vmf, VmfA);
+  const vb = d.bwRate > 0 ? d.bwRate / 3600 : vbAuto;
+  calc.step('Backwash rate', 'V_b = k\\,V_{mf}(d_{90})', `${n(d.bwFactor)}\\times${n(Math.max(Vmf, VmfA) * 3600)}`, vb * 3600, 'm/h', d.bwRate > 0 ? 'User value' : 'AWWA – fluidise d₉₀');
+  const Le = expanded(sandL, g.fractions, d.sandPorosity, rhoP, T, vb, nu);
+  let LeA = 0;
+  if (type === 'dual') LeA = expanded(d.anthDepth, anth.fractions, d.anthPorosity, d.anthSG * 1000, T, vb, nu);
+  const Ltot = sandL + (type === 'dual' ? d.anthDepth : 0);
+  const LeTot = Le + LeA;
+  const expPct = (LeTot / Ltot - 1) * 100;
+  calc.step('Expanded bed depth (Richardson–Zaki per fraction)', 'L_e = L(1-\\varepsilon_0)\\sum\\frac{x_i}{1-\\varepsilon_{e,i}},\\ \\varepsilon_{e,i}=\\left(\\frac{V_b}{v_{t,i}}\\right)^{1/n_i}', '', LeTot, 'm');
+  calc.step('Bed expansion', 'E = \\frac{L_e}{L}-1', `\\frac{${n(LeTot)}}{${n(Ltot)}}-1`, expPct, '%');
+  calc.check('f.expansion', expPct, d.bwMethod === 'airwater' ? 'Bed expansion (air scour + water wash)' : 'Bed expansion (water-only wash)', d.bwMethod === 'airwater' ? { crit: { min: 10, max: 35, hardMin: 5, hardMax: 50 }, range: '10 – 35' } : {});
+  const hFluid = sandL * (1 - d.sandPorosity) * (d.sandSG - 1) + (type === 'dual' ? d.anthDepth * (1 - d.anthPorosity) * (d.anthSG - 1) : 0);
+  calc.step('Head loss through fluidised bed', 'h_f = L(1-\\varepsilon)(S_s-1)', `${n(sandL)}(1-${n(d.sandPorosity)})(${n(d.sandSG)}-1)`, hFluid, 'm');
+  const Qbw = vb * AfAct; // m3/s per filter
+  const vOrifBw = Qbw / beds / AoTot;
+  const hUnderBw = (vOrifBw / d.orificeCd) ** 2 / (2 * G);
+  calc.step('Orifice head loss at backwash flow', 'h_o = \\frac{1}{2g}\\left(\\frac{v_o}{C_d}\\right)^2', `\\frac{1}{19.62}\\left(\\frac{${n(vOrifBw)}}{${n(d.orificeCd)}}\\right)^2`, hUnderBw, 'm');
+  const washVol = vb * 60 * d.bwMinutes * AfAct + (rateAct / 60) * d.ftwMinutes * AfAct;
+  calc.step('Water per wash (backwash + filter-to-waste)', 'V_w = A_f(V_b t_b + v_f t_{ftw})', `${n(AfAct)}(${n(vb * 60)}\\times${n(d.bwMinutes)} + ${n(rateAct / 60, 3)}\\times${n(d.ftwMinutes)})`, washVol, 'm³');
+  const washesPerDay = Math.max(24 / Math.min(runAvg, 72), 1 / 3);
+  const bwDailyM3 = N * washesPerDay * washVol;
+  const bwPct = (bwDailyM3 / dem.Qd) * 100;
+  calc.step('Washes per filter per day', 'n_w = 24/t_r', `24/${n(Math.min(runAvg, 72))}`, washesPerDay, '');
+  calc.step('Daily wash-water use', 'V_d = N\\,n_w V_w', `${N}\\times${n(washesPerDay)}\\times${n(washVol)}`, bwDailyM3, 'm³/d');
+  calc.step('Wash water as % of plant output', '\\%BW = V_d/Q', `${n(bwDailyM3)}/${n(dem.Qd, 0)}`, bwPct, '%');
+  calc.check('f.bwPct', bwPct);
+  // wash supply
+  const staticBw = d.underdrainDepth + d.gravel.reduce((a, x) => a + x.depth, 0) + Ltot + 0.6 + 3.0; // CWR low level ~3 m below filter floor
+  const tdhBw = staticBw + hFluid + hUnderBw + 0.3 + 2.0;
+  const bwPumpKw = nextStd(((rho * G * Qbw * tdhBw) / 0.75 / 0.92 / 1000) * 1.1, MOTOR_KW);
+  calc.step('Wash-water pump head', 'H = H_s + h_f + h_o + h_g + h_p', `${n(staticBw)}+${n(hFluid)}+${n(hUnderBw)}+0.3+2.0`, tdhBw, 'm');
+  calc.step('Wash pump duty', 'Q_b = V_b A_f', `${n(vb * 3600)}\\times${n(AfAct)}`, Qbw * 3600, 'm³/h');
+  calc.step('Wash pump motor (η = 0.75 × 0.92, +10 %)', 'P = \\frac{\\rho g Q H}{\\eta}', `\\frac{${n(rho, 0)}\\times9.81\\times${n(Qbw, 3)}\\times${n(tdhBw)}}{0.69}`, bwPumpKw, 'kW');
+  const tankVol = d.bwSupply === 'tank' ? 1.5 * vb * 60 * d.bwMinutes * AfAct : 0;
+  if (d.bwSupply === 'tank') calc.step('Elevated wash-water tank (1.5 washes)', 'V_t = 1.5 V_b t_b A_f', '', tankVol, 'm³');
+  // air scour
+  let airQ = 0, blowerKw = 0, airP = 0;
+  if (d.bwMethod === 'airwater') {
+    airQ = d.airRate * AfAct;
+    const depthAir = d.waterDepth + Ltot + d.gravel.reduce((a, x) => a + x.depth, 0) + 0.3;
+    airP = depthAir * 9.81 + 15;
+    const p1 = 101.3, p2 = p1 + airP;
+    const w = (airQ / 3600) * 1.2;
+    blowerKw = nextStd(((w * 8.314 * 303) / (29.7 * 0.283 * 0.7)) * ((p2 / p1) ** 0.283 - 1) * 1.15, MOTOR_KW);
+    calc.step('Air-scour flow', 'Q_a = q_a A_f', `${n(d.airRate)}\\times${n(AfAct)}`, airQ, 'm³/h');
+    calc.step('Blower discharge pressure', 'p = \\gamma h + \\Delta p', `9.81\\times${n(depthAir)} + 15`, airP, 'kPa');
+    calc.step('Blower power (adiabatic, e = 0.7)', 'P = \\frac{w R T_1}{29.7\\,n\\,e}\\left[\\left(\\frac{p_2}{p_1}\\right)^{0.283}-1\\right]', `w=${n(w, 3)}\\,kg/s`, blowerKw, 'kW');
+  }
+  // troughs
+  calc.section('Wash-water troughs');
+  const nTr = Math.max(1, Math.ceil(Lb / d.troughSpacing));
+  const qTr = Qbw / beds / nTr;
+  const hTr = (qTr / (1.376 * d.troughWidth)) ** (2 / 3);
+  const trDepth = hTr + 0.1;
+  const lipAbove = (LeTot - Ltot) + 0.15 + trDepth;
+  calc.step('Troughs per bed', 'n_t = \\lceil L_b/s_t \\rceil', `\\lceil ${n(Lb)}/${n(d.troughSpacing)} \\rceil`, nTr, '');
+  calc.step('Water depth in trough', 'h = \\left(\\frac{Q_t}{1.376\\,b}\\right)^{2/3}', `\\left(\\frac{${n(qTr, 4)}}{1.376\\times${n(d.troughWidth)}}\\right)^{2/3}`, hTr, 'm');
+  calc.step('Trough lip above unexpanded media', 'h_{lip} = (L_e-L) + 0.15 + d_t', `${n(LeTot - Ltot)}+0.15+${n(trDepth)}`, lipAbove, 'm');
+  calc.check('f.troughSp', Lb / nTr);
+  // gallery pipework
+  calc.section('Filter gallery pipework (per filter)');
+  const Qf = Qh / 3600 / N;
+  const pipes = [
+    ['Influent (settled water)', Qf, 0.6, 'f.vInf'],
+    ['Filtered water', Qf, 1.5, 'f.vEff'],
+    ['Wash water', Qbw, 2.4, 'f.vWash'],
+    ['Wash waste', Qbw, 1.5, 'f.vWaste'],
+  ].map(([label, Qp, vt, key]) => {
+    const dn = selectDN(Qp, vt, ctx.crit[key].max);
+    const vv = vel(Qp, dn / 1000);
+    calc.step(label + ' pipe', 'DN', `Q=${n(Qp, 3)}\\,m^3/s`, dn, 'mm');
+    calc.check(key, vv, label + ' velocity');
+    return { label, Q: Qp, dn, v: vv };
+  });
+  // box depth
+  const gravelD = d.gravel.reduce((a, x) => a + x.depth, 0);
+  const boxDepth = d.underdrainDepth + gravelD + Ltot + d.waterDepth + d.freeboard;
+  calc.step('Filter box depth', 'D = h_u + h_g + L + h_w + f_b', `${n(d.underdrainDepth)}+${n(gravelD)}+${n(Ltot)}+${n(d.waterDepth)}+${n(d.freeboard)}`, boxDepth, 'm');
+  calc.check('f.water', d.waterDepth);
+  // head loss development
+  const hlCurve = [];
+  const tMax = Math.min(runAvg, 120);
+  for (let i = 0; i <= 24; i++) {
+    const t = (tMax * i) / 24;
+    hlCurve.push({ t, h: h0 + ((d.termHead - h0) * t) / Math.max(tMax, 1e-6) });
+  }
+  // expansion vs rate curve
+  const expCurve = [];
+  for (let vbx = 10; vbx <= 90; vbx += 2.5) {
+    const L1 = expanded(sandL, g.fractions, d.sandPorosity, rhoP, T, vbx / 3600, nu);
+    const L2 = type === 'dual' ? expanded(d.anthDepth, anth.fractions, d.anthPorosity, d.anthSG * 1000, T, vbx / 3600, nu) : 0;
+    expCurve.push({ vb: vbx, exp: ((L1 + L2) / Ltot - 1) * 100 });
+  }
+  const gw = d.layout === 'twin' ? d.gulletW : 0;
+  const boxW = beds * B + gw + (beds === 1 ? 0.9 : 0);
+  Object.assign(out, {
+    rate: rateAct, rateOne, A, N, Nrule, Af: AfAct, beds, B, Lb, g, anth, sandL, Ltot, h0, h0sand, h0anth, h0gravel, hUnderFilt,
+    infAvg, infPeak, runAvg, runPeak, UFRV, Vmf, vb, Le: LeTot, expPct, hFluid, Qbw, hUnderBw, washVol, washesPerDay, bwDailyM3, bwPct,
+    tdhBw, bwPumpKw, tankVol, airQ, airP, blowerKw, nTr, hTr, trDepth, lipAbove, pipes, boxDepth, gravelD, hlCurve, expCurve,
+    nO, nLat, latLen, oPerLat, latDia, manDia,
+    filteredAvg: Math.max(0.1, infAvg * 0.08), filteredPeak: Math.max(0.2, infPeak * 0.1),
+    footprint: { L: Lb + 0.6, W: (boxW + 0.3) * N / 2 + 4, boxW, rows: 2 },
+    headloss: d.termHead + 0.3 + 0.15, // terminal loss + inlet/outlet weirs & control
+    kw: blowerKw > 0 ? bwPumpKw + blowerKw : bwPumpKw,
+    kwh: (bwPumpKw * d.bwMinutes / 60 + blowerKw * d.airMinutes / 60) * N * washesPerDay,
+  });
+  void clamp;
+  return { ...out, ...calc.result() };
+}
