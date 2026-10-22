@@ -2,7 +2,7 @@
 import { worstStatus } from '../core/calc.js';
 import { fmt } from '../core/util.js';
 import { newProject } from '../engine/index.js';
-import { CREDIT, bannerImg, emblemImg } from './brand.js';
+import { bannerImg, emblemImg } from './brand.js';
 import { clear, h, icon, modal, popupMenu, toast } from './dom.js';
 import { renderForm } from './form.js';
 import { GROUPS, PAGES } from './pages/registry.js';
@@ -58,6 +58,7 @@ function loadText(text, path) {
     const p = JSON.parse(text);
     if (!p.inputs) throw new Error('Not a WTP Designer project file');
     setProject(normalise(p), path);
+    if (store.project.migratedRB2025) { delete store.project.migratedRB2025; setTimeout(() => toast('Unit rates, chemical prices and the CEB tariff were updated to the NWSDB Rate Book 2025', 'info'), 600); }
     navigate('dashboard');
     toast('Opened ' + String(path).split(/[\\/]/).pop());
   } catch (e) { modal('Could not open file', String(e.message)); }
@@ -150,8 +151,7 @@ function renderStatus() {
     Object.keys(r.errors || {}).length ? h('span', { class: 'sb', style: { color: 'var(--fail)' } }, icon('warn'), 'Calculation error in: ' + Object.keys(r.errors).join(', ')) : null,
     h('span', { class: 'sb' }, `recalc ${fmt(store.calcMs, 0)} ms`),
     h('span', { class: 'sb' }, 'SI units · SLS 614:2013'),
-    h('span', { class: 'sb' }, store.filePath ? String(store.filePath).split(/[\\/]/).pop() : 'not saved'),
-    h('span', { class: 'sb credit', title: 'NWSDB WTP Designer' }, icon('pen'), CREDIT)].filter(Boolean));
+    h('span', { class: 'sb' }, store.filePath ? String(store.filePath).split(/[\\/]/).pop() : 'not saved')].filter(Boolean));
   els.pname.textContent = store.project.inputs.setup.name || 'Untitled project';
   els.dirty.style.display = store.dirty ? '' : 'none';
   els.undo.disabled = !store.history.length && !store.dirty;
@@ -283,7 +283,7 @@ function onKey(e) {
 export async function boot(root) {
   buildShell(root);
   applyTheme();
-  const splash = h('div', { class: 'splash' }, h('div', { class: 'si', html: `<div class="si-logo">${bannerImg(86)}</div><h2>WTP Designer</h2><p>Conventional Water Treatment Plant Design Suite · NWSDB Design Manuals D2 &amp; D3</p><div class="si-bar"><span></span></div><div class="si-credit">${CREDIT}</div>` }));
+  const splash = h('div', { class: 'splash' }, h('div', { class: 'si', html: `<div class="si-logo">${bannerImg(86)}</div><h2>WTP Designer</h2><p>Conventional Water Treatment Plant Design Suite · NWSDB Design Manuals D2 &amp; D3</p><div class="si-bar"><span></span></div>` }));
   document.body.append(splash);
   // initial project: file passed by OS > autosave > sample
   let started = false;

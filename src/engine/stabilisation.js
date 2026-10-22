@@ -1,6 +1,7 @@
 // pH correction & chemical stabilisation: carbonate equilibrium through the train, Langelier/Ryznar indices,
 // post-lime dose to reach a target LSI or pH (lecture: "chemical stabilisation – final step"); NWSDB D3 Ch 8 targets
 // (pH 6.5–8.5, LSI > −1.5, RSI < 10, CCPP ≈ +4 (> −5), Alk & Ca ≥ 50 mg/L as CaCO₃).
+import { CHEM as RBCHEM } from '../core/ratebook.js';
 import { Calc, n } from '../core/calc.js';
 import { CTfrom, lsiText, pHfrom, stability } from '../core/water.js';
 import { bisect } from '../core/util.js';
@@ -13,7 +14,7 @@ export const DEFAULTS = {
   targetPH: 7.5,
   limePurity: 85,
   maxLime: 60,
-  price: 70,
+  price: 0,             // LKR/kg – 0 = NWSDB RB 2025 A-CH/01 hydrated lime
   storageDays: 30,
   bagKg: 25,
 };
@@ -121,7 +122,7 @@ export function compute(inp, ctx) {
     curve.push({ L, LSI: e.LSI, pH: e.pHF });
   }
   return {
-    inputs: d, apply, lime, kgD, annualKg, store, cost: annualKg * d.price, pH1: pH, s1, s2, pHafterCl, alkAfterCl: alk, final: fin, pHfinal: fin.pHF,
+    inputs: d, apply, lime, kgD, annualKg, store, cost: annualKg * (d.price > 0 ? d.price : RBCHEM.lime.v), pH1: pH, s1, s2, pHafterCl, alkAfterCl: alk, final: fin, pHfinal: fin.pHF,
     lsiText: lsiText(fin.LSI), curve, TDSf: TDSf + 0.54 * lime, ccpp, larson, pHs83,
     ...calc.result(),
   };

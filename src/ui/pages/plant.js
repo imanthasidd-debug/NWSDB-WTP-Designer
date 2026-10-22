@@ -7,6 +7,7 @@ import { mountDrawing } from '../draw/render.js';
 import { cwrPlan, hydraulicProfile, layoutPlan } from '../draw/units.js';
 import { card, chartCard, drawingCard, kpis, kvTable, notes, statusBadge, table } from '../results.js';
 import { econChart, mainSpecCard } from './units.js';
+import { ENG_PCT, RB, TARIFFS } from '../../core/ratebook.js';
 import { setInput, store } from '../store.js';
 
 const f0 = (v) => fmt(v, 0), f1 = (v) => fmt(v, 1), f2 = (v) => fmt(v, 2);
@@ -265,11 +266,12 @@ export const energy = {
     { k: 'diversity', l: 'Diversity factor', step: 0.05 },
     { k: 'genEssentialPumps', l: 'Duty pumps per station on generator', step: 1, note: 'D2 §6.4.1: all essential pumping' },
     { k: 'outageHours', l: 'Standby generation per year', u: 'h' },
-    { k: 'dieselPrice', l: 'Diesel price', u: 'LKR/L' },
-    { sec: 'CEB tariff (update to current PUCSL tariff)' },
-    { k: 'energyRate', l: 'Energy charge (blended)', u: 'LKR/kWh' },
-    { k: 'demandRate', l: 'Demand charge', u: 'LKR/kVA·month' },
-    { k: 'fixedCharge', l: 'Fixed charge', u: 'LKR/month' },
+    { k: 'dieselPrice', l: 'Diesel price', u: 'LKR/L', note: 'RB 2025 Annex 1 (July 2025): 289' },
+    { sec: 'CEB tariff – NWSDB Rate Book 2025 Annex 8 (effective 12.06.2025)' },
+    { k: 'tariff', l: 'Tariff category', t: 'sel', o: (r) => [['auto', `Auto (${r.energy.tariff})`], ...Object.entries(TARIFFS).map(([k, t]) => [k, t.label])], note: 'The Rate Book does not state the NWSDB category – confirm with CEB' },
+    { k: 'energyRate', l: 'Energy charge (TOU blend)', u: 'LKR/kWh', auto: true, autoVal: (r) => r.energy.energyRate, note: '13 h day / 4 h peak / 7 h off-peak + 2.5 % SSCL' },
+    { k: 'demandRate', l: 'Demand charge', u: 'LKR/kVA·month', auto: true, autoVal: (r) => r.energy.demandRate },
+    { k: 'fixedCharge', l: 'Fixed charge', u: 'LKR/month', auto: true, autoVal: (r) => r.energy.fixedCharge },
     { k: 'extraLoads', t: 'table', l: 'Additional loads', cols: [{ k: 'name', l: 'Load', text: true, w: '50%' }, { k: 'kw', l: 'kW' }, { k: 'hours', l: 'h/d' }], add: { name: 'New load', kw: 1, hours: 8 }, minRows: 0 },
   ],
   render(r) {
@@ -282,7 +284,7 @@ export const energy = {
           { label: 'Transformer', value: e.tx, unit: 'kVA' },
           { label: 'Standby generator', value: e.genKva, unit: 'kVA', sub: `essential loads · ${f0(e.fuelL)} L diesel/yr` },
           { label: 'Energy use', value: f0(e.kwhOp), unit: 'kWh/d', sub: `${f2(e.spec)} kWh/m³ at operating flow` },
-          { label: 'Electricity bill', value: fmtMoney(e.monthlyBill), sub: 'per month (estimate)' },
+          { label: 'Electricity bill', value: fmtMoney(e.monthlyBill), sub: `per month · CEB ${e.tariff} @ ${f2(e.energyRate)} LKR/kWh` },
         ]),
         notes(e.notes),
         card('Load schedule', table([{ k: 'group', l: 'Group' }, { k: 'name', l: 'Load' }, { k: 'kwEach', l: 'kW each', num: true }, { k: 'nInst', l: 'Installed', num: true }, { k: 'nRun', l: 'Running', num: true }, { k: 'hours', l: 'h/d', num: true, fmt: f1 }, { k: 'kwh', l: 'kWh/d', num: true, fmt: f0 }], e.loads, { totals: { kwh: e.kwhD } }), { flush: true }),
@@ -294,37 +296,60 @@ export const energy = {
 
 // ------------------------------------------------------------------ Cost
 export const cost = {
-  id: 'cost', title: 'Cost estimate', sub: 'Quantity-based capital cost, annual O&M and unit production cost (LKR)', icon: 'wallet', group: 'Plant-wide', mod: 'cost',
+  id: 'cost', title: 'Cost estimate', sub: 'Total cost estimate & BOQ priced from the NWSDB Rate Book 2025, annual O&M and unit cost of water (LKR)', icon: 'wallet', group: 'Plant-wide', mod: 'cost',
   fields: [
-    { sec: 'Civil rates (indicative – update to NWSDB schedule of rates)' },
-    { k: 'rConcrete', l: 'Reinforced concrete (incl. formwork)', u: 'LKR/m³' },
-    { k: 'rSteel', l: 'Reinforcement', u: 'LKR/kg' },
-    { k: 'steelPerM3', l: 'Reinforcement intensity', u: 'kg/m³' },
-    { k: 'rExcavation', l: 'Excavation', u: 'LKR/m³' },
-    { k: 'rBuilding', l: 'Buildings', u: 'LKR/m²' },
-    { k: 'rSand', l: 'Filter sand', u: 'LKR/m³' },
-    { k: 'rGravel', l: 'Filter gravel', u: 'LKR/m³' },
-    { k: 'rPipePerMmM', l: 'DI main (per mm dia. per m)', u: 'LKR' },
-    { k: 'rSiteWorks', l: 'Site works', u: 'LKR/m² site' },
-    { k: 'landPerPerch', l: 'Land acquisition', u: 'LKR/perch' },
-    { sec: 'M&E' },
-    { k: 'pumpPerKw', l: 'Pump sets', u: 'LKR/kW' },
-    { k: 'filterEquip', l: 'Filter equipment per filter', u: 'LKR' },
-    { k: 'elecPct', l: 'LV electrical', u: '% of M&E' },
-    { k: 'icaPct', l: 'Instrumentation & SCADA', u: '% of M&E' },
-    { k: 'rAirValve', l: 'Air valve incl. chamber', u: 'LKR/nr' },
-    { k: 'rWashout', l: 'Washout incl. chamber', u: 'LKR/nr' },
-    { k: 'facilities', l: 'Include D2 §10.2 facilities checklist items', t: 'bool' },
-    { sec: 'Estimate format (D2 §10.2)' },
-    { k: 'stage', l: 'Estimate stage', t: 'sel', o: [['prefeasibility', 'Pre-feasibility (contingency 20 %)'], ['feasibility', 'Feasibility (10–15 %)'], ['detailed', 'Detailed design (10 %)']] },
-    { k: 'prelimPct', l: 'Preliminaries', u: '% of ECC', auto: true, autoVal: (r) => r.cost.prelimPct, note: 'D2: ½–1 %' },
-    { k: 'contPct', l: 'Physical contingencies', u: '%', auto: true, autoVal: (r) => r.cost.contPct },
-    { k: 'engPct', l: 'Engineering design & supervision', u: '%', note: 'D2: 6 % + 2 %' },
-    { k: 'include2yrOM', l: 'Include 2 years O&M in capital', t: 'bool' },
-    { k: 'vatPct', l: 'Taxes (VAT)', u: '%', note: 'D2 (1989): BTT 3 %' },
-    { k: 'escalationPct', l: 'Price escalation for funding', u: '% p.a.', note: 'D2: 10–15 % (0 = base year)' },
-    { k: 'escalationYears', l: 'Years to mid-construction', step: 1, show: (i) => i.cost.escalationPct > 0 },
+    { sec: 'Estimate – NWSDB Rate Book 2025' },
+    { k: 'method', l: 'Pricing method', t: 'sel', o: [['composite', 'Total cost estimate – Section A composite rates & unit-cost graphs (RB "How to use")'], ['boq', 'Engineer\'s estimate – quantity BOQ with Section B unit rates']] },
+    { k: 'format', l: 'Estimate format', t: 'sel', o: [['rb2025', 'NWSDB Rate Book 2025 – Table 1 total cost estimate'], ['d2', 'NWSDB Design Manual D2 §10.2 (1989)']] },
+    { k: 'markup', l: 'Contractor\'s markup on RB rates that exclude it', u: '%', note: 'RB 2025: 27 %' },
+    { k: 'procurement', l: 'Procurement (Table 2 LC/FC factors)', t: 'sel', o: [['ncb', 'NCB – national competitive bidding'], ['icb', 'ICB – international competitive bidding']], show: (i) => i.cost.format !== 'd2' },
+    { k: 'fundSource', l: 'Source of funds (Table 4)', t: 'sel', o: Object.entries(ENG_PCT).map(([k, v]) => [k, `${v.label} – ${v.ge100} % (≥ LKR 100 M)`]), show: (i) => i.cost.format !== 'd2' },
+    { k: 'engPct', l: 'Investigation, design & supervision', u: '% of ST1', auto: true, autoVal: (r) => r.cost.est?.engPct, show: (i) => i.cost.format !== 'd2' },
+    { k: 'prelimPct', l: 'Preliminaries', u: '% of ST1', auto: true, autoVal: (r) => r.cost.prelimPct, note: 'RB: 4 % (> LKR 500 M) / 5 %', show: (i) => i.cost.format !== 'd2' },
+    { k: 'contPct', l: 'Physical contingencies', u: '% of ST1', auto: true, autoVal: (r) => r.cost.contPct, note: 'RB: maximum 10 %', show: (i) => i.cost.format !== 'd2' },
+    { k: 'rwss', l: '(iv) 5 % for RWS&S / water-resource improvement', t: 'bool', show: (i) => i.cost.format !== 'd2' },
+    { k: 'powerSupply', l: '(ii) CEB bulk supply cost (standard construction cost 2025)', t: 'bool', show: (i) => i.cost.format !== 'd2' },
+    { k: 'supplyKv', l: 'CEB supply voltage', u: 'kV', show: (i) => i.cost.format !== 'd2' && i.cost.powerSupply },
+    { k: 'roadReinst', l: '(ii) Road reinstatement (p.sum)', u: 'LKR', show: (i) => i.cost.format !== 'd2' },
+    { k: 'eia', l: 'EIA / IEE (p.sum)', u: 'LKR', show: (i) => i.cost.format !== 'd2' },
+    { k: 'vehicles', l: 'Vehicles (p.sum)', u: 'LKR' },
+    { k: 'training', l: 'Training (p.sum)', u: 'LKR', show: (i) => i.cost.format !== 'd2' },
+    { k: 'duties', l: '(v) Duties & fiscal levies (if not in the rates)', u: 'LKR', show: (i) => i.cost.format !== 'd2' },
+    { k: 'vatPct', l: 'VAT', u: '%', note: 'RB 2025 / Annex 14: 18 % of Sub Total 3' },
+    { k: 'escalate', l: 'Price escalation beyond 31.12.2025 (LC 5 %, FC 3 % p.a.)', t: 'bool', show: (i) => i.cost.format !== 'd2' },
+    { k: 'implStart', l: 'Implementation starts', u: 'year', step: 1, show: (i) => i.cost.format !== 'd2' && i.cost.escalate },
+    { k: 'implYears', l: 'Implementation period', u: 'years', step: 0.5, show: (i) => i.cost.format !== 'd2' && i.cost.escalate },
+    { k: 'landPerPerch', l: '(iii) Land acquisition', u: 'LKR/perch' },
     { k: 'usd', l: 'Exchange rate', u: 'LKR/USD' },
+    { sec: 'D2 §10.2 format', show: (i) => i.cost.format === 'd2' },
+    { k: 'stage', l: 'Estimate stage', t: 'sel', o: [['prefeasibility', 'Pre-feasibility (contingency 20 %)'], ['feasibility', 'Feasibility (10–15 %)'], ['detailed', 'Detailed design (10 %)']], show: (i) => i.cost.format === 'd2' },
+    { k: 'd2EngPct', l: 'Engineering design & supervision', u: '%', note: 'D2: 6 % + 2 %', show: (i) => i.cost.format === 'd2' },
+    { k: 'include2yrOM', l: 'Include 2 years O&M in capital', t: 'bool', show: (i) => i.cost.format === 'd2' },
+    { k: 'escalationPct', l: 'Price escalation for funding', u: '% p.a.', show: (i) => i.cost.format === 'd2' },
+    { sec: 'Unit rates (0 = NWSDB RB 2025)' },
+    { k: 'rConcrete', l: 'RC grade 30 – supply & place', u: 'LKR/m³', auto: true, autoVal: (r) => r.cost.rates.conc, note: 'B-WRS/01 A + B + markup' },
+    { k: 'rFormwork', l: 'Formwork', u: 'LKR/m²', auto: true, autoVal: (r) => r.cost.rates.form, note: 'B-WRS/01 D' },
+    { k: 'rSteel', l: 'Reinforcement', u: 'LKR/kg', auto: true, autoVal: (r) => r.cost.rates.steel, note: 'B-WRS/01 C' },
+    { k: 'steelPerM3', l: 'Reinforcement intensity', u: 'kg/m³' },
+    { k: 'rExcavation', l: 'Excavation for structures', u: 'LKR/m³', auto: true, autoVal: (r) => r.cost.rates.exc, note: 'B-WRS/02' },
+    { k: 'rSand', l: 'Filter sand', u: 'LKR/m³', auto: true, autoVal: (r) => r.cost.rates.sand, note: 'B-FM/01' },
+    { k: 'rGravel', l: 'Filter gravel', u: 'LKR/m³', auto: true, autoVal: (r) => r.cost.rates.gravel, note: 'B-FM/01' },
+    { k: 'rAnthracite', l: 'Anthracite', u: 'LKR/m³', auto: true, autoVal: (r) => r.cost.rates.anth, note: 'B-FM/01 (475 LKR/kg)' },
+    { k: 'rRoad', l: 'Internal roads', u: 'LKR/m²', auto: true, autoVal: (r) => r.cost.rates.road, note: 'B-RD/01' },
+    { k: 'rFence', l: 'Boundary fence', u: 'LKR/m', auto: true, autoVal: (r) => r.cost.rates.fence, note: 'B-MIS/02' },
+    { k: 'rPipeFactor', l: 'Pipe supply & laying factor', step: 0.05, note: 'A-DI/PE/PVC tables × B-COM/02 location factor' },
+    { k: 'origin', l: 'Pipe origin', t: 'sel', o: [['asian', 'Asian (A-DI/1, A-PE/1, 3)'], ['nonasian', 'Japanese & non-Asian (A-DI/2, A-PE/2, 4)'], ['local', 'Local HDPE (B-PE/1B, 3B)']] },
+    { k: 'ewsPct', l: 'Earthwork support allowance (pipe trenches)', u: '% of basic' },
+    { k: 'dewPct', l: 'Dewatering allowance (pipe trenches)', u: '% of basic' },
+    { sec: 'M&E' },
+    { k: 'starter', l: 'Pump motor starters', t: 'sel', o: [['soft', 'Soft starter (B-ELE/12)'], ['stardelta', 'Star-delta (B-ELE/13)'], ['vsd', 'Variable speed drive (B-ELE/15–16)']] },
+    { k: 'sparesPct', l: 'Spare parts on pumps & generators', u: '% of supply', note: 'RB: up to 20–25 % for TCE' },
+    { k: 'cablePct', l: 'Cabling, earthing & lightning', u: '% of switchgear' },
+    { k: 'icaPct', l: 'Instrumentation, PLC/SCADA', u: '% of M&E' },
+    { k: 'filterEquip', l: 'Filter valves & controls per filter (not in RB)', u: 'LKR' },
+    { k: 'scraperRect', l: 'Chain-and-flight scraper (not in RB)', u: 'LKR/nr' },
+    { k: 'chemSystem', l: 'Chemical dosing system (not in RB)', u: 'LKR' },
+    { k: 'facilities', l: 'Include laboratory equipment & D2 §10.2 facilities', t: 'bool' },
     { sec: 'O&M (D2 §10.1.2)' },
     { k: 'maintMEPct', l: 'Repairs – M&E', u: '%/yr', note: 'D2: about 1 %' },
     { k: 'maintCivilPct', l: 'Repairs – piping, valves & structures', u: '%/yr' },
@@ -338,28 +363,41 @@ export const cost = {
   ],
   render(r) {
     const c = r.cost;
-    const grp = Object.entries(c.groupTotals).map(([g, v]) => ({ g, v: v / 1e6 })).sort((a, b) => b.v - a.v);
+    const rb = c.est.format !== 'd2';
+    const mn = (v) => fmt(v / 1e6, 2);
+    const grp = Object.entries(c.worksGroups || c.groupTotals).map(([g, v]) => ({ g, v: v / 1e6 })).filter((x) => x.v > 0).sort((a, b) => b.v - a.v);
     const om = Object.entries(c.om).map(([g, v]) => ({ g, v: v / 1e6 })).sort((a, b) => b.v - a.v);
     const boq = [...c.civil.map((x) => ({ ...x, cat: 'Civil' })), ...c.me.map((x) => ({ ...x, cat: 'M&E' }))];
+    const refCell = (v) => h('span', { class: 'small ' + (/indicative|provisional/i.test(v || '') ? 'warn-txt' : 'muted') }, v || '');
+    const itemCols = [{ k: 'item', l: 'Item' }, { k: 'qty', l: 'Qty', num: true, fmt: (v) => fmt(v, v < 10 ? 2 : 0) }, { k: 'unit', l: 'Unit' }, { k: 'rate', l: 'Rate (LKR)', num: true, fmt: f0 }, { k: 'amount', l: 'Amount (LKR Mn)', num: true, fmt: mn }, { k: 'ref', l: 'Rate Book reference', v: (x) => refCell(x.ref) }];
+    const estRows = c.est.rows.filter(([k, v]) => v || /TOTAL/i.test(k)).map(([k, v]) => ({ k, v, _tot: /SUB TOTAL|TOTAL IMPLEMENTING|Total capital/i.test(k) }));
+    const tceTitle = rb ? 'Total cost estimate – NWSDB Rate Book 2025 (Table 1 format)' : 'Capital cost – NWSDB Design Manual D2 §10.2 format';
+    const cross = c.cross.map((x) => ({ ...x, ratio: (x.boq / Math.max(x.rb, 1)) * 100 }));
     return {
       overview: [
         kpis([
-          { label: 'Total capital cost', value: fmtMoney(c.capex), sub: `≈ USD ${fmt(c.usd / 1e6, 1)} Mn incl. VAT`, accent: true, icon: 'wallet' },
+          { label: rb ? 'Total implementing cost' : 'Total capital cost', value: fmtMoney(c.capex), sub: `≈ USD ${fmt(c.usd / 1e6, 1)} Mn incl. VAT ${c.inputs.vatPct} %`, accent: true, icon: 'wallet' },
           { label: 'Per m³/d capacity', value: f0(c.perCap), unit: 'LKR', sub: `≈ USD ${f0(c.perCap / c.inputs.usd)}` },
-          { label: 'Annual O&M', value: fmtMoney(c.omTot), sub: 'chemicals, power, staff, maintenance' },
-          { label: 'O&M cost', value: f2(c.omPerM3), unit: 'LKR/m³', sub: 'per m³ produced' },
+          { label: c.method === 'composite' ? 'Works – composite (RB Sec. A)' : 'Works – BOQ (RB Sec. B)', value: fmtMoney(c.works), sub: c.method === 'composite' ? `Engineer's BOQ ${fmtMoney(c.boqWorks)}` : `Composite (Sec. A) ${fmtMoney(c.compTot)}` },
+          { label: 'Annual O&M', value: fmtMoney(c.omTot), sub: `${f2(c.omPerM3)} LKR/m³ · chemicals, power, staff` },
           { label: 'Unit cost of water (EAC)', value: f2(c.fullPerM3), unit: 'LKR/m³', sub: `D2 §10.3 · discount ${c.inputs.interest} %` },
           { label: 'Present value (20 yr)', value: fmtMoney(c.pvTotal), sub: 'capital + discounted O&M' },
         ]),
-        notes(c.notes),
+        notes([
+          { level: 'info', title: 'Pricing basis', text: `${RB.title}${rb ? ` – ${c.method === 'composite' ? 'Section A composite rates & unit-cost graphs first, Section B unit rates where none exist' : 'quantity BOQ priced with Section B unit rates'} (How to use, item 1)` : ''}. Contractor's markup ${c.inputs.markup} % added where the book excludes it; pipe laying × B-COM/02 location factor ${fmt(c.factor, 2)} (${c.district || 'district not set'}). Full rate tables: Library → NWSDB Rate Book 2025.` },
+          c.indicativePct > 0.5 ? { level: 'warn', title: 'Items not in the Rate Book', text: `${fmt(c.indicativePct, 0)} % of the BOQ (${fmtMoney(c.indicative)}) is priced with indicative allowances for items the Rate Book does not cover (scrapers, filter valve sets, dosing skids, …) – shown in amber in the BOQ; replace with quotations when available.` } : null,
+          ...(c.notes || []),
+        ].filter(Boolean)),
         h('div', { class: 'grid2' },
-          card('Capital cost – NWSDB D2 §10.2 format', kvTable([['1. Civil & building works', fmtMoney(c.civilTot), ''], ['1. Mechanical, electrical & facilities', fmtMoney(c.meTot), ''], [`   Preliminaries (${c.prelimPct} % of ECC)`, fmtMoney(c.prelim), ''], c.land ? ['   Land acquisition', fmtMoney(c.land), ''] : null, ['2. O&M for 2 years', fmtMoney(c.om2), ''], ['3. Subtotal', fmtMoney(c.sub3), ''], [`4. Engineering & supervision (${c.inputs.engPct} %)`, fmtMoney(c.eng), ''], [`5. Physical contingencies (${c.contPct} %)`, fmtMoney(c.cont), ''], [`6. Taxes (${c.inputs.vatPct} %)`, fmtMoney(c.vat), ''], ['7. Total capital cost', fmtMoney(c.capex), ''], c.escal ? ['8. Price escalation for funding', fmtMoney(c.escal), ''] : null]), { flush: true }),
+          card(tceTitle, table([{ k: 'k', l: 'Item' }, { k: 'v', l: 'LKR Mn', num: true, fmt: mn }], estRows), { flush: true, sub: rb ? `${(c.inputs.procurement || 'ncb').toUpperCase()} · LC share ${fmt(c.est.lcPct, 0)} % · ${c.est.t > 0 ? `escalated ${fmt(c.est.t, 1)} yr beyond 31.12.2025` : 'base prices 31.12.2025'}` : `${c.inputs.stage} stage` }),
           card('Staffing (indicative NWSDB cadre)', kvTable(Object.entries(c.staff).map(([k, v]) => [({ engineer: 'Engineer / OIC', chemist: 'Chemist', labAsst: 'Laboratory assistants', operator: 'Plant operators (3 shifts)', fitter: 'Fitters / electricians', labourer: 'Labourers', security: 'Security' })[k], v, 'nos.'])), { flush: true })),
-        card('Bill of quantities (summary)', table([{ k: 'cat', l: '' }, { k: 'item', l: 'Item' }, { k: 'qty', l: 'Qty', num: true, fmt: (v) => fmt(v, v < 10 ? 2 : 0) }, { k: 'unit', l: 'Unit' }, { k: 'rate', l: 'Rate (LKR)', num: true, fmt: f0 }, { k: 'amount', l: 'Amount (LKR Mn)', num: true, fmt: (v) => fmt(v / 1e6, 2) }], boq, { totals: { amount: c.works } }), { flush: true }),
+        card('Cross-check – quantity BOQ vs RB unit-cost graphs', table([{ k: 'item', l: 'Scope' }, { k: 'rb', l: 'RB graph (LKR Mn)', num: true, fmt: mn }, { k: 'boq', l: 'BOQ (LKR Mn)', num: true, fmt: mn }, { k: 'ratio', l: 'BOQ / graph', num: true, fmt: (v) => fmt(v, 0) + ' %' }], cross), { flush: true, sub: 'Graphs A-UC/01–07 include markup & duties, exclude VAT. The graphs reflect full NWSDB tender prices; a quantity BOQ of the main structures alone is normally well below them.' }),
+        rb && c.method === 'composite' ? card('Contractual composite items (works)', table(itemCols, c.comp, { totals: { amount: c.compTot } }), { flush: true, sub: 'Rates per NWSDB RB 2025 – Section A tables & graphs; Section B where no composite rate exists' }) : null,
+        card(c.method === 'composite' && rb ? "Engineer's estimate – bill of quantities (RB Section B unit rates)" : 'Bill of quantities', table([{ k: 'cat', l: '' }, ...itemCols], boq, { totals: { amount: c.boqWorks } }), { flush: true, sub: 'Amber references are indicative allowances (not in the Rate Book)' }),
       ],
       visuals: [
+        chartCard('Works cost by component (LKR Mn)', { type: 'hbar', data: grp, x: { key: 'g' }, y: { label: 'LKR Mn' }, series: [{ key: 'v', label: 'Cost' }], valueFormat: (v) => f1(v), unit: 'LKR Mn', height: 40 + grp.length * 30, marginLeft: 210 }, { sub: c.method === 'composite' ? 'Composite estimate (RB Section A)' : 'Quantity BOQ (RB Section B)' }),
         chartCard('Unit cost of water vs discount rate (D2 §10.3)', { type: 'stacked', data: c.sens.map((x) => ({ r: x.r + ' %', cap: x.cap, om: x.om })), x: { key: 'r', label: 'Discount rate' }, y: { label: 'LKR / m³' }, series: [{ key: 'cap', label: 'Capital (EAC)' }, { key: 'om', label: 'O&M' }], unit: 'LKR/m³', height: 260 }, { sub: 'D2: test several rates in the 8–15 % range' }),
-        chartCard('Capital cost by component (LKR Mn)', { type: 'hbar', data: grp, x: { key: 'g' }, y: { label: 'LKR Mn' }, series: [{ key: 'v', label: 'Cost' }], valueFormat: (v) => f1(v), unit: 'LKR Mn', height: 40 + grp.length * 30, marginLeft: 210 }),
         chartCard('Annual O&M cost (LKR Mn)', { type: 'hbar', data: om, x: { key: 'g' }, y: { label: 'LKR Mn/yr' }, series: [{ key: 'v', label: 'Cost', color: 'var(--series-3)' }], valueFormat: (v) => f1(v), unit: 'LKR Mn', height: 40 + om.length * 36 }),
       ],
     };

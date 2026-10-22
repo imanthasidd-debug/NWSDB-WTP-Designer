@@ -6,6 +6,7 @@ import { AIR_VALVE_SPACING, ISOLATING_VALVE_SPACING, MAIN_RULES, PIPE_MATERIALS,
 import { pAtm, pVap, rho as rhoW } from '../core/water.js';
 import { DN, G, MOTOR_KW, bisect, hwLoss, nextStd, selectDN, vel } from '../core/util.js';
 import { DEFAULTS as COST_D } from './cost.js';
+import { blendedRate, locationFactor, pipeCost, pumpSetCost } from '../core/ratebook.js';
 import { DEFAULTS as ENERGY_D } from './energy.js';
 
 /** D2 Table 6.2 efficiencies for a pump type (user values override when > 0) */
@@ -29,9 +30,11 @@ export function economicDN(o, ctx) {
     const hf = hwLoss(o.Q, D, o.L, C0) + (o.K * v * v) / (2 * G);
     const H = o.Hs + hf;
     const kW = (rhoW(o.T ?? 28) * G * o.Q * H) / (o.etaP * o.etaM) / 1000;
-    const pipeCap = ci.rPipePerMmM * dn * o.L;
-    const pumpCap = (ci.pumpBase + ci.pumpPerKw * (kW / o.nDuty) * 1.1) * (o.nDuty + o.nStandby);
-    const energy = kW * (o.hours ?? 24) * 365 * (ei.energyRate ?? 26) * (o.loadFactor ?? 0.85);
+    // NWSDB Rate Book 2025: pipe supply & laying (Section A tables), pump sets (Graphs A-M/05–M/08), CEB tariff (Annex 8)
+    const pipeCap = pipeCost(o.material, dn, { origin: ci.origin, pn: 16, factor: locationFactor(ctx?.inp?.setup?.district), markup: ci.markup ?? 27, ewsPct: ci.ewsPct ?? 25, dewPct: ci.dewPct ?? 25 }).total * (ci.rPipeFactor || 1) * o.L;
+    const pumpCap = pumpSetCost((kW / o.nDuty) * 1.1, o.pumpKind === 'submersible' ? 'submersible' : 'horizontal', 0).value * (o.nDuty + o.nStandby);
+    const eRate = ei.energyRate > 0 ? ei.energyRate : blendedRate(ei.tariff || 'I-3').rate;
+    const energy = kW * (o.hours ?? 24) * 365 * eRate * (o.loadFactor ?? 0.85);
     const annual = eac(pipeCap, r, nYr) + eac(pumpCap, r, Math.min(nYr, 10) || 10) + energy;
     rows.push({ dn, v, hf, H, kW, pipeCap, pumpCap, energy, annual, okV: v >= PIPE_V.min && v <= PIPE_V.max });
   }

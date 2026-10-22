@@ -59,7 +59,7 @@ export const DEFAULT_INPUTS = () => ({
 });
 
 export function newProject() {
-  return { app: 'NWSDB WTP Designer', version: 1, created: new Date().toISOString(), inputs: DEFAULT_INPUTS(), criteria: {} };
+  return { app: 'NWSDB WTP Designer', version: 1, rb2025: true, created: new Date().toISOString(), inputs: DEFAULT_INPUTS(), criteria: {} };
 }
 
 /** criteria with project overrides */

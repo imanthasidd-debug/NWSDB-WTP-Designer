@@ -3,7 +3,6 @@
 // north arrow for plans and a D3-style figure caption.  The drawing is placed at a true standard scale so the
 // printed A3 sheet can be measured.  Also produces the same sheet in DXF (model space, scaled frame).
 import { fmt } from '../../core/util.js';
-import { CREDIT } from '../brand.js';
 import { LOGO_BANNER, LOGO_BANNER_RATIO } from '../logo.js';
 import { drawingDXF, drawingSVG } from './render.js';
 
@@ -151,7 +150,7 @@ export function sheetSVG(dw, meta, { scale: forceScale, nts = false, inner } = {
   // revision + credit
   out.push(lab(L + 2, TB.y0 + 59.3, 'REVISION'));
   out.push(val(L + 17, TB.y0 + 59.6, `${meta.rev} – ${meta.date} – Issued for design review`, 2.1));
-  out.push(`<text x="${R - 2}" y="${TB.y1 - 1.6}" font-size="2" text-anchor="end" fill="#0b4a92" font-weight="700">NWSDB WTP Designer v1.3 – ${esc(CREDIT)}</text>`);
+  out.push(`<text x="${R - 2}" y="${TB.y1 - 1.6}" font-size="2" text-anchor="end" fill="#0b4a92" font-weight="700">NWSDB WTP Designer v1.4</text>`);
   out.push('</svg>');
   return { svg: out.join(''), scale, code: drawingCode(title), number: drawingNumber({ code: meta.code }, title) };
 }
@@ -195,7 +194,7 @@ export function sheetDXFItems(dw, meta) {
   cx = L;
   for (const [kk, v, w] of [['DRAWING No.', drawingNumber({ code: meta.code }, dw.title), 64], ['REV', meta.rev, 12], ['SCALE (A3)', `1:${scale}`, 24], ['SHEET', `${meta.sheet} of ${meta.sheets}`, 22], ['DATE', meta.date, W - 122]]) { tx(cx + 1.5, TB.y0 + 48.2, 1.9, kk); tx(cx + 1.5, TB.y0 + 53.6, 2.7, v); cx += w; }
   tx(L + 2, TB.y0 + 59.6, 2.1, `REVISION ${meta.rev} - ${meta.date} - Issued for design review`);
-  tx(TB.x1 - 2, TB.y1 - 1.6, 2, `NWSDB WTP Designer v1.3 - ${CREDIT}`, 2);
+  tx(TB.x1 - 2, TB.y1 - 1.6, 2, 'NWSDB WTP Designer v1.4', 2);
   tx(NB.x0 + 3, NB.y0 + 5, 3, 'NOTES');
   NOTES.forEach((n, i) => tx(NB.x0 + 3, NB.y0 + 10 + i * 7.5, 2.2, `${i + 1}. ${n.slice(0, 95)}`));
   tx((DA.x0 + DA.x1) / 2, DA.y1 - 9, 4.4, `DRAWING ${drawingCode(dw.title)}: ${(dw.title || '').toUpperCase()}`, 1);

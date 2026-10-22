@@ -155,13 +155,13 @@ def main():
     vs = slot(res, 16, 1)
     old = bytes(d[vs['off']:vs['off'] + vs['size']])
     exe_name = exe.replace('\\', '/').split('/')[-1]
-    copyright = '(C) NWSDB. Developed by Eng. Imantha Dilshan'
+    copyright = '(C) National Water Supply & Drainage Board'
     blk = version_block(old, ver, product, company, exe_name, copyright)
     if len(blk) > vs['size']:
         company = 'NWSDB Sri Lanka'
         blk = version_block(old, ver, product, company, exe_name, copyright)
     if len(blk) > vs['size']:
-        copyright = 'Eng. Imantha Dilshan'
+        copyright = '(C) NWSDB Sri Lanka'
         blk = version_block(old, ver, product, company, exe_name, copyright)
     put(d, vs, blk)
     print(f'  version resource {len(blk)}/{vs["size"]} B: {product} {ver} ({company})')

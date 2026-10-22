@@ -5,7 +5,31 @@ It takes a scheme from population forecast to a costed, drawn and checked plant:
 aeration → chemical dosing → rapid mixing → flocculation → sedimentation → filtration → disinfection → stabilisation →
 storage & pumping → residuals → hydraulic profile → site layout → power → cost → SLS 614 compliance → design report.
 
-*Developed by **Eng. Imantha Dilshan** for the National Water Supply & Drainage Board.*
+*For the National Water Supply & Drainage Board, Sri Lanka.*
+
+**Version 1.4 – priced from the NWSDB Rate Book 2025**
+* **Total cost estimate in the Rate Book format** (How to use; Table 1): contractual items → price escalation beyond
+  31.12.2025 (LC 5 %, FC 3 % p.a. with the Table 2 NCB/ICB factors) → preliminaries (4 % above LKR 500 M, else 5 %) →
+  Sub Total 1 → (i) investigation, design & supervision by Table 4 and source of funds → (ii) road reinstatement and CEB
+  bulk-supply cost → (iii) land → (iv) 5 % RWS&S → vehicles / training → (v) duties → Sub Total 2 → physical contingency
+  (≤ 10 %) → Sub Total 3 → VAT 18 %. The D2 §10.2 (1989) format remains selectable.
+* **Section A composite rates first** (How to use, item 1): the treatment plant is priced from Graph A-UC/07 (slow-sand
+  schemes from A-UC/05, A-UC/03, A-UC/01); intake, raw- and treated-water mains, buildings and the laboratory are
+  priced item by item. The quantity BOQ priced with Section B unit rates is kept as the **Engineer's estimate**, with a
+  cross-check against the unit-cost graphs.
+* **Every BOQ line cites its Rate Book table or graph**: DI / HDPE / PVC pipe supply and laying (A-DI, A-PE, A-PVC) ×
+  the B-COM/02 district location factor, valves (B-V&M/02) and chambers (B-COM/08–14), pump sets, starters, panels,
+  generators, flow meters, blowers, surge vessels, chlorinators and MOVs from the M&E graphs, water-retaining-structure
+  rates (B-WRS), filter media (B-FM/01), buildings (A-MIS/01), fence, gate and roads, laboratory (B-LAB/01). The 27 %
+  contractor's markup is added only where the book excludes it. Items the book does not cover are flagged *indicative*.
+* **Chemicals and energy**: coagulants, lime, polymer, PAC, chlorine (900 kg and 68 kg cylinders) and bleaching powder at
+  the Table A-CH/01–02 prices; electricity at the Annex 8 CEB tariff (12.06.2025) with time-of-use blend, demand and
+  fixed charges and the 2.5 % SSCL; diesel at the Annex 1 price. The pumping-main economic diameter uses the same rates.
+* **Library → NWSDB Rate Book 2025**: rates applied in the project, the estimate format and Tables 2 & 4, pipe tables,
+  valves & chambers, the digitised M&E and unit-cost graphs (with the project's operating point), civil, buildings,
+  laboratory, chemicals, CEB tariff, labour and location factors. Excel adds *Cost estimate* and *Composite items*
+  sheets and a Rate Book reference column in the BOQ.
+* Projects saved with v1.3 or earlier open with their old indicative prices replaced by the Rate Book values.
 
 **Version 1.3 – a connected, easier plant designer**
 * **Dashboard** rebuilt around the NWSDB logo: design capacity and design-basis switch, compliance rings (design checks,
@@ -58,7 +82,7 @@ is listed in **Library → NWSDB Design Manual D2** and in a dedicated report ch
 
 ## Install on Windows 10 / 11
 
-1. Extract `NWSDB-WTP-Designer-1.3.0-win-x64.zip` (right-click → *Extract all*).
+1. Extract `NWSDB-WTP-Designer-1.4.0-win-x64.zip` (right-click → *Extract all*).
 2. Double-click **Install.cmd**. The app is installed for the current user (no administrator rights), with Start-menu and
    desktop shortcuts and the `.wtpd` project-file association. Uninstall from *Settings → Apps*.
 3. Or run it without installing: open the `NWSDB WTP Designer` folder and double-click `NWSDB WTP Designer.exe`.
@@ -78,9 +102,9 @@ choose **More info → Run anyway**, or ask ICT to sign/whitelist it (see *Build
 | Source & hydrology | D2 §4: river-basin data (103 basins), dry-weather availability, reservoir mass diagram (Rippl), sediment, evaporation, flood estimate |
 | Plant configurator | Click one illustrated card per decision; D3 / expert recommendation and suitability on every option; live animated PFD; decision log, D3 Table 4-5 |
 | Treatment units | Each page: inputs on the left (live criteria hints, failing checks under the field), connection strip (receives / hands over), results / charts / checks / calculation sheet / drawings (model or A3 sheet) on the right |
-| Plant-wide | Storage & pumping (mass curve, pump curves, surge), residuals, hydraulic profile, draggable site layout, power, cost |
+| Plant-wide | Storage & pumping (mass curve, pump curves, surge), residuals, hydraulic profile, draggable site layout, power (CEB Annex 8 tariff), NWSDB Rate Book 2025 total cost estimate & BOQ |
 | Outputs | SLS 614 compliance & log credits, design-check register (Locate), PDF report, Excel workbook, NWSDB A3 drawing pack (PDF / DXF / SVG) |
-| Library | NWSDB Design Manuals D2 and D3 (clause index, project compliance, design tables, errata), editable design-criteria library, engineering toolbox, help, settings |
+| Library | NWSDB Design Manuals D2 and D3 (clause index, project compliance, design tables, errata), NWSDB Rate Book 2025 (rates, graphs, estimate format), editable design-criteria library, engineering toolbox, help, settings |
 
 Shortcuts: `Ctrl+N` new · `Ctrl+O` open · `Ctrl+S` save · `Ctrl+Z/Y` undo/redo · `Ctrl+P` report · `Ctrl+E` Excel · `Ctrl+1…9` pages.
 
@@ -95,8 +119,10 @@ Manual D2 (1989)**. Water quality, process selection and treatment-unit design f
 supplemented where D3 is silent by the lecture notes (Dr B. Gunawardana, 2020), AWWA/ASCE *Water Treatment Plant
 Design*, Kawamura, MWH, USEPA SWTR, Ten States Standards and IRC/WHO. Where D3 is internally inconsistent the
 interpretation used is listed under Library → D3 → Errata. Every check cites its source in the **Design criteria** page, where all ranges can be edited
-and are saved with the project. Unit rates, chemical prices and the CEB tariff are indicative 2026 values — update them to
-the current NWSDB schedule of rates before issuing estimates. Predicted water quality is a screening estimate; confirm
+and are saved with the project. Capital costs, chemical prices and the CEB tariff are taken from the **NWSDB Rate Book 2025**
+(Quantity Surveying Section, Planning & Designs Division; rates at 31.12.2025, VAT excluded); items the book does not
+cover are indicative allowances to be replaced by quotations, and the CEB tariff category of the plant (the book does
+not state it) should be confirmed with CEB. Predicted water quality is a screening estimate; confirm
 with jar tests and pilot data. The tool supports, and does not replace, the judgement of a qualified engineer.
 
 ## Developer notes

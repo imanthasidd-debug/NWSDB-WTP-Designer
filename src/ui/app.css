@@ -316,6 +316,7 @@ table.res tr.click { cursor: pointer; } table.res tr.click:hover td { background
 .pill-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .mono { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; }
 .muted { color: var(--muted); }
+.warn-txt { color: var(--warn); }
 .small { font-size: 11.5px; }
 .flex { display: flex; gap: 8px; align-items: center; }
 .mt0 { margin-top: 0; } .mb0 { margin-bottom: 0; }

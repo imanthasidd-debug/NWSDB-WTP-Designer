@@ -104,8 +104,44 @@ near(D2.basinOf(1).unit, 2445 * 1000 / 365, 1e-9, 'unit runoff from basin runoff
 const pd = newProject();
 const rd = computeAll(pd);
 ok(rd.d2.total >= 40 && rd.d2.fail === 0, `D2 register for default project (${rd.d2.total} checks, ${rd.d2.fail} fail)`);
-near(rd.cost.om2, 2 * rd.cost.omTot, 1e-6, 'D2 §10.2: two years O&M in capital');
-near(rd.cost.capex, rd.cost.sub3 * (1 + (rd.cost.inputs.engPct + rd.cost.contPct + rd.cost.inputs.vatPct) / 100), 1e-3, 'D2 §10.2 estimate format');
+{
+  const pD2 = newProject(); pD2.inputs.cost = { ...(pD2.inputs.cost || {}), format: 'd2' };
+  const rD2 = computeAll(pD2);
+  near(rD2.cost.om2, 2 * rD2.cost.omTot, 1e-6, 'D2 §10.2: two years O&M in capital');
+  near(rD2.cost.capex, rD2.cost.sub3 * (1 + (rD2.cost.inputs.d2EngPct + rD2.cost.contPct + rD2.cost.inputs.vatPct) / 100), 1e-3, 'D2 §10.2 estimate format');
+}
+// ---- NWSDB Rate Book 2025 (default estimate)
+{
+  const c = rd.cost, e = c.est;
+  ok(e.format === 'rb2025' && c.method === 'composite', 'default estimate = RB 2025 TCE with composite rates');
+  near(c.capex, e.st2 + c.cont + c.vat, 1e-6, 'RB TCE: total = ST2 + contingency + VAT');
+  near(c.vat, 0.18 * c.sub3, 1e-6, 'RB TCE: VAT 18 % of Sub Total 3');
+  ok(c.contPct <= 10, 'RB TCE: physical contingency ≤ 10 %');
+  ok(c.prelimPct === (e.st1 > 500e6 ? 4 : 5), 'RB TCE: preliminaries 4 % above LKR 500 M');
+  ok(e.engPct === 18, 'RB Table 4: GOSL ≥ LKR 100 M → 18 %');
+  near(e.rwss, 0.05 * e.st1, 1e-6, 'RB item 11: 5 % of ST1 for RWS&S');
+  const uc = c.comp.find((x) => /Treatment plant – base cost/.test(x.item));
+  ok(uc && Math.abs(uc.rate - 131700) / 131700 < 0.15, `UC/07 unit cost at ${rd.demand.Qd} m³/d ≈ 125–135 k LKR per m³/d (${uc && Math.round(uc.rate)})`);
+  ok(c.boqWorks > 0 && c.compTot > c.boqWorks * 0.8, 'composite works and BOQ both priced');
+  ok([...c.civil, ...c.me].every((x) => x.ref), 'every BOQ item carries a Rate Book reference');
+  ok(c.cross.length >= 2, 'cross-check against RB unit-cost graphs');
+}
+{
+  const RBm = await import('../src/core/ratebook.js');
+  const p7 = RBm.pipeCost('di', 700, { factor: 1, markup: 27, ewsPct: 0, dewPct: 0 });
+  near(p7.supply, 111074, 1e-9, 'RB A-DI/1: DN700 supply (transmission) 111,074 LKR/m');
+  ok(p7.laying > 0 && p7.ref.includes('A-DI/1'), 'RB A-DI/3 laying with reference');
+  ok(RBm.locationFactor('Jaffna') === 0.67 && RBm.locationFactor('Colombo') === 1, 'RB B-COM/02 location factors');
+  near(RBm.blendedRate('I-3').raw, (14 * 13 + 27 * 4 + 11 * 7) / 24, 1e-9, 'CEB I-3 TOU blend (Annex 8)');
+  near(RBm.CHEM.alum.v, 93.08, 1e-9, 'RB A-CH/01 alum 93.08 LKR/kg');
+  near(RBm.CHEM.cl2.v, 225, 1e-9, 'RB A-CH/02 chlorine 900 kg cylinder 225 LKR/kg');
+  near(RBm.graph('UC/07', 30000).value, 131700, 1e-6, 'RB Graph A-UC/07 at 30,000 m³/d');
+  ok(rd.coag.inputs.priceCoag === RBm.CHEM[rd.coag.inputs.coagulant === 'pacl' ? 'pacl' : 'alum'].v, 'coagulant price defaults to the Rate Book');
+  ok(Math.abs(rd.energy.energyRate - RBm.blendedRate(rd.energy.tariff).rate) < 1e-9, 'energy rate defaults to the CEB tariff');
+  const pB = newProject(); pB.inputs.cost = { ...(pB.inputs.cost || {}), method: 'boq' };
+  const rB = computeAll(pB);
+  near(rB.cost.works, rB.cost.boqWorks, 1e-9, 'BOQ method prices works from the quantity BOQ');
+}
 ok(rd.storage.srV >= rd.storage.d2V - 1e-6, 'service reservoir ≥ D2 rule');
 ok(rd.intake.pumps.v >= 0.6 && rd.intake.pumps.v <= 1.6, 'raw-water main velocity within D2 0.6–1.6 m/s');
 ok(rd.intake.cv >= 0.6 && rd.intake.cv <= 0.9, 'intake pipe velocity within D2 0.6–0.9 m/s');

@@ -195,6 +195,8 @@ export const PIPE_MATERIALS = {
     classes: () => [{ cls: 'Class 15', bar: 7.5 }, { cls: 'Class 20', bar: 10 }, { cls: 'Class 25', bar: 12.5 }] },
   steel: { label: 'Steel, welded, lined (BS 534 / CP 2010)', lined: true, rule: 1.1, dnMax: 1800, designed: true,
     classes: () => [{ cls: 'Designed (CP 2010 Pt 2)', bar: 25 }] },
+  hdpe: { label: 'HDPE PE100 (SDR17 PN10 / SDR11 PN16)', lined: true, rule: 1.0, dnMax: 1200, derate: true,
+    classes: () => [{ cls: 'SDR17 PN10', bar: 10 }, { cls: 'SDR11 PN16', bar: 16 }] },
   ci: { label: 'Coated spun iron, unlined', lined: false, rule: 1.1, dnMax: 1200,
     classes: () => [{ cls: 'Class B', bar: 6 }, { cls: 'Class C', bar: 12 }, { cls: 'Class D', bar: 16 }] },
 };
@@ -202,7 +204,7 @@ export const PIPE_MATERIALS = {
 export function cDesign(material, dn) {
   const m = PIPE_MATERIALS[material];
   if (!m) return 130;
-  if (material === 'upvc147' || material === 'upvc3505') return 140;
+  if (material === 'upvc147' || material === 'upvc3505' || material === 'hdpe') return 140;
   if (!m.lined) return dn < 300 ? 100 : dn < 450 ? 110 : 120;
   return dn < 600 ? 130 : 140;
 }

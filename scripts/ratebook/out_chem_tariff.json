@@ -1,0 +1,4889 @@
+{
+ "source": {
+  "book": "NWSDB Rate Book 2025 (2025 RB), Volume I",
+  "files": {
+   "v1a": "/root/.claude/uploads/ab443502-a195-5238-a92b-65d538795bc7/6551fa35-RB_2025_Vol_I_no_pw-1-200.pdf",
+   "v1b": "/root/.claude/uploads/ab443502-a195-5238-a92b-65d538795bc7/ecef0e11-RB_2025_Vol_I_no_pw-201-398.pdf"
+  },
+  "page_convention": "'page' = PDF page index within the given file (1-based); 'printed_page' = page number printed in the Rate Book footer",
+  "currency": "LKR",
+  "price_base": "Market prices July 2025 unless stated; VAT excluded unless stated"
+ },
+ "chemicals": [
+  {
+   "table": "A-CH/01",
+   "item": "1.01",
+   "name": "Bleaching Powder",
+   "unit": "t",
+   "rate": 153300.0,
+   "fob": 104560.0,
+   "cif": 109893.0,
+   "customs_duty": 25825.0,
+   "role": "bleaching_powder (chlorinated lime / Ca hypochlorite powder)",
+   "file": "v1a",
+   "page": 125,
+   "printed_page": 73,
+   "notes": "Table A-CH/01 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices. Columns: FOB, CIF, Customs Duty, Supply Cost (Supply Cost = rate to use).",
+   "derived_rate_LKR_per_kg": 153.3
+  },
+  {
+   "table": "A-CH/01",
+   "item": "1.02",
+   "name": "Aluminium Sulphate",
+   "unit": "t",
+   "rate": 93080.0,
+   "fob": 68654.0,
+   "cif": 72156.0,
+   "customs_duty": 9381.0,
+   "role": "alum (solid; form not stated - only one alum entry, no liquid alum)",
+   "file": "v1a",
+   "page": 125,
+   "printed_page": 73,
+   "notes": "Table A-CH/01 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices. Columns: FOB, CIF, Customs Duty, Supply Cost (Supply Cost = rate to use).",
+   "derived_rate_LKR_per_kg": 93.08
+  },
+  {
+   "table": "A-CH/01",
+   "item": "1.03",
+   "name": "Hydrated lime",
+   "unit": "t",
+   "rate": 72000.0,
+   "fob": 53106.0,
+   "cif": 55814.0,
+   "customs_duty": 7256.0,
+   "role": "lime_hydrated",
+   "file": "v1a",
+   "page": 125,
+   "printed_page": 73,
+   "notes": "Table A-CH/01 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices. Columns: FOB, CIF, Customs Duty, Supply Cost (Supply Cost = rate to use).",
+   "derived_rate_LKR_per_kg": 72.0
+  },
+  {
+   "table": "A-CH/01",
+   "item": "1.04",
+   "name": "Poly Aluminium Chloride",
+   "unit": "t",
+   "rate": 122752.0,
+   "fob": 90539.0,
+   "cif": 95156.0,
+   "customs_duty": 12371.0,
+   "role": "PACl",
+   "file": "v1a",
+   "page": 125,
+   "printed_page": 73,
+   "notes": "Table A-CH/01 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices. Columns: FOB, CIF, Customs Duty, Supply Cost (Supply Cost = rate to use).",
+   "derived_rate_LKR_per_kg": 122.75
+  },
+  {
+   "table": "A-CH/01",
+   "item": "1.05",
+   "name": "Potassium Permanganate (KMnO4)",
+   "unit": "kg",
+   "rate": 1400.0,
+   "fob": 1033.0,
+   "cif": 1086.0,
+   "customs_duty": 142.0,
+   "role": "KMnO4",
+   "file": "v1a",
+   "page": 125,
+   "printed_page": 73,
+   "notes": "Table A-CH/01 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices. Columns: FOB, CIF, Customs Duty, Supply Cost (Supply Cost = rate to use).",
+   "derived_rate_LKR_per_kg": 1400.0
+  },
+  {
+   "table": "A-CH/02",
+   "item": "2.01",
+   "name": "Chlorine Gas - Paranthan Cylinder",
+   "unit": "900kg (cylinder)",
+   "rate": 202500.0,
+   "role": "chlorine_gas_900kg_cylinder",
+   "file": "v1a",
+   "page": 126,
+   "printed_page": 74,
+   "notes": "Table A-CH/02 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices.",
+   "derived_rate_LKR_per_kg": 225.0
+  },
+  {
+   "table": "A-CH/02",
+   "item": "2.02",
+   "name": "Chlorine Gas - Paranthan Cylinder",
+   "unit": "68kg (cylinder)",
+   "rate": 37000.0,
+   "role": "chlorine_gas_68kg_cylinder",
+   "file": "v1a",
+   "page": 126,
+   "printed_page": 74,
+   "notes": "Table A-CH/02 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices.",
+   "derived_rate_LKR_per_kg": 544.12
+  },
+  {
+   "table": "A-CH/02",
+   "item": "2.03",
+   "name": "Powder Activated Carbon",
+   "unit": "t",
+   "rate": 980000.0,
+   "role": "PAC (powdered activated carbon)",
+   "file": "v1a",
+   "page": 126,
+   "printed_page": 74,
+   "notes": "Table A-CH/02 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices.",
+   "derived_rate_LKR_per_kg": 980.0
+  },
+  {
+   "table": "A-CH/02",
+   "item": "2.04",
+   "name": "Uniflex M2 5 Polyelectrolyte",
+   "unit": "kg",
+   "rate": null,
+   "rate_text": "N/A",
+   "role": "polyelectrolyte (no price given)",
+   "file": "v1a",
+   "page": 126,
+   "printed_page": 74,
+   "notes": "Table A-CH/02 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices.",
+   "derived_rate_LKR_per_kg": null
+  },
+  {
+   "table": "A-CH/02",
+   "item": "2.05",
+   "name": "Potassium Dichromate (K2Cr2O7)",
+   "unit": "kg",
+   "rate": 3000.0,
+   "role": "lab reagent",
+   "file": "v1a",
+   "page": 126,
+   "printed_page": 74,
+   "notes": "Table A-CH/02 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices.",
+   "derived_rate_LKR_per_kg": 3000.0
+  },
+  {
+   "table": "A-CH/02",
+   "item": "2.06",
+   "name": "Cationic Polymer (Dry Cationic Flocculants )",
+   "unit": "kg",
+   "rate": 2000.0,
+   "role": "polymer_cationic (coagulant/flocculant aid)",
+   "file": "v1a",
+   "page": 126,
+   "printed_page": 74,
+   "notes": "Table A-CH/02 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices.",
+   "derived_rate_LKR_per_kg": 2000.0
+  },
+  {
+   "table": "A-CH/02",
+   "item": "2.07",
+   "name": "Polymer (food grade )",
+   "unit": "kg",
+   "rate": 2562.0,
+   "role": "polymer_food_grade",
+   "file": "v1a",
+   "page": 126,
+   "printed_page": 74,
+   "notes": "Table A-CH/02 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices.",
+   "derived_rate_LKR_per_kg": 2562.0
+  },
+  {
+   "table": "A-CH/02",
+   "item": "2.08",
+   "name": "Granular Activated Carbon",
+   "unit": "t",
+   "rate": 1100000.0,
+   "role": "GAC",
+   "file": "v1a",
+   "page": 126,
+   "printed_page": 74,
+   "notes": "Table A-CH/02 notes: 1. Supplier's markup included. 2. VAT not included. Source: Market Prices & Supply Section NWS&DB, Bid prices.",
+   "derived_rate_LKR_per_kg": 1100.0
+  }
+ ],
+ "chemicals_not_in_rate_book": [
+  "liquid alum",
+  "ferric chloride / ferric sulphate",
+  "quicklime (only hydrated lime priced; import tariff lists quicklime HS 2522.10)",
+  "soda ash",
+  "caustic soda",
+  "sodium hypochlorite (NaOCl)",
+  "calcium hypochlorite / HTH (only Bleaching Powder priced; import tariff lists HS 2828.10)",
+  "fluoride chemicals",
+  "anionic/non-ionic polymer (only cationic and food-grade polymer priced; Uniflex M2 5 polyelectrolyte = N/A)"
+ ],
+ "chemicals_general_note": "Chemical prices are supply cost incl. supplier markup, excl. VAT (18%). No separate transport note in tables. derived_rate_LKR_per_kg is computed (not printed in book).",
+ "ceb_tariff": {
+  "title": "CEB Electricity Tariff Revision - June 2025 (Annex 8: CEB - Electricity Tariff)",
+  "effective": "2025-06-12",
+  "approved_by": "Public Utilities Commission of Sri Lanka",
+  "billing_basis": "each 30-day billing period",
+  "tou_periods": {
+   "day": "05:30-18:30",
+   "peak": "18:30-22:30",
+   "off_peak": "22:30-05:30"
+  },
+  "units": {
+   "energy": "LKR/kWh",
+   "fixed": "LKR/month (30-day billing period)",
+   "demand": "LKR/kVA (per 30-day billing period, printed as Rs./kVA)"
+  },
+  "definitions": {
+   "VDMC": "Volume Differentiated Monthly Consumption",
+   "Rate 1": "Supply at 400/230 V & Contract demand <= 42 kVA",
+   "Rate 2": "Supply at 400/230 V & Contract demand > 42 kVA",
+   "Rate 3": "Supply at 11 kV & above"
+  },
+  "notes": [
+   "In accordance with the Social Security Contribution Levy (SSCL) Act No. 25 of 2022, a 2.5% SSCL is applied to monthly electricity bills, effective from October 1, 2022.",
+   "Tariff published in terms of Section 30 (2) (d) of the Sri Lanka Electricity Act, No. 20 of 2009 (Actg. General Manager, CEB).",
+   "Government (GV) rates are identical to General Purpose (GP) rates.",
+   "Rate 1 categories have a single flat energy charge (no TOU split); Rate 2 and Rate 3 are TOU with a demand charge.",
+   "The Rate Book does NOT state which category NWSDB water pumping/treatment plants fall into. A GV (Government) category exists (same rates as GP); Industrial rates are lower. Category for an NWSDB WTP must be confirmed with CEB/NWSDB."
+  ],
+  "nwsdb_category_stated": false,
+  "categories": [
+   {
+    "group": "Domestic",
+    "code": "D",
+    "name": "Domestic",
+    "condition": "Consumption of 0-60 kWh per month; Block 1: 0-30 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 4.5,
+    "fixed_charge_LKR_per_month": 80.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Domestic",
+    "code": "D",
+    "name": "Domestic",
+    "condition": "Consumption of 0-60 kWh per month; Block 2: 31-60 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 8.0,
+    "fixed_charge_LKR_per_month": 210.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Domestic",
+    "code": "D",
+    "name": "Domestic",
+    "condition": "Consumption above 60 kWh per month; Block 1: 0-60 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 12.75,
+    "fixed_charge_LKR_per_month": null,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Domestic",
+    "code": "D",
+    "name": "Domestic",
+    "condition": "Consumption above 60 kWh per month; Block 2: 61-90 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 18.5,
+    "fixed_charge_LKR_per_month": 400.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Domestic",
+    "code": "D",
+    "name": "Domestic",
+    "condition": "Consumption above 60 kWh per month; Block 3: 91-120 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 24.0,
+    "fixed_charge_LKR_per_month": 1000.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Domestic",
+    "code": "D",
+    "name": "Domestic",
+    "condition": "Consumption above 60 kWh per month; Block 4: 121-180 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 41.0,
+    "fixed_charge_LKR_per_month": 1500.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Domestic",
+    "code": "D",
+    "name": "Domestic",
+    "condition": "Consumption above 60 kWh per month; Block 5: Above 180 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 61.0,
+    "fixed_charge_LKR_per_month": 2100.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Domestic",
+    "code": "D-TOU",
+    "name": "Domestic Time of Use (Optional)",
+    "condition": null,
+    "supply": null,
+    "energy_charge_LKR_per_kWh": {
+     "day": 35.0,
+     "peak": 67.0,
+     "off_peak": 21.0
+    },
+    "fixed_charge_LKR_per_month": 2100.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Religious & Charitable",
+    "code": "R",
+    "name": "Religious & Charitable Institutions",
+    "condition": "Block 1: 0-30 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 4.5,
+    "fixed_charge_LKR_per_month": 75.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Religious & Charitable",
+    "code": "R",
+    "name": "Religious & Charitable Institutions",
+    "condition": "Block 2: 31-90 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 4.5,
+    "fixed_charge_LKR_per_month": 200.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Religious & Charitable",
+    "code": "R",
+    "name": "Religious & Charitable Institutions",
+    "condition": "Block 3: 91-120 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 8.0,
+    "fixed_charge_LKR_per_month": 350.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Religious & Charitable",
+    "code": "R",
+    "name": "Religious & Charitable Institutions",
+    "condition": "Block 4: 121-180 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 19.0,
+    "fixed_charge_LKR_per_month": 1300.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Religious & Charitable",
+    "code": "R",
+    "name": "Religious & Charitable Institutions",
+    "condition": "Block 5: Above 180 kWh",
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 26.0,
+    "fixed_charge_LKR_per_month": 1700.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Industrial",
+    "code": "IP 1-1",
+    "name": "Industrial Rate 1",
+    "condition": "VDMC <= 300 kWh/month",
+    "supply": "Rate 1 - Supply at 400/230 V & Contract demand <= 42 kVA",
+    "energy_charge_LKR_per_kWh": 8.0,
+    "fixed_charge_LKR_per_month": 300.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Industrial",
+    "code": "IP 1-2",
+    "name": "Industrial Rate 1",
+    "condition": "VDMC > 300 kWh/month",
+    "supply": "Rate 1 - Supply at 400/230 V & Contract demand <= 42 kVA",
+    "energy_charge_LKR_per_kWh": 17.0,
+    "fixed_charge_LKR_per_month": 800.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Industrial",
+    "code": "IP-2",
+    "name": "Industrial Rate 2",
+    "condition": null,
+    "supply": "Rate 2 - Supply at 400/230 V & Contract demand > 42 kVA",
+    "energy_charge_LKR_per_kWh": {
+     "day": 15.0,
+     "peak": 28.0,
+     "off_peak": 12.0
+    },
+    "fixed_charge_LKR_per_month": 5000.0,
+    "demand_charge_LKR_per_kVA": 1400.0
+   },
+   {
+    "group": "Industrial",
+    "code": "IP-3",
+    "name": "Industrial Rate 3",
+    "condition": null,
+    "supply": "Rate 3 - Supply at 11 kV & above",
+    "energy_charge_LKR_per_kWh": {
+     "day": 14.0,
+     "peak": 27.0,
+     "off_peak": 11.0
+    },
+    "fixed_charge_LKR_per_month": 5000.0,
+    "demand_charge_LKR_per_kVA": 1350.0
+   },
+   {
+    "group": "Hotel",
+    "code": "H 1-1",
+    "name": "Hotel Rate 1",
+    "condition": "VDMC <= 300 kWh/month",
+    "supply": "Rate 1 - Supply at 400/230 V & Contract demand <= 42 kVA",
+    "energy_charge_LKR_per_kWh": 8.0,
+    "fixed_charge_LKR_per_month": 300.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Hotel",
+    "code": "H 1-2",
+    "name": "Hotel Rate 1",
+    "condition": "VDMC > 300 kWh/month",
+    "supply": "Rate 1 - Supply at 400/230 V & Contract demand <= 42 kVA",
+    "energy_charge_LKR_per_kWh": 17.0,
+    "fixed_charge_LKR_per_month": 800.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Hotel",
+    "code": "H-2",
+    "name": "Hotel Rate 2",
+    "condition": null,
+    "supply": "Rate 2 - Supply at 400/230 V & Contract demand > 42 kVA",
+    "energy_charge_LKR_per_kWh": {
+     "day": 15.0,
+     "peak": 28.0,
+     "off_peak": 12.0
+    },
+    "fixed_charge_LKR_per_month": 5000.0,
+    "demand_charge_LKR_per_kVA": 1400.0
+   },
+   {
+    "group": "Hotel",
+    "code": "H-3",
+    "name": "Hotel Rate 3",
+    "condition": null,
+    "supply": "Rate 3 - Supply at 11 kV & above",
+    "energy_charge_LKR_per_kWh": {
+     "day": 14.0,
+     "peak": 27.0,
+     "off_peak": 11.0
+    },
+    "fixed_charge_LKR_per_month": 5000.0,
+    "demand_charge_LKR_per_kVA": 1350.0
+   },
+   {
+    "group": "General Purpose",
+    "code": "GP 1-1",
+    "name": "General Purpose Rate 1",
+    "condition": "VDMC <= 180 kWh/month",
+    "supply": "Rate 1 - Supply at 400/230 V & Contract demand <= 42 kVA",
+    "energy_charge_LKR_per_kWh": 25.0,
+    "fixed_charge_LKR_per_month": 500.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "General Purpose",
+    "code": "GP 1-2",
+    "name": "General Purpose Rate 1",
+    "condition": "VDMC > 180 kWh/month",
+    "supply": "Rate 1 - Supply at 400/230 V & Contract demand <= 42 kVA",
+    "energy_charge_LKR_per_kWh": 34.0,
+    "fixed_charge_LKR_per_month": 1600.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "General Purpose",
+    "code": "GP-2",
+    "name": "General Purpose Rate 2",
+    "condition": null,
+    "supply": "Rate 2 - Supply at 400/230 V & Contract demand > 42 kVA",
+    "energy_charge_LKR_per_kWh": {
+     "day": 41.0,
+     "peak": 47.0,
+     "off_peak": 31.0
+    },
+    "fixed_charge_LKR_per_month": 5000.0,
+    "demand_charge_LKR_per_kVA": 1500.0
+   },
+   {
+    "group": "General Purpose",
+    "code": "GP-3",
+    "name": "General Purpose Rate 3",
+    "condition": null,
+    "supply": "Rate 3 - Supply at 11 kV & above",
+    "energy_charge_LKR_per_kWh": {
+     "day": 39.5,
+     "peak": 46.0,
+     "off_peak": 30.0
+    },
+    "fixed_charge_LKR_per_month": 5000.0,
+    "demand_charge_LKR_per_kVA": 1450.0
+   },
+   {
+    "group": "Government",
+    "code": "GV 1-1",
+    "name": "Government Rate 1",
+    "condition": "VDMC <= 180 kWh/month",
+    "supply": "Rate 1 - Supply at 400/230 V & Contract demand <= 42 kVA",
+    "energy_charge_LKR_per_kWh": 25.0,
+    "fixed_charge_LKR_per_month": 500.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Government",
+    "code": "GV 1-2",
+    "name": "Government Rate 1",
+    "condition": "VDMC > 180 kWh/month",
+    "supply": "Rate 1 - Supply at 400/230 V & Contract demand <= 42 kVA",
+    "energy_charge_LKR_per_kWh": 34.0,
+    "fixed_charge_LKR_per_month": 1600.0,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Government",
+    "code": "GV-2",
+    "name": "Government Rate 2",
+    "condition": null,
+    "supply": "Rate 2 - Supply at 400/230 V & Contract demand > 42 kVA",
+    "energy_charge_LKR_per_kWh": {
+     "day": 41.0,
+     "peak": 47.0,
+     "off_peak": 31.0
+    },
+    "fixed_charge_LKR_per_month": 5000.0,
+    "demand_charge_LKR_per_kVA": 1500.0
+   },
+   {
+    "group": "Government",
+    "code": "GV-3",
+    "name": "Government Rate 3",
+    "condition": null,
+    "supply": "Rate 3 - Supply at 11 kV & above",
+    "energy_charge_LKR_per_kWh": {
+     "day": 39.5,
+     "peak": 46.0,
+     "off_peak": 30.0
+    },
+    "fixed_charge_LKR_per_month": 5000.0,
+    "demand_charge_LKR_per_kVA": 1450.0
+   },
+   {
+    "group": "Street Lighting",
+    "code": "SL",
+    "name": "Street Lighting",
+    "condition": null,
+    "supply": null,
+    "energy_charge_LKR_per_kWh": 50.0,
+    "fixed_charge_LKR_per_month": null,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "EV Charging",
+    "code": "EV-DC",
+    "name": "EV charging at CEB stations - DC Fast Charging",
+    "condition": null,
+    "supply": null,
+    "energy_charge_LKR_per_kWh": {
+     "day": 87.0,
+     "peak": 111.0,
+     "off_peak": 53.0
+    },
+    "fixed_charge_LKR_per_month": null,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "EV Charging",
+    "code": "EV-AC",
+    "name": "EV charging at CEB stations - AC Level 2 Charging",
+    "condition": null,
+    "supply": null,
+    "energy_charge_LKR_per_kWh": {
+     "day": 70.0,
+     "peak": 90.0,
+     "off_peak": 40.0
+    },
+    "fixed_charge_LKR_per_month": null,
+    "demand_charge_LKR_per_kVA": null
+   },
+   {
+    "group": "Agriculture",
+    "code": "AGR-1",
+    "name": "Agriculture Rate 1 - Optional",
+    "condition": null,
+    "supply": null,
+    "energy_charge_LKR_per_kWh": {
+     "day": 13.0,
+     "peak": 23.0,
+     "off_peak": 7.0
+    },
+    "fixed_charge_LKR_per_month": 750.0,
+    "demand_charge_LKR_per_kVA": null
+   }
+  ],
+  "file": "v1b",
+  "page": 172,
+  "printed_page": 292
+ },
+ "labour": [
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 1,
+   "trade": "Unskilled Labour",
+   "unit": "day",
+   "rate": 2400.0,
+   "skill_class": "unskilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 2,
+   "trade": "Helper",
+   "unit": "day",
+   "rate": 2450.0,
+   "skill_class": "semi-skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 3,
+   "trade": "Pipe Layer/Fitter",
+   "unit": "day",
+   "rate": 3400.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 4,
+   "trade": "Mason",
+   "unit": "day",
+   "rate": 3250.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 5,
+   "trade": "Carpenter and Joiner",
+   "unit": "day",
+   "rate": 3300.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 6,
+   "trade": "Steel Work Erector",
+   "unit": "day",
+   "rate": 3300.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 7,
+   "trade": "Tool Operator",
+   "unit": "day",
+   "rate": 2700.0,
+   "skill_class": "semi-skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 8,
+   "trade": "Tiler",
+   "unit": "day",
+   "rate": 3200.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 9,
+   "trade": "Plumber",
+   "unit": "day",
+   "rate": 3250.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 10,
+   "trade": "Welder",
+   "unit": "day",
+   "rate": 3250.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 11,
+   "trade": "Painter",
+   "unit": "day",
+   "rate": 3250.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 12,
+   "trade": "Electrician",
+   "unit": "day",
+   "rate": 3300.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 13,
+   "trade": "Mechanic",
+   "unit": "day",
+   "rate": 3300.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 14,
+   "trade": "Bar Bender",
+   "unit": "day",
+   "rate": 3250.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 15,
+   "trade": "Operator (Heavy Machine)",
+   "unit": "day",
+   "rate": 3500.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 02: Basic Rates - Labour",
+   "item": 16,
+   "trade": "Driver",
+   "unit": "day",
+   "rate": 2950.0,
+   "skill_class": "skilled",
+   "file": "v1b",
+   "page": 148,
+   "printed_page": 258
+  },
+  {
+   "table": "Annex 03.A: Basic Wages for Labour Contracts (useful for O&M manpower contracts)",
+   "item": 1,
+   "trade": "Unskilled Labour",
+   "unit": "day",
+   "rate": 1500.0,
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.A: Basic Wages for Labour Contracts (useful for O&M manpower contracts)",
+   "item": 2,
+   "trade": "Lab Assistant",
+   "unit": "day",
+   "rate": 2155.0,
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.A: Basic Wages for Labour Contracts (useful for O&M manpower contracts)",
+   "item": 3,
+   "trade": "Pipe Fitter",
+   "unit": "day",
+   "rate": 2000.0,
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.A: Basic Wages for Labour Contracts (useful for O&M manpower contracts)",
+   "item": 4,
+   "trade": "Mechanic",
+   "unit": "day",
+   "rate": 2000.0,
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.A: Basic Wages for Labour Contracts (useful for O&M manpower contracts)",
+   "item": 5,
+   "trade": "Mason",
+   "unit": "day",
+   "rate": 2000.0,
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.A: Basic Wages for Labour Contracts (useful for O&M manpower contracts)",
+   "item": 6,
+   "trade": "Pump Operator Mechanic",
+   "unit": "day",
+   "rate": 1850.0,
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.A: Basic Wages for Labour Contracts (useful for O&M manpower contracts)",
+   "item": 7,
+   "trade": "Electrician",
+   "unit": "day",
+   "rate": 2000.0,
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.A: Basic Wages for Labour Contracts (useful for O&M manpower contracts)",
+   "item": 8,
+   "trade": "Work supervisor",
+   "unit": "day",
+   "rate": 2000.0,
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.A: Basic Wages for Labour Contracts (useful for O&M manpower contracts)",
+   "item": 9,
+   "trade": "Computer Hardware Technician",
+   "unit": "day",
+   "rate": 2000.0,
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.A: Basic Wages for Labour Contracts (useful for O&M manpower contracts)",
+   "item": 10,
+   "trade": "Lab attendant",
+   "unit": "day",
+   "rate": 1850.0,
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.A: Basic Wages for Labour Contracts (useful for O&M manpower contracts)",
+   "item": 11,
+   "trade": "Management Assistant",
+   "unit": "day",
+   "rate": 2000.0,
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.B: Basic Wages for Janitorial Services",
+   "item": 1,
+   "trade": "Unskilled Labour",
+   "unit": "day",
+   "rate": null,
+   "rate_range": [
+    1000.0,
+    1200.0
+   ],
+   "rate_text": "1,000.00-1,200.00",
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03.B: Basic Wages for Janitorial Services",
+   "item": 2,
+   "trade": "Supervisor",
+   "unit": "day",
+   "rate": null,
+   "rate_range": [
+    1300.0,
+    1600.0
+   ],
+   "rate_text": "1,300.00-1,600.00",
+   "file": "v1b",
+   "page": 150,
+   "printed_page": 260
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 1,
+   "trade": "Manager",
+   "unit": "LKR/month (HHA)",
+   "rate": 1000.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 2,
+   "trade": "Chemist",
+   "unit": "LKR/month (HHA)",
+   "rate": 950.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 3,
+   "trade": "EA/TA (Civil/Elec/Mech/Electronic)",
+   "unit": "LKR/month (HHA)",
+   "rate": 650.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 4,
+   "trade": "Store Keeper",
+   "unit": "LKR/month (HHA)",
+   "rate": 500.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 5,
+   "trade": "Laboratory Assistant",
+   "unit": "LKR/month (HHA)",
+   "rate": 1500.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 6,
+   "trade": "Pump Operator/Plant Technician",
+   "unit": "LKR/month (HHA)",
+   "rate": 2100.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 7,
+   "trade": "Mechanic",
+   "unit": "LKR/month (HHA)",
+   "rate": 1200.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 8,
+   "trade": "Driver",
+   "unit": "LKR/month (HHA)",
+   "rate": 1000.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 9,
+   "trade": "Labour Supervisor",
+   "unit": "LKR/month (HHA)",
+   "rate": 1000.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 10,
+   "trade": "Electrician",
+   "unit": "LKR/month (HHA)",
+   "rate": 1800.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 11,
+   "trade": "Pipe Fitter",
+   "unit": "LKR/month (HHA)",
+   "rate": 1800.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 12,
+   "trade": "Caretaker",
+   "unit": "LKR/month (HHA)",
+   "rate": 1000.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 13,
+   "trade": "Labourer",
+   "unit": "LKR/month (HHA)",
+   "rate": 3800.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  },
+  {
+   "table": "Annex 03: Payment of Health Hazards Allowance (sewerage works only)",
+   "item": 14,
+   "trade": "Service Contract Labourer",
+   "unit": "LKR/month (HHA)",
+   "rate": 3000.0,
+   "file": "v1b",
+   "page": 149,
+   "printed_page": 259
+  }
+ ],
+ "labour_notes": {
+  "Annex 02": "Annex 02 note: All-in Labour rates used. VAT not included. Contractor's markup not included. Source: Market prices July 2025. (skill_class is an interpretation, not printed in book.)",
+  "Annex 03.A/B": "Annex 03.A/03.B notes: 1. EPF/ETF Employer's contribution not included. 2. Contractor's markup not included. 3. Consider 10% markup for estimation purpose only. 4. VAT not included. Source: 1. Unskilled labour rate based on Special committee recommendation. 2. Other rates based on 2021 salary revision structure.",
+  "Annex 03": "HHA for sewerage works per Board Decision No. 4326(s) of Board Meeting No 902 dated 26.05.2022; paid only if they work a minimum of 20 days per month."
+ },
+ "daywork_labour": [
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 1,
+   "trade": "Unskilled Labour",
+   "unit": "day",
+   "rate": 2400.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 2,
+   "trade": "Helper",
+   "unit": "day",
+   "rate": 2450.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 3,
+   "trade": "Pipe Layer/Fitter",
+   "unit": "day",
+   "rate": 3400.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 4,
+   "trade": "Mason",
+   "unit": "day",
+   "rate": 3250.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 5,
+   "trade": "Carpenter and Joiner",
+   "unit": "day",
+   "rate": 3300.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 6,
+   "trade": "Steel Work Erector",
+   "unit": "day",
+   "rate": 3300.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 7,
+   "trade": "Tool Operator",
+   "unit": "day",
+   "rate": 2700.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 8,
+   "trade": "Tiler",
+   "unit": "day",
+   "rate": 3200.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 9,
+   "trade": "Plumber",
+   "unit": "day",
+   "rate": 3250.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 10,
+   "trade": "Welder",
+   "unit": "day",
+   "rate": 3250.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 11,
+   "trade": "Painter",
+   "unit": "day",
+   "rate": 3250.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 12,
+   "trade": "Electrician",
+   "unit": "day",
+   "rate": 3300.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 13,
+   "trade": "Mechanic",
+   "unit": "day",
+   "rate": 3300.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 14,
+   "trade": "Bar Bender",
+   "unit": "day",
+   "rate": 3250.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 15,
+   "trade": "Operator (Heavy Machine)",
+   "unit": "day",
+   "rate": 3500.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  },
+  {
+   "table": "A-DWK/01: Rates for Daywork Schedules - Labour",
+   "item": 16,
+   "trade": "Driver",
+   "unit": "day",
+   "rate": 2950.0,
+   "file": "v1a",
+   "page": 61,
+   "printed_page": 26
+  }
+ ],
+ "daywork_labour_notes": "All-in Labour rates used. VAT not included. Contractor's percentage adjustment for day work of labour - 15% on the relevant amount. Source: Market prices July 2025. (Identical rates to Annex 02.)",
+ "materials": [
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 1,
+   "category": "Fuel",
+   "description": "Petrol -92 Octane",
+   "unit": "l",
+   "rate": 305.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 2,
+   "category": "Fuel",
+   "description": "Petrol -95 Octane",
+   "unit": "l",
+   "rate": 341.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 3,
+   "category": "Fuel",
+   "description": "Auto Diesel",
+   "unit": "l",
+   "rate": 289.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 4,
+   "category": "Fuel",
+   "description": "Super Diesel",
+   "unit": "l",
+   "rate": 325.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 5,
+   "category": "Fuel",
+   "description": "Kerosene",
+   "unit": "l",
+   "rate": 185.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 6,
+   "category": "Fuel",
+   "description": "Industrial Kerosene",
+   "unit": "l",
+   "rate": 186.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 15,
+   "category": "Bonding Materials",
+   "description": "Portland Cement - Local (50kg)",
+   "unit": "bag",
+   "rate": 1650.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 16,
+   "category": "Bonding Materials",
+   "description": "White Cement",
+   "unit": "kg",
+   "rate": 69.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 17,
+   "category": "Bonding Materials",
+   "description": "Lime",
+   "unit": "kg",
+   "rate": 51.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 25,
+   "category": "Building Materials",
+   "description": "Sand ( Fine Sand ) *",
+   "unit": "m3",
+   "rate": 9894.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 26,
+   "category": "Building Materials",
+   "description": "Sand ( Coarse Sand ) *",
+   "unit": "m3",
+   "rate": 9600.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 27,
+   "category": "Building Materials",
+   "description": "Mine sand (wash)*",
+   "unit": "m3",
+   "rate": 9894.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 28,
+   "category": "Building Materials",
+   "description": "Sea sand (wash & unseived) *",
+   "unit": "m3",
+   "rate": 9841.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 29,
+   "category": "Building Materials",
+   "description": "Metal ½\" ( chips) *",
+   "unit": "m3",
+   "rate": 3711.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 30,
+   "category": "Building Materials",
+   "description": "Metal ¾\" *",
+   "unit": "m3",
+   "rate": 3711.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 31,
+   "category": "Building Materials",
+   "description": "Metal 1\" *",
+   "unit": "m3",
+   "rate": 3591.0,
+   "file": "v1b",
+   "page": 119,
+   "printed_page": 229,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 32,
+   "category": "Building Materials",
+   "description": "Metal 1½\" *",
+   "unit": "m3",
+   "rate": 3591.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 33,
+   "category": "Building Materials",
+   "description": "Metal 2\" *",
+   "unit": "m3",
+   "rate": 3591.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 34,
+   "category": "Building Materials",
+   "description": "Quarry Dust *",
+   "unit": "m3",
+   "rate": 4417.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 35,
+   "category": "Building Materials",
+   "description": "ABC *",
+   "unit": "m3",
+   "rate": 3799.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 36,
+   "category": "Building Materials",
+   "description": "Rubble (6\"x9\") *",
+   "unit": "m3",
+   "rate": 3622.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 37,
+   "category": "Building Materials",
+   "description": "Rubble (6\"x4\") *",
+   "unit": "m3",
+   "rate": 3967.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 38,
+   "category": "Building Materials",
+   "description": "Earth *",
+   "unit": "m3",
+   "rate": 2633.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 39,
+   "category": "Building Materials",
+   "description": "Gravel *",
+   "unit": "m3",
+   "rate": 2651.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230,
+   "note": "* Transport cost included in price"
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 40,
+   "category": "Clay Products",
+   "description": "Ordinary bricks",
+   "unit": "nr",
+   "rate": 27.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 41,
+   "category": "Clay Products",
+   "description": "Wire cut bricks - 8\" x 4\" x 2 ¼ \"",
+   "unit": "nr",
+   "rate": 47.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 48,
+   "category": "Cement Blocks (Hollow) - ICC",
+   "description": "Cement Blocks 390x100x190mm",
+   "unit": "nr",
+   "rate": 90.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 49,
+   "category": "Cement Blocks (Hollow) - ICC",
+   "description": "Cement Blocks 390x150x190mm",
+   "unit": "nr",
+   "rate": 125.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 50,
+   "category": "Cement Blocks (Hollow) - ICC",
+   "description": "Cement Blocks 390x200x190mm",
+   "unit": "nr",
+   "rate": 165.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 51,
+   "category": "Cement Blocks (Hollow) - Other than ICC",
+   "description": "Cement Blocks 14\"x7\"x4\"",
+   "unit": "nr",
+   "rate": 77.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 52,
+   "category": "Cement Blocks (Hollow) - Other than ICC",
+   "description": "Cement Blocks 16\"x8\"x4\"",
+   "unit": "nr",
+   "rate": 102.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 53,
+   "category": "Cement Blocks (Hollow) - Other than ICC",
+   "description": "Cement Blocks 16\"x8\"x6\"",
+   "unit": "nr",
+   "rate": 140.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 54,
+   "category": "Cement Blocks (Solid) - ICC",
+   "description": "Cement Blocks 390x100x190mm",
+   "unit": "nr",
+   "rate": 105.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 55,
+   "category": "Cement Blocks (Solid) - ICC",
+   "description": "Cement Blocks 390x150x190mm",
+   "unit": "nr",
+   "rate": 155.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 56,
+   "category": "Cement Blocks (Solid) - ICC",
+   "description": "Cement Blocks 390x200x190mm",
+   "unit": "nr",
+   "rate": 220.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 57,
+   "category": "Cement Blocks (Solid) - Other than ICC",
+   "description": "Cement Blocks 12\"x6\"x5\"",
+   "unit": "nr",
+   "rate": 89.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 58,
+   "category": "Cement Blocks (Solid) - Other than ICC",
+   "description": "Cement Blocks 16\"x8\"x6\"",
+   "unit": "nr",
+   "rate": 162.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 59,
+   "category": "Cement Blocks (Solid) - Other than ICC",
+   "description": "Cement Blocks 16\"x8\"x8\"",
+   "unit": "nr",
+   "rate": 246.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 60,
+   "category": "Cement Blocks (Solid) - Other than ICC",
+   "description": "Cement Blocks 12\"x6\"x4\"",
+   "unit": "nr",
+   "rate": 75.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 61,
+   "category": "Cement Blocks (Solid) - Other than ICC",
+   "description": "Cement Blocks 14\"x7\"x4\"",
+   "unit": "nr",
+   "rate": 79.0,
+   "file": "v1b",
+   "page": 120,
+   "printed_page": 230
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 177,
+   "category": "Galvanized Products",
+   "description": "GI Sheet 8x4 (2mm)",
+   "unit": "nr",
+   "rate": 15551.0,
+   "file": "v1b",
+   "page": 125,
+   "printed_page": 235
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 297,
+   "category": "Steel Products",
+   "description": "Mild steel / Tor steel (Lanwa)",
+   "unit": "t",
+   "rate": 233000.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 298,
+   "category": "Steel Products",
+   "description": "Mild steel / Tor steel (Melwa)",
+   "unit": "t",
+   "rate": 238000.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 299,
+   "category": "Steel Products",
+   "description": "Mild steel / Tor steel (GTB)",
+   "unit": "t",
+   "rate": 215000.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 300,
+   "category": "Steel Products",
+   "description": "Mild steel / Tor steel ( Other SLS)",
+   "unit": "t",
+   "rate": 212000.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 301,
+   "category": "Steel Products",
+   "description": "6mm mild steel (coil )",
+   "unit": "kg",
+   "rate": 191.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 302,
+   "category": "H sections",
+   "description": "150x150x31.5 kg/m (5.8m)",
+   "unit": "nr",
+   "rate": 43000.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 303,
+   "category": "H sections",
+   "description": "200x200x50 kg/m (5.8m)",
+   "unit": "nr",
+   "rate": 67000.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 304,
+   "category": "H sections",
+   "description": "250x250x74 kg/m (5.8m)",
+   "unit": "nr",
+   "rate": 99000.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 305,
+   "category": "H sections",
+   "description": "300x300x94 kg/m (5.8m)",
+   "unit": "nr",
+   "rate": 127000.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 306,
+   "category": "H sections",
+   "description": "350x350x137 kg/m (5.8m)",
+   "unit": "nr",
+   "rate": 190000.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 307,
+   "category": "H sections",
+   "description": "400x200x66 kg/m(5.8m)",
+   "unit": "nr",
+   "rate": 89000.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 316,
+   "category": "MS C Channels",
+   "description": "50 x 25 x 5 x 6mm (5.8m)",
+   "unit": "nr",
+   "rate": 5410.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 318,
+   "category": "MS C Channels",
+   "description": "100 x 50 x 5 x 7.5mm (5.8m)",
+   "unit": "nr",
+   "rate": 12840.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 320,
+   "category": "MS C Channels",
+   "description": "150 x 75 x 6.5 x 10mm (5.8m)",
+   "unit": "nr",
+   "rate": 25510.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 323,
+   "category": "MS C Channels",
+   "description": "200 x 80 x 7.5 x 11mm (5.8m)",
+   "unit": "nr",
+   "rate": 33940.0,
+   "file": "v1b",
+   "page": 129,
+   "printed_page": 239
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 328,
+   "category": "MS C Channels",
+   "description": "300 x 90 x 9 x 12mm (5.8m)",
+   "unit": "nr",
+   "rate": 50930.0,
+   "file": "v1b",
+   "page": 130,
+   "printed_page": 240
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 333,
+   "category": "MS C Channels",
+   "description": "380 x 100 x 13 x 20mm (5.8m)",
+   "unit": "nr",
+   "rate": 92310.0,
+   "file": "v1b",
+   "page": 130,
+   "printed_page": 240
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 346,
+   "category": "GI Pipes",
+   "description": "1/2\" dia. (1.2mm thickness 5.5m.)",
+   "unit": "nr",
+   "rate": 900.0,
+   "file": "v1b",
+   "page": 130,
+   "printed_page": 240
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 350,
+   "category": "GI Pipes",
+   "description": "1/2\" dia. (2.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 1460.0,
+   "file": "v1b",
+   "page": 130,
+   "printed_page": 240
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 355,
+   "category": "GI Pipes",
+   "description": "3/4\" dia. (2.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 1850.0,
+   "file": "v1b",
+   "page": 130,
+   "printed_page": 240
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 360,
+   "category": "GI Pipes",
+   "description": "1\" dia. (2.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 2440.0,
+   "file": "v1b",
+   "page": 130,
+   "printed_page": 240
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 361,
+   "category": "GI Pipes",
+   "description": "1\" dia. (3.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 3590.0,
+   "file": "v1b",
+   "page": 130,
+   "printed_page": 240
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 365,
+   "category": "GI Pipes",
+   "description": "1 1/4\" dia. (2.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 3030.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 366,
+   "category": "GI Pipes",
+   "description": "1 1/4\" dia. (3.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 4540.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 370,
+   "category": "GI Pipes",
+   "description": "1 1/2\" dia. (3.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 5130.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 373,
+   "category": "GI Pipes",
+   "description": "2\" dia. (2.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 4360.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 374,
+   "category": "GI Pipes",
+   "description": "2\" dia. (3.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 6670.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 375,
+   "category": "GI Pipes",
+   "description": "3\" dia. (2.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 6410.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 376,
+   "category": "GI Pipes",
+   "description": "3\" dia. (3.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 9490.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 377,
+   "category": "GI Pipes",
+   "description": "4\" dia. (2.0mm thickness 5.8m.)",
+   "unit": "nr",
+   "rate": 8200.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 378,
+   "category": "GI Pipes",
+   "description": "4\" dia. (3.0mm thickness 5.8m.).",
+   "unit": "nr",
+   "rate": 12820.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 379,
+   "category": "Mild Steel Plate",
+   "description": "1200x2400x3mm",
+   "unit": "nr",
+   "rate": 15000.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 380,
+   "category": "Mild Steel Plate",
+   "description": "1200x2400x4mm",
+   "unit": "nr",
+   "rate": 20000.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 381,
+   "category": "Mild Steel Plate",
+   "description": "1200x2400x6mm",
+   "unit": "nr",
+   "rate": 30000.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 382,
+   "category": "Mild Steel Plate",
+   "description": "1200x2400x8mm",
+   "unit": "nr",
+   "rate": 41000.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 383,
+   "category": "Mesh",
+   "description": "Binding Wire (guage 18&16)",
+   "unit": "kg",
+   "rate": 240.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 384,
+   "category": "Mesh",
+   "description": "12'X7' B.R.C Sheet 6mm A 142 (8\"x8\")",
+   "unit": "nr",
+   "rate": 4100.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 385,
+   "category": "Mesh",
+   "description": "12'X7' B.R.C Sheet 6mm A 189 (6\"x6\")",
+   "unit": "nr",
+   "rate": 5600.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 386,
+   "category": "Mesh",
+   "description": "12'X7' B.R.C Sheet 6mm A 283 (4\"x4\")",
+   "unit": "nr",
+   "rate": 6800.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 387,
+   "category": "Mesh",
+   "description": "12'x7' (2.9mm) GI welded mesh (2\"x2\")",
+   "unit": "nr",
+   "rate": 4600.0,
+   "file": "v1b",
+   "page": 131,
+   "printed_page": 241
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 396,
+   "category": "MS Angles",
+   "description": "40x40x3 mm (5.8m )",
+   "unit": "nr",
+   "rate": 2660.0,
+   "file": "v1b",
+   "page": 132,
+   "printed_page": 242
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 399,
+   "category": "MS Angles",
+   "description": "50x50x5 mm (5.8m )",
+   "unit": "nr",
+   "rate": 4930.0,
+   "file": "v1b",
+   "page": 132,
+   "printed_page": 242
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 401,
+   "category": "MS Angles",
+   "description": "60x60x5 mm (5.8m )",
+   "unit": "nr",
+   "rate": 6680.0,
+   "file": "v1b",
+   "page": 132,
+   "printed_page": 242
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 405,
+   "category": "MS Angles",
+   "description": "75x75x5 mm (5.8m )",
+   "unit": "nr",
+   "rate": 8480.0,
+   "file": "v1b",
+   "page": 132,
+   "printed_page": 242
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 410,
+   "category": "MS Angles",
+   "description": "100x100x12mm (5.8m )",
+   "unit": "nr",
+   "rate": 29400.0,
+   "file": "v1b",
+   "page": 132,
+   "printed_page": 242
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 412,
+   "category": "MS Angles",
+   "description": "150x75x10 mm (5.8m )",
+   "unit": "nr",
+   "rate": 25100.0,
+   "file": "v1b",
+   "page": 132,
+   "printed_page": 242
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 413,
+   "category": "MS Angles",
+   "description": "200x100x10 mm (5.8m )",
+   "unit": "nr",
+   "rate": 34000.0,
+   "file": "v1b",
+   "page": 132,
+   "printed_page": 242
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 414,
+   "category": "Stainless steel Grade SS 304 - SS Pipes",
+   "description": "25 mm dia. (2.1mm thickness 5.8m)",
+   "unit": "nr",
+   "rate": 9000.0,
+   "file": "v1b",
+   "page": 132,
+   "printed_page": 242
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 420,
+   "category": "Stainless steel Grade SS 304 - SS Pipes",
+   "description": "50 mm dia. (1.2mm thickness 5.8m)",
+   "unit": "nr",
+   "rate": 10900.0,
+   "file": "v1b",
+   "page": 132,
+   "printed_page": 242
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 422,
+   "category": "Stainless steel Grade SS 304 - SS Pipes",
+   "description": "50 mm dia. (2.6mm thickness 5.8m)",
+   "unit": "nr",
+   "rate": 22900.0,
+   "file": "v1b",
+   "page": 132,
+   "printed_page": 242
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 458,
+   "category": "Stainless steel Grade SS 304 - SS Sheets",
+   "description": "8 ' x 4 ' (0.7mm)",
+   "unit": "nr",
+   "rate": 17000.0,
+   "file": "v1b",
+   "page": 134,
+   "printed_page": 244
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 460,
+   "category": "Stainless steel Grade SS 304 - SS Sheets",
+   "description": "8 ' x 4 ' (3mm)",
+   "unit": "nr",
+   "rate": 62000.0,
+   "file": "v1b",
+   "page": 134,
+   "printed_page": 244
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 462,
+   "category": "Stainless steel Grade SS 304 - SS Sheets",
+   "description": "8 ' x 4 ' (5mm)",
+   "unit": "nr",
+   "rate": 130000.0,
+   "file": "v1b",
+   "page": 134,
+   "printed_page": 244
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 580,
+   "category": "PVC Pipes - solvent socketed (SCJ)",
+   "description": "20mm dia (PNT 14)",
+   "unit": "m",
+   "rate": 76.0,
+   "file": "v1b",
+   "page": 138,
+   "printed_page": 248
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 581,
+   "category": "PVC Pipes - solvent socketed (SCJ)",
+   "description": "25mm dia (PNT 11)",
+   "unit": "m",
+   "rate": 110.0,
+   "file": "v1b",
+   "page": 138,
+   "printed_page": 248
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 582,
+   "category": "PVC Pipes - solvent socketed (SCJ)",
+   "description": "32mm dia (PNT 11)",
+   "unit": "m",
+   "rate": 138.0,
+   "file": "v1b",
+   "page": 138,
+   "printed_page": 248
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 583,
+   "category": "PVC Pipes - solvent socketed (SCJ)",
+   "description": "40mm dia (PNT 11)",
+   "unit": "m",
+   "rate": 218.0,
+   "file": "v1b",
+   "page": 138,
+   "printed_page": 248
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 584,
+   "category": "PVC Pipes - solvent socketed (SCJ)",
+   "description": "50mm dia (PNT 11)",
+   "unit": "m",
+   "rate": 340.0,
+   "file": "v1b",
+   "page": 138,
+   "printed_page": 248
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 585,
+   "category": "PVC Pipes - solvent socketed (SCJ)",
+   "description": "32mm dia (PNT 7)",
+   "unit": "m",
+   "rate": 96.0,
+   "file": "v1b",
+   "page": 138,
+   "printed_page": 248
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 586,
+   "category": "PVC Pipes - solvent socketed (SCJ)",
+   "description": "40mm dia (PNT 7)",
+   "unit": "m",
+   "rate": 147.0,
+   "file": "v1b",
+   "page": 138,
+   "printed_page": 248
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 587,
+   "category": "PVC Pipes - solvent socketed (SCJ)",
+   "description": "50mm dia (PNT 7)",
+   "unit": "m",
+   "rate": 273.0,
+   "file": "v1b",
+   "page": 138,
+   "printed_page": 248
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 287,
+   "category": "Iron Products",
+   "description": "Wire nail",
+   "unit": "kg",
+   "rate": 365.0,
+   "file": "v1b",
+   "page": 128,
+   "printed_page": 238
+  },
+  {
+   "table": "Annex 01: Basic Prices - Material",
+   "item": 842,
+   "category": "Hand Tools",
+   "description": "Welding rods Gauge 12",
+   "unit": "kg",
+   "rate": 492.0,
+   "file": "v1b",
+   "page": 146,
+   "printed_page": 256
+  },
+  {
+   "table": "Table B-WRS/01 A: Water Retaining Structures - 1.1 Provision of Concrete (Basic Cost)",
+   "item": "1.1.1",
+   "category": "Concrete",
+   "description": "Ready mixed concrete Grade 15 (incl. transport up to 15 km from batching plant)",
+   "unit": "m3",
+   "rate": 21050.0,
+   "file": "v1a",
+   "page": 181,
+   "printed_page": 119,
+   "note": "Ready-mix basic cost includes transport from batching plant to unloading location; machine-mixed includes all-in materials, labour, equipment. Contractor's markup not included. VAT not included."
+  },
+  {
+   "table": "Table B-WRS/01 A: Water Retaining Structures - 1.1 Provision of Concrete (Basic Cost)",
+   "item": "1.1.2",
+   "category": "Concrete",
+   "description": "Ready mixed concrete Grade 20",
+   "unit": "m3",
+   "rate": 21950.0,
+   "file": "v1a",
+   "page": 181,
+   "printed_page": 119,
+   "note": "Ready-mix basic cost includes transport from batching plant to unloading location; machine-mixed includes all-in materials, labour, equipment. Contractor's markup not included. VAT not included."
+  },
+  {
+   "table": "Table B-WRS/01 A: Water Retaining Structures - 1.1 Provision of Concrete (Basic Cost)",
+   "item": "1.1.3",
+   "category": "Concrete",
+   "description": "Ready mixed concrete Grade 25",
+   "unit": "m3",
+   "rate": 22600.0,
+   "file": "v1a",
+   "page": 181,
+   "printed_page": 119,
+   "note": "Ready-mix basic cost includes transport from batching plant to unloading location; machine-mixed includes all-in materials, labour, equipment. Contractor's markup not included. VAT not included."
+  },
+  {
+   "table": "Table B-WRS/01 A: Water Retaining Structures - 1.1 Provision of Concrete (Basic Cost)",
+   "item": "1.1.4",
+   "category": "Concrete",
+   "description": "Ready mixed concrete Grade 30",
+   "unit": "m3",
+   "rate": 23400.0,
+   "file": "v1a",
+   "page": 181,
+   "printed_page": 119,
+   "note": "Ready-mix basic cost includes transport from batching plant to unloading location; machine-mixed includes all-in materials, labour, equipment. Contractor's markup not included. VAT not included."
+  },
+  {
+   "table": "Table B-WRS/01 A: Water Retaining Structures - 1.1 Provision of Concrete (Basic Cost)",
+   "item": "1.1.5",
+   "category": "Concrete",
+   "description": "Ready mixed concrete Grade 35 A",
+   "unit": "m3",
+   "rate": 26800.0,
+   "file": "v1a",
+   "page": 181,
+   "printed_page": 119,
+   "note": "Ready-mix basic cost includes transport from batching plant to unloading location; machine-mixed includes all-in materials, labour, equipment. Contractor's markup not included. VAT not included."
+  },
+  {
+   "table": "Table B-WRS/01 A: Water Retaining Structures - 1.1 Provision of Concrete (Basic Cost)",
+   "item": "1.1.6",
+   "category": "Concrete",
+   "description": "Additional transportation (avg.) distance exceeding 15 km from batching plant - Highly congested areas",
+   "unit": "m3",
+   "rate": 97.0,
+   "file": "v1a",
+   "page": 181,
+   "printed_page": 119,
+   "note": "Ready-mix basic cost includes transport from batching plant to unloading location; machine-mixed includes all-in materials, labour, equipment. Contractor's markup not included. VAT not included."
+  },
+  {
+   "table": "Table B-WRS/01 A: Water Retaining Structures - 1.1 Provision of Concrete (Basic Cost)",
+   "item": "1.1.7",
+   "category": "Concrete",
+   "description": "Additional transportation (avg.) distance exceeding 15 km from batching plant - Other areas",
+   "unit": "m3",
+   "rate": 83.0,
+   "file": "v1a",
+   "page": 181,
+   "printed_page": 119,
+   "note": "Ready-mix basic cost includes transport from batching plant to unloading location; machine-mixed includes all-in materials, labour, equipment. Contractor's markup not included. VAT not included."
+  },
+  {
+   "table": "Table B-WRS/01 A: Water Retaining Structures - 1.1 Provision of Concrete (Basic Cost)",
+   "item": "1.1.8",
+   "category": "Concrete",
+   "description": "Machine mixed (on site) concrete 1:3:6 (40)",
+   "unit": "m3",
+   "rate": 18460.0,
+   "file": "v1a",
+   "page": 181,
+   "printed_page": 119,
+   "note": "Ready-mix basic cost includes transport from batching plant to unloading location; machine-mixed includes all-in materials, labour, equipment. Contractor's markup not included. VAT not included."
+  },
+  {
+   "table": "Table B-WRS/01 A: Water Retaining Structures - 1.1 Provision of Concrete (Basic Cost)",
+   "item": "1.1.9",
+   "category": "Concrete",
+   "description": "Machine mixed (on site) concrete 1:2.5:3 (25)",
+   "unit": "m3",
+   "rate": 19740.0,
+   "file": "v1a",
+   "page": 181,
+   "printed_page": 119,
+   "note": "Ready-mix basic cost includes transport from batching plant to unloading location; machine-mixed includes all-in materials, labour, equipment. Contractor's markup not included. VAT not included."
+  },
+  {
+   "table": "Table B-WRS/01 A: Water Retaining Structures - 1.1 Provision of Concrete (Basic Cost)",
+   "item": "1.1.10",
+   "category": "Concrete",
+   "description": "Machine mixed (on site) concrete 1:2:4 (20)",
+   "unit": "m3",
+   "rate": 21630.0,
+   "file": "v1a",
+   "page": 181,
+   "printed_page": 119,
+   "note": "Ready-mix basic cost includes transport from batching plant to unloading location; machine-mixed includes all-in materials, labour, equipment. Contractor's markup not included. VAT not included."
+  },
+  {
+   "table": "Table B-WRS/01 A: Water Retaining Structures - 1.1 Provision of Concrete (Basic Cost)",
+   "item": "1.1.11",
+   "category": "Concrete",
+   "description": "Machine mixed (on site) concrete 1:1.5:3 (20)",
+   "unit": "m3",
+   "rate": 24320.0,
+   "file": "v1a",
+   "page": 181,
+   "printed_page": 119,
+   "note": "Ready-mix basic cost includes transport from batching plant to unloading location; machine-mixed includes all-in materials, labour, equipment. Contractor's markup not included. VAT not included."
+  }
+ ],
+ "materials_notes": "Annex 01 note: VAT not included. * Transport cost included in prices. Source: Market prices - July 2025. Annex 01 PVC pipe prices cover only 20-50 mm SCJ pipes; large-diameter PVC/DI/HDPE pipe supply & laying rates are in Section A tables (A-PVC, A-DI, A-PE), not Annex 01. No structural-steel price per tonne other than tor/mild steel; sections priced per 5.8 m length.",
+ "equipment": [
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 1,
+   "description": "Air Compressor (incl. tools, breakers) - engine driven**",
+   "capacity": "1000 CFM",
+   "unit": "hr",
+   "wet_rate": 8500.0,
+   "dry_rate": 3150.0,
+   "file": "v1b",
+   "page": 152,
+   "printed_page": 262
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 3,
+   "description": "Air Compressor (incl. tools, breakers) - engine driven**",
+   "capacity": "300 CFM",
+   "unit": "hr",
+   "wet_rate": 3250.0,
+   "dry_rate": 1470.0,
+   "file": "v1b",
+   "page": 152,
+   "printed_page": 262
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 5,
+   "description": "Air Compressor (incl. tools, breakers) - electrical*",
+   "capacity": "300 CFM",
+   "unit": "hr",
+   "wet_rate": 1300.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 152,
+   "printed_page": 262
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 28,
+   "description": "Plate Compactor Mechanical",
+   "capacity": "90kg",
+   "unit": "day",
+   "wet_rate": 6300.0,
+   "dry_rate": 2500.0,
+   "file": "v1b",
+   "page": 153,
+   "printed_page": 263
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 31,
+   "description": "Soil compactor - Vibrating Roller** (Min.4hrs/day)",
+   "capacity": "1t",
+   "unit": "hr",
+   "wet_rate": 1650.0,
+   "dry_rate": 610.0,
+   "file": "v1b",
+   "page": 153,
+   "printed_page": 263
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 34,
+   "description": "Soil compactor - Vibrating Roller** (Min.4hrs/day)",
+   "capacity": "10 t",
+   "unit": "hr",
+   "wet_rate": 4300.0,
+   "dry_rate": 1957.0,
+   "file": "v1b",
+   "page": 153,
+   "printed_page": 263
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 37,
+   "description": "Concrete mixer complete with scales etc.**",
+   "capacity": "0.25m3",
+   "unit": "day",
+   "wet_rate": 6750.0,
+   "dry_rate": 2000.0,
+   "file": "v1b",
+   "page": 153,
+   "printed_page": 263
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 38,
+   "description": "Concrete mixer complete with scales etc.**",
+   "capacity": "0.5m3",
+   "unit": "day",
+   "wet_rate": 7250.0,
+   "dry_rate": 2500.0,
+   "file": "v1b",
+   "page": 153,
+   "printed_page": 263
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 39,
+   "description": "Poker vibrator (Electric)",
+   "capacity": "25mm dia.",
+   "unit": "day",
+   "wet_rate": null,
+   "dry_rate": 990.0,
+   "file": "v1b",
+   "page": 153,
+   "printed_page": 263
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 41,
+   "description": "Poker vibrator (with engine)**",
+   "capacity": "25mm dia.",
+   "unit": "day",
+   "wet_rate": 3400.0,
+   "dry_rate": 2000.0,
+   "file": "v1b",
+   "page": 153,
+   "printed_page": 263
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 44,
+   "description": "Pump Cars - 21m boom length** (Minimum 30 m3) - for supply of ready mix concrete (Colombo area)",
+   "capacity": null,
+   "unit": "m3",
+   "wet_rate": 1300.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 47,
+   "description": "Backhoe loader**",
+   "capacity": "0.10m3",
+   "unit": "hr",
+   "wet_rate": 3000.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 48,
+   "description": "Backhoe loader**",
+   "capacity": "0.25m3",
+   "unit": "hr",
+   "wet_rate": 3900.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 50,
+   "description": "Bulldozer (Crawler Tractor)** (Min.4hrs/day)",
+   "capacity": "85 hp",
+   "unit": "hr",
+   "wet_rate": 6300.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 52,
+   "description": "Excavator (Long Arm)**",
+   "capacity": "0.4m3",
+   "unit": "hr",
+   "wet_rate": 7200.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 55,
+   "description": "Excavator**",
+   "capacity": "0.18m3",
+   "unit": "hr",
+   "wet_rate": 3655.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 56,
+   "description": "Excavator**",
+   "capacity": "0.35m3",
+   "unit": "hr",
+   "wet_rate": 6000.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 57,
+   "description": "Excavator**",
+   "capacity": "0.45m3",
+   "unit": "hr",
+   "wet_rate": 6400.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 58,
+   "description": "Excavator**",
+   "capacity": "0.7m3",
+   "unit": "hr",
+   "wet_rate": 6850.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 59,
+   "description": "Excavator**",
+   "capacity": "0.9m3",
+   "unit": "hr",
+   "wet_rate": 7350.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 60,
+   "description": "Backhoe Loader-Large Heavy-Belt**",
+   "capacity": "130hp",
+   "unit": "hr",
+   "wet_rate": 7600.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 64,
+   "description": "Wheel Loader**",
+   "capacity": "1.4m3",
+   "unit": "hr",
+   "wet_rate": 3300.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 66,
+   "description": "Chain Block",
+   "capacity": "5T",
+   "unit": "day",
+   "wet_rate": null,
+   "dry_rate": 2200.0,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 67,
+   "description": "Hoist Machine (300/500kg)*",
+   "capacity": null,
+   "unit": "day",
+   "wet_rate": 4750.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 154,
+   "printed_page": 264
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 68,
+   "description": "Crane Truck (80 km/day)** - crane charge Rs.4000/hrs",
+   "capacity": "5t",
+   "unit": "km",
+   "wet_rate": 250.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 155,
+   "printed_page": 265
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 69,
+   "description": "Crane Truck (80 km/day)** - crane charge Rs.6000/hrs",
+   "capacity": "17t",
+   "unit": "km",
+   "wet_rate": 350.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 155,
+   "printed_page": 265
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 70,
+   "description": "Crane Truck (80 km/day)** - crane charge Rs.7000/hrs",
+   "capacity": "20t",
+   "unit": "km",
+   "wet_rate": 550.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 155,
+   "printed_page": 265
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 71,
+   "description": "Crawler Crane**",
+   "capacity": "35 t",
+   "unit": "hr",
+   "wet_rate": 6400.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 155,
+   "printed_page": 265
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 72,
+   "description": "Crawler Crane**",
+   "capacity": "50 t",
+   "unit": "hr",
+   "wet_rate": 8500.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 155,
+   "printed_page": 265
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 77,
+   "description": "Hydraulic Crane** (Min.6hrs/day) (without transportation)",
+   "capacity": "20t",
+   "unit": "hr",
+   "wet_rate": 5300.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 155,
+   "printed_page": 265
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 78,
+   "description": "Hydraulic Crane** (Min.6hrs/day) (without transportation)",
+   "capacity": "15t",
+   "unit": "hr",
+   "wet_rate": 4600.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 155,
+   "printed_page": 265
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 79,
+   "description": "Tower crane - Electrical* (without mobilization & demobilization)",
+   "capacity": "10 t",
+   "unit": "hr",
+   "wet_rate": 3850.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 155,
+   "printed_page": 265
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 82,
+   "description": "Welding Plant - Electrical",
+   "capacity": "250A",
+   "unit": "day",
+   "wet_rate": null,
+   "dry_rate": 1000.0,
+   "file": "v1b",
+   "page": 155,
+   "printed_page": 265
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 90,
+   "description": "Generator**",
+   "capacity": "5 KW",
+   "unit": "hr",
+   "wet_rate": 1170.0,
+   "dry_rate": 625.0,
+   "file": "v1b",
+   "page": 155,
+   "printed_page": 265
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 92,
+   "description": "Generator**",
+   "capacity": "10 KW",
+   "unit": "hr",
+   "wet_rate": 2700.0,
+   "dry_rate": 1150.0,
+   "file": "v1b",
+   "page": 155,
+   "printed_page": 265
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 94,
+   "description": "Water Pump 2\" dia. (Electrical) - long term (>1 month)",
+   "capacity": null,
+   "unit": "day",
+   "wet_rate": null,
+   "dry_rate": 1200.0,
+   "file": "v1b",
+   "page": 156,
+   "printed_page": 266
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 95,
+   "description": "Water Pump 2\" dia.** (Engine Driven) - long term (>1 month)",
+   "capacity": null,
+   "unit": "day",
+   "wet_rate": 4200.0,
+   "dry_rate": 1200.0,
+   "file": "v1b",
+   "page": 156,
+   "printed_page": 266
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 96,
+   "description": "Water Pump 4\" dia.** (Engine Driven) - long term (>1 month) [dewatering]",
+   "capacity": null,
+   "unit": "day",
+   "wet_rate": 5700.0,
+   "dry_rate": 1920.0,
+   "file": "v1b",
+   "page": 156,
+   "printed_page": 266
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 97,
+   "description": "Sludge pump 4'' dia.** (Engine Driven) - long term (>1 month)",
+   "capacity": null,
+   "unit": "day",
+   "wet_rate": 5800.0,
+   "dry_rate": 2688.0,
+   "file": "v1b",
+   "page": 156,
+   "printed_page": 266
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 98,
+   "description": "Butt fusion Machine with all necessary equipment - Electrical*",
+   "capacity": null,
+   "unit": "month",
+   "wet_rate": 33000.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 156,
+   "printed_page": 266
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 104,
+   "description": "Crew cab**",
+   "capacity": null,
+   "unit": "km",
+   "wet_rate": 97.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 156,
+   "printed_page": 266
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 105,
+   "description": "Double cab**",
+   "capacity": null,
+   "unit": "km",
+   "wet_rate": 83.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 156,
+   "printed_page": 266
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 106,
+   "description": "Lorry** (up to 80 km/day)",
+   "capacity": "12t",
+   "unit": "km",
+   "wet_rate": 140.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 156,
+   "printed_page": 266
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 108,
+   "description": "Ordinary truck (100 km/day)**",
+   "capacity": "6t",
+   "unit": "day",
+   "wet_rate": 13000.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 156,
+   "printed_page": 266
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 109,
+   "description": "Ordinary truck (100 km/day)**",
+   "capacity": "12 t",
+   "unit": "day",
+   "wet_rate": 17200.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 157,
+   "printed_page": 267
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 111,
+   "description": "Truck with Boom*",
+   "capacity": "3t",
+   "unit": "day",
+   "wet_rate": 18500.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 157,
+   "printed_page": 267
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 113,
+   "description": "Truck with Boom**",
+   "capacity": "4t",
+   "unit": "day",
+   "wet_rate": 22000.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 157,
+   "printed_page": 267
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 114,
+   "description": "Truck with tipper**",
+   "capacity": "10t/5cu",
+   "unit": "km",
+   "wet_rate": 400.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 157,
+   "printed_page": 267
+  },
+  {
+   "table": "Annex 04: Basic Rates - Equipment (Construction Plants)",
+   "item": 116,
+   "description": "Water Bowser (up to 80 km/day)**",
+   "capacity": "6000 l",
+   "unit": "km",
+   "wet_rate": 316.0,
+   "dry_rate": null,
+   "file": "v1b",
+   "page": 157,
+   "printed_page": 267
+  }
+ ],
+ "equipment_notes": [
+  "VAT not included",
+  "* Cost of Operator / Driver (if applicable) are included in rates - for wet rates",
+  "** Cost of Operator / Driver and fuel (if applicable) are included in rates - for wet rates",
+  "Hiring Rates are used for Earth Work Related Equipment and Transportation/Moving Items",
+  "Electrically operated items do not include Electricity Consumption",
+  "Contractor's markup not included",
+  "Source: Market Prices July 2025",
+  "Same rates as Table A-DWK/02 Daywork Rates - Equipment (v1a pp.62-67), which adds: Contractor's percentage adjustment for day work of equipment - 10%"
+ ],
+ "ceb_construction": [
+  {
+   "section": "1.1.1 Bare conductor MV line cost per km - 11kV network (pole line constructions only)",
+   "rows": [
+    {
+     "item": "Single Circuit (Rs./km)",
+     "RACOON_7_4_09mm": 7477500.0,
+     "LYNX_37_2_79mm": 11072000.0,
+     "ELM_19_3_76mm": 9811000.0
+    },
+    {
+     "item": "Single Circuit on 13m Pole in metropolitan areas (Rs./km)",
+     "RACOON_7_4_09mm": 10818000.0,
+     "LYNX_37_2_79mm": 13668000.0,
+     "ELM_19_3_76mm": 12496000.0
+    },
+    {
+     "item": "Double Circuit on 13m Pole (Rs./km)",
+     "RACOON_7_4_09mm": null,
+     "LYNX_37_2_79mm": 21245000.0,
+     "ELM_19_3_76mm": 18824000.0
+    }
+   ],
+   "unit": "LKR/km",
+   "file": "v1b",
+   "page": 13,
+   "printed_page": 144,
+   "source": "Source: Based on publication \"STANDARD CONSTRUCTION COST - 2025\" of CEB."
+  },
+  {
+   "section": "1.1.2 Bare conductor MV line cost per km - 33kV network",
+   "rows": [
+    {
+     "item": "Single Circuit (Rs./km)",
+     "RACOON_7_4_09mm": 8039100.0,
+     "LYNX_37_2_79mm": 11623000.0,
+     "ELM_19_3_76mm": 10419000.0
+    },
+    {
+     "item": "Single Circuit on 13m Pole in metropolitan areas (Rs./km)",
+     "RACOON_7_4_09mm": 11462000.0,
+     "LYNX_37_2_79mm": 14340000.0,
+     "ELM_19_3_76mm": 13087000.0
+    },
+    {
+     "item": "Double Circuit on 13m Pole (Rs./km)",
+     "RACOON_7_4_09mm": null,
+     "LYNX_37_2_79mm": 22652000.0,
+     "ELM_19_3_76mm": 20074000.0
+    }
+   ],
+   "unit": "LKR/km",
+   "file": "v1b",
+   "page": 13,
+   "printed_page": 144,
+   "source": "Source: Based on publication \"STANDARD CONSTRUCTION COST - 2025\" of CEB."
+  },
+  {
+   "section": "1.2.1 Aerial Bundled Conductor (ABC) MV line cost per km - 11kV network",
+   "rows": [
+    {
+     "item": "Single Circuit on 11m Pole",
+     "ABC_95mm2": 15881000.0,
+     "ABC_150mm2": 20426000.0
+    },
+    {
+     "item": "Single Circuit on 13m Pole",
+     "ABC_95mm2": 18266000.0,
+     "ABC_150mm2": 22228000.0
+    },
+    {
+     "item": "Double Circuit on 11m Pole",
+     "ABC_95mm2": 24174000.0,
+     "ABC_150mm2": 34795000.0
+    },
+    {
+     "item": "Double Circuit on 13m Pole",
+     "ABC_95mm2": 26558000.0,
+     "ABC_150mm2": 36598000.0
+    }
+   ],
+   "unit": "LKR/km",
+   "file": "v1b",
+   "page": 14,
+   "printed_page": 145,
+   "source": "Source: Based on publication \"STANDARD CONSTRUCTION COST - 2025\" of CEB."
+  },
+  {
+   "section": "1.2.2 Aerial Bundled Conductor (ABC) MV line cost - 33kV network",
+   "rows": [
+    {
+     "item": "Single Circuit on 11m Pole",
+     "ABC_95mm2": 21605000.0,
+     "ABC_150mm2": 24994000.0
+    },
+    {
+     "item": "Single Circuit on 13m Pole",
+     "ABC_95mm2": 23452000.0,
+     "ABC_150mm2": 26994000.0
+    },
+    {
+     "item": "Double Circuit on 11m Pole",
+     "ABC_95mm2": 35407000.0,
+     "ABC_150mm2": 42499000.0
+    },
+    {
+     "item": "Double Circuit on 13m Pole",
+     "ABC_95mm2": 37253000.0,
+     "ABC_150mm2": 44449000.0
+    }
+   ],
+   "unit": "LKR (printed as \"Cost (LKR)\"; section heading says per km)",
+   "file": "v1b",
+   "page": 14,
+   "printed_page": 145,
+   "source": "Source: Based on publication \"STANDARD CONSTRUCTION COST - 2025\" of CEB."
+  },
+  {
+   "section": "2) Cost for provision of bulk supply from 100kVA to 1 MVA for overhead connections",
+   "formula": "Cost = Variable cost/kVA x kVA + Fixed cost",
+   "rows": [
+    {
+     "item": "Bulk supply connection through overhead network - 11 kV (i) 100kVA-1MVA",
+     "variable_cost_LKR_per_kVA": 8590.0,
+     "fixed_cost_LKR": 2000510.0,
+     "example_250kVA_LKR_derived": 4148010.0,
+     "example_500kVA_LKR_derived": 6295510.0
+    },
+    {
+     "item": "Bulk supply connection through overhead network - 33 kV (ii) 100kVA-1MVA",
+     "variable_cost_LKR_per_kVA": 8800.0,
+     "fixed_cost_LKR": 2322480.0,
+     "example_250kVA_LKR_derived": 4522480.0,
+     "example_500kVA_LKR_derived": 6722480.0
+    }
+   ],
+   "includes": [
+    "Current Transformers",
+    "MCCBs & Bus Bar Chamber",
+    "Crimp type Sockets (at the Transformer LV Terminals and MCCBs)",
+    "PVC insulated Cu Cables (valid up to 50m from Transformer LV Terminals to the MCCB; any length exceeding 50m charged from the customer)",
+    "Bulk Supply Meter Box",
+    "4 Nos. of Concrete Earthing System with 50 mm2 Cables (30m) with compression lugs, Earth rods and exothermic materials",
+    "Cost of constructing the Tap-Off from the existing MV including DDLO, SA, etc.",
+    "RC/PS Poles required for substation"
+   ],
+   "customer_provides": "The customer shall provide the transformer plinth and meter cubicle for housing bulk supply meter box and MCCB as per the CEB guidelines.",
+   "file": "v1b",
+   "page": 15,
+   "printed_page": 146,
+   "source": "Source: Based on publication \"STANDARD CONSTRUCTION COST - 2025\" of CEB."
+  },
+  {
+   "section": "3) Cost of installation of MV metering equipment",
+   "rows": [
+    {
+     "item": "11 kV cost (Rs)",
+     "cost_LKR": 2920000.0
+    },
+    {
+     "item": "33 kV cost (Rs)",
+     "cost_LKR": 3132000.0
+    }
+   ],
+   "file": "v1b",
+   "page": 15,
+   "printed_page": 146,
+   "source": "Source: Based on publication \"STANDARD CONSTRUCTION COST - 2025\" of CEB."
+  },
+  {
+   "section": "4.1.1 Overhead service connections up to 42kVA - from overhead network (Total = Fixed + Variable)",
+   "rows": [
+    {
+     "item": "1P 30A",
+     "fixed_cost_LKR_up_to_50m": 37500.0,
+     "variable_LKR_per_m_length_up_to_110m": 1670.0,
+     "variable_LKR_per_m_length_over_110m": 3404.0,
+     "variable_basis": "100% of cost of line length inside premises beyond 50m from meter point"
+    },
+    {
+     "item": "3P 30A",
+     "fixed_cost_LKR_up_to_50m": 76100.0,
+     "variable_LKR_per_m": 4105.0,
+     "variable_basis": "distance beyond 50m off the existing LV network (from three-phase available point)"
+    },
+    {
+     "item": "3P 60A",
+     "fixed_cost_LKR_up_to_50m": 85500.0,
+     "variable_LKR_per_m": 4105.0
+    }
+   ],
+   "note": "If a new transformer is required: Additional MV Network Development Cost = 50% x ((Required Capacity / Transformer Capacity) x Substation Cost as per standard construction rates + MV line construction cost).",
+   "file": "v1b",
+   "page": 16,
+   "printed_page": 147,
+   "source": "Source: Based on publication \"STANDARD CONSTRUCTION COST - 2025\" of CEB."
+  },
+  {
+   "section": "4.1.2 Loop services from existing overhead service",
+   "rows": [
+    {
+     "item": "1P 30A",
+     "fixed_cost_LKR": 14600.0,
+     "extra_length_LKR_per_m": 300.0
+    },
+    {
+     "item": "3P 30A",
+     "fixed_cost_LKR": 43600.0,
+     "extra_length_LKR_per_m": 600.0
+    },
+    {
+     "item": "3P 60A",
+     "fixed_cost_LKR": 44500.0,
+     "extra_length_LKR_per_m": 710.0
+    }
+   ],
+   "note": "Covered length within fixed cost: 2 m. Loop connections only for premises in same building/structure.",
+   "file": "v1b",
+   "page": 17,
+   "printed_page": 148,
+   "source": "Source: Based on publication \"STANDARD CONSTRUCTION COST - 2025\" of CEB."
+  },
+  {
+   "section": "4.1.3.1 Service connection to loads creating disturbances (larger feeder loads/lengths)",
+   "rows": [
+    {
+     "item": "60A, 3 ph. (2 connections allowable, 3-Ph ABC)",
+     "fixed_cost_LKR": 130150.0
+    },
+    {
+     "item": "30A, 3 ph. (4 allowable, 3-Ph ABC)",
+     "fixed_cost_LKR": 120750.0
+    },
+    {
+     "item": "30A, 1 ph. (4 allowable, 1-Ph ABC)",
+     "fixed_cost_LKR": 82150.0
+    }
+   ],
+   "note": "Effective feeder length for variable cost = distance from metering point to transformer - 50m; 50% of LV line cost beyond 50m charged at standard construction rates.",
+   "file": "v1b",
+   "page": 17,
+   "printed_page": 148,
+   "source": "Source: Based on publication \"STANDARD CONSTRUCTION COST - 2025\" of CEB."
+  },
+  {
+   "section": "4.1.4 Augmentation of overhead connections",
+   "rows": [
+    {
+     "item": "30 A, 1 Phase -> 30 A 3 Phase",
+     "fixed_cost_LKR": 70500.0
+    },
+    {
+     "item": "30 A, 1 Phase -> 60 A 3 Phase",
+     "fixed_cost_LKR": 79000.0
+    },
+    {
+     "item": "30 A, 3 Phase -> 60 A 3 Phase",
+     "fixed_cost_LKR": 58000.0
+    }
+   ],
+   "variable_LKR_per_m_beyond_50m": 2073.0,
+   "file": "v1b",
+   "page": 18,
+   "printed_page": 149,
+   "source": "Source: Based on publication \"STANDARD CONSTRUCTION COST - 2025\" of CEB."
+  }
+ ],
+ "import_tariff": {
+  "table": "Table B-ITT/01: Import Tariff and Taxes",
+  "file": "v1b",
+  "pages": "91-116",
+  "printed_pages": "203-228",
+  "column_meanings": {
+   "Unit": "u = unit (number), kg",
+   "AP": "Preferential duty - APTA (Asia-Pacific Trade Agreement)",
+   "AD": "Preferential duty - APTA LDC concession (Sri Lanka Customs code; not defined in Rate Book)",
+   "BN": "Preferential duty - (Sri Lanka Customs code BN; not defined in Rate Book)",
+   "GT": "Preferential duty - GSTP (Global System of Trade Preferences)",
+   "IN": "Preferential duty - Indo-Sri Lanka FTA (ISFTA)",
+   "PK": "Preferential duty - Pakistan-Sri Lanka FTA (PSFTA)",
+   "SA": "Preferential duty - SAPTA",
+   "SF": "Preferential duty - SAFTA (non-LDC)",
+   "SD": "Preferential duty - SAFTA (LDC)",
+   "SG": "Preferential duty - Sri Lanka-Singapore FTA",
+   "General_Duty": "General (MFN) customs import duty, % of CIF",
+   "Surcharge": "Customs surcharge (blank for all rows extracted)",
+   "PAL_GEN": "Ports and Airports Development Levy - general rate",
+   "PAL_SG": "PAL - rate for Singapore-FTA origin",
+   "CESS_GEN": "Cess (EDB) - general rate",
+   "CESS_SG": "Cess - rate for Singapore-FTA origin",
+   "SSCL": "Social Security Contribution Levy (2.5%)",
+   "Total_Duty": "Total Duty as % of CIF (general rates). Book values reproduce as GD+PAL+CESS+SSCL*(1.1+GD+PAL+CESS) (derived check, holds for all extracted rows)",
+   "VAT": "VAT 18% (charged in addition)",
+   "Ex": "Ex = exempt"
+  },
+  "notes": [
+   "Preferential-agreement abbreviations are not defined in the Rate Book; meanings given follow Sri Lanka Customs tariff convention (BN/AD uncertain).",
+   "Only selected rows relevant to WTP design extracted. No separate HS rows for polyelectrolyte, caustic soda, soda ash, ferric salts, or soft starters/VFDs in the table.",
+   "Blank cells left as null. \"Free\" = 0% preferential rate."
+  ],
+  "rows": [
+   {
+    "group": "chemicals - lime",
+    "hs_code": "2522.10",
+    "description": "Quicklime",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 91,
+    "printed_page": 203
+   },
+   {
+    "group": "chemicals - lime",
+    "hs_code": "2522.20",
+    "description": "Slaked lime",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 91,
+    "printed_page": 203
+   },
+   {
+    "group": "chemicals - chlorine",
+    "hs_code": "2801.10",
+    "description": "Chlorine",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 91,
+    "printed_page": 203
+   },
+   {
+    "group": "chemicals - PACl/aluminium chloride",
+    "hs_code": "2827.32",
+    "description": "Other chlorides: Of aluminium (aluminium chloride - closest heading for PACl)",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 92,
+    "printed_page": 204
+   },
+   {
+    "group": "chemicals - calcium hypochlorite / bleaching powder",
+    "hs_code": "2828.10",
+    "description": "Commercial calcium hypochlorite and other calcium chlorites",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "10%",
+    "CESS_SG": "0%",
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "23.25%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 92,
+    "printed_page": 204
+   },
+   {
+    "group": "chemicals - other hypochlorites",
+    "hs_code": "2828.90",
+    "description": "Hypochlorites etc. - Other (e.g. sodium hypochlorite)",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 92,
+    "printed_page": 204
+   },
+   {
+    "group": "chemicals - alum",
+    "hs_code": "2833.22",
+    "description": "Sulphates: Of aluminium (aluminium sulphate / alum)",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 92,
+    "printed_page": 204
+   },
+   {
+    "group": "chemicals - activated carbon",
+    "hs_code": "3802.10.22",
+    "description": "Activated carbon - Powdered",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 92,
+    "printed_page": 204
+   },
+   {
+    "group": "pipes - HDPE",
+    "hs_code": "3917.21",
+    "description": "Tubes, pipes and hoses, rigid: of polymers of ethylene (PE/HDPE pipes)",
+    "unit": "kg",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "15%",
+    "CESS_SG": "8%",
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "48.88%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "5.0%",
+     "SD": "5.0%"
+    },
+    "file": "v1b",
+    "page": 92,
+    "printed_page": 204
+   },
+   {
+    "group": "pipes - PVC",
+    "hs_code": "3917.23",
+    "description": "Tubes, pipes and hoses, rigid: of polymers of vinyl chloride (PVC pipes)",
+    "unit": "kg",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "25%",
+    "CESS_SG": "16%",
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "59.13%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 93,
+    "printed_page": 205
+   },
+   {
+    "group": "pipes - plastic fittings",
+    "hs_code": "3917.40.90",
+    "description": "Fittings - Other (incl. PVC-U pipe joints and fittings for potable cold water supplies)",
+    "unit": "kg",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "20%",
+    "CESS_SG": "12%",
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "54.00%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 93,
+    "printed_page": 205
+   },
+   {
+    "group": "pipes - DI/cast iron",
+    "hs_code": "7303.00",
+    "description": "Tubes, pipes & hollow profiles, of cast-iron (incl. ductile iron pipes)",
+    "unit": "kg",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "33.50%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "6.0%",
+     "SD": "4.5%"
+    },
+    "file": "v1b",
+    "page": 97,
+    "printed_page": 209
+   },
+   {
+    "group": "pipes - DI/cast iron fittings",
+    "hs_code": "7307.11.00",
+    "description": "Cast fittings of non-malleable cast iron",
+    "unit": "kg",
+    "general_duty": "15%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": null,
+    "CESS_GEN": "0%",
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "28.38%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 101,
+    "printed_page": 213
+   },
+   {
+    "group": "pipes - DI/cast iron fittings",
+    "hs_code": "7307.19.00",
+    "description": "Cast fittings - Other (e.g. ductile/malleable iron)",
+    "unit": "kg",
+    "general_duty": "15%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": null,
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "28.38%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 101,
+    "printed_page": 213
+   },
+   {
+    "group": "pumps",
+    "hs_code": "8413.50",
+    "description": "Other reciprocating positive displacement pumps (e.g. dosing pumps)",
+    "unit": "u",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "7.5%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "10.44%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 104,
+    "printed_page": 216
+   },
+   {
+    "group": "pumps",
+    "hs_code": "8413.60",
+    "description": "Other rotary positive displacement pumps",
+    "unit": "u",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "7.5%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "10%",
+    "CESS_SG": "Free",
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "41.19%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 104,
+    "printed_page": 216
+   },
+   {
+    "group": "pumps",
+    "hs_code": "8413.70.11",
+    "description": "Other centrifugal pumps: Water pumps except submersible pumps, inlet & outlet internal dia. not exceeding 15 cm - Used",
+    "unit": "u",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "10%",
+    "CESS_SG": "Free",
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "43.75%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 104,
+    "printed_page": 216
+   },
+   {
+    "group": "pumps",
+    "hs_code": "8413.70.19",
+    "description": "Other centrifugal pumps: Water pumps except submersible pumps, inlet & outlet internal dia. not exceeding 15 cm - Other (new)",
+    "unit": "u",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "7.5%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "10%",
+    "CESS_SG": "Free",
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "41.19%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 104,
+    "printed_page": 216
+   },
+   {
+    "group": "pumps",
+    "hs_code": "8413.70.91",
+    "description": "Other centrifugal pumps - Other - Used",
+    "unit": "u",
+    "general_duty": "",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 104,
+    "printed_page": 216
+   },
+   {
+    "group": "pumps",
+    "hs_code": "8413.70.99",
+    "description": "Other centrifugal pumps - Other (new; e.g. large/submersible centrifugal pumps)",
+    "unit": "u",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "7.5%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "10.44%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 104,
+    "printed_page": 216
+   },
+   {
+    "group": "pumps",
+    "hs_code": "8413.81",
+    "description": "Other pumps for liquids - Pumps",
+    "unit": "u",
+    "general_duty": "Free",
+    "surcharge": null,
+    "PAL_GEN": "7.5%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "10.44%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 104,
+    "printed_page": 216
+   },
+   {
+    "group": "pumps",
+    "hs_code": "8413.91.90",
+    "description": "Parts of pumps - Other",
+    "unit": "kg",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "7.5%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "30.94%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "5.0%",
+     "SD": "4.5%",
+     "SG": "10.0%"
+    },
+    "file": "v1b",
+    "page": 104,
+    "printed_page": 216
+   },
+   {
+    "group": "valves",
+    "hs_code": "8481.10.90",
+    "description": "Pressure-reducing valves - Other",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "5.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "7.88%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 106,
+    "printed_page": 218
+   },
+   {
+    "group": "valves",
+    "hs_code": "8481.30",
+    "description": "Check (nonreturn) valves",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "5.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "7.88%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 107,
+    "printed_page": 219
+   },
+   {
+    "group": "valves",
+    "hs_code": "8481.40",
+    "description": "Safety or relief valves",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "5.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "7.88%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 107,
+    "printed_page": 219
+   },
+   {
+    "group": "valves",
+    "hs_code": "8481.80.90",
+    "description": "Other appliances (valves) - Other (gate/butterfly/sluice valves etc.)",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "7.5%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "10.44%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 107,
+    "printed_page": 219
+   },
+   {
+    "group": "valves",
+    "hs_code": "8481.90.90",
+    "description": "Parts of valves - Other",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "5.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "7.88%",
+    "VAT": "18%",
+    "preferential": {
+     "AP": "Free",
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 107,
+    "printed_page": 219
+   },
+   {
+    "group": "motors",
+    "hs_code": "8501.52.10",
+    "description": "AC motors, multi-phase, 750 W-75 kW: Induction motors 350/450 V, 3 phase exceeding 750 W but not exceeding 25 kW & exceeding 750 RPM",
+    "unit": "u",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "5.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "28.38%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 109,
+    "printed_page": 221
+   },
+   {
+    "group": "motors",
+    "hs_code": "8501.52.90",
+    "description": "AC motors, multi-phase, 750 W-75 kW: Other",
+    "unit": "u",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "5.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "7.88%",
+    "VAT": "18%",
+    "preferential": {
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 109,
+    "printed_page": 221
+   },
+   {
+    "group": "motors",
+    "hs_code": "8501.53",
+    "description": "AC motors, multi-phase, output exceeding 75 kW",
+    "unit": "u",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "5.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "7.88%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 109,
+    "printed_page": 221
+   },
+   {
+    "group": "generators",
+    "hs_code": "8502.11",
+    "description": "Diesel generating sets, output not exceeding 75 kVA",
+    "unit": "u",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {
+     "AP": "Free",
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 109,
+    "printed_page": 221
+   },
+   {
+    "group": "generators",
+    "hs_code": "8502.12",
+    "description": "Diesel generating sets, output exceeding 75 kVA but not exceeding 375 kVA",
+    "unit": "u",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {
+     "AP": "Free",
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 109,
+    "printed_page": 221
+   },
+   {
+    "group": "generators",
+    "hs_code": "8502.13",
+    "description": "Diesel generating sets, output exceeding 375 kVA",
+    "unit": "u",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "Free",
+     "SD": "Free",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 109,
+    "printed_page": 221
+   },
+   {
+    "group": "transformers",
+    "hs_code": "8504.21.90",
+    "description": "Liquid dielectric transformers, not exceeding 650 kVA - Other (non-PCB)",
+    "unit": "u",
+    "general_duty": "15%",
+    "surcharge": null,
+    "PAL_GEN": "5.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "23.25%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 110,
+    "printed_page": 222
+   },
+   {
+    "group": "transformers",
+    "hs_code": "8504.22.20",
+    "description": "Liquid dielectric transformers, 650-10000 kVA: Other, not exceeding 5000 kVA",
+    "unit": "u",
+    "general_duty": "15%",
+    "surcharge": null,
+    "PAL_GEN": "5.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "23.25%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "6.0%",
+     "SD": "4.5%",
+     "SG": "10.0%"
+    },
+    "file": "v1b",
+    "page": 110,
+    "printed_page": 222
+   },
+   {
+    "group": "transformers",
+    "hs_code": "8504.22.90",
+    "description": "Liquid dielectric transformers, 650-10000 kVA: Other",
+    "unit": "u",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "8%",
+    "CESS_SG": "6%",
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "21.20%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "4.0%",
+     "SD": "1.5%",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 111,
+    "printed_page": 223
+   },
+   {
+    "group": "transformers",
+    "hs_code": "8504.23.90",
+    "description": "Other transformers (book code 8504.23.90) - Other",
+    "unit": "u",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "5.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "8%",
+    "CESS_SG": "6%",
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "16.08%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "4.0%",
+     "SD": "1.5%",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 111,
+    "printed_page": 223
+   },
+   {
+    "group": "electrical panels",
+    "hs_code": "8537.10",
+    "description": "Boards, panels, consoles etc. for electric control/distribution, voltage not exceeding 1,000 V",
+    "unit": "kg",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": null,
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "33.50%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 114,
+    "printed_page": 226
+   },
+   {
+    "group": "electrical panels",
+    "hs_code": "8537.20",
+    "description": "Boards, panels etc., voltage exceeding 1,000 V",
+    "unit": "kg",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": null,
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "33.50%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 114,
+    "printed_page": 226
+   },
+   {
+    "group": "cables",
+    "hs_code": "8544.49.30",
+    "description": "Other electric conductors <=1000 V: Other single and multi-cored wire and cable not exceeding 185 mm2 conductor cross-section per core",
+    "unit": "kg",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "10%",
+    "CESS_SG": "0%",
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "43.75%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 115,
+    "printed_page": 227
+   },
+   {
+    "group": "cables",
+    "hs_code": "8544.49.40",
+    "description": "Other electric conductors <=1000 V: Other armoured and underground cables not exceeding 150mm2 conductor cross-section per core",
+    "unit": "kg",
+    "general_duty": "20%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "10%",
+    "CESS_SG": "0%",
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "43.75%",
+    "VAT": "18%",
+    "preferential": {},
+    "file": "v1b",
+    "page": 115,
+    "printed_page": 227
+   },
+   {
+    "group": "cables",
+    "hs_code": "8544.49.90",
+    "description": "Other electric conductors <=1000 V: Other",
+    "unit": "kg",
+    "general_duty": "15%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": "0%",
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "28.38%",
+    "VAT": "18%",
+    "preferential": {
+     "SG": "10.0%"
+    },
+    "file": "v1b",
+    "page": 115,
+    "printed_page": 227
+   },
+   {
+    "group": "cables",
+    "hs_code": "8544.60",
+    "description": "Other electric conductors, for a voltage exceeding 1000 V",
+    "unit": "kg",
+    "general_duty": "0%",
+    "surcharge": null,
+    "PAL_GEN": "10.0%",
+    "PAL_SG": "6.0%",
+    "CESS_GEN": null,
+    "CESS_SG": null,
+    "SSCL": "2.5%",
+    "total_duty_pct_CIF": "13.00%",
+    "VAT": "18%",
+    "preferential": {
+     "IN": "Free",
+     "PK": "Free",
+     "SF": "4.0%",
+     "SD": "1.5%",
+     "SG": "Free"
+    },
+    "file": "v1b",
+    "page": 115,
+    "printed_page": 227
+   }
+  ]
+ },
+ "vat": {
+  "rate": 0.18,
+  "rate_text": "eighteen per centum (18%)",
+  "effective": "2024-01-01",
+  "ref": "Extraordinary Gazette No. 2363/22 dated 19 December 2023 (Tuesday) - Order under Section 2A of the Value Added Tax Act, No. 14 of 2002 as amended by Act No. 06 of 2005; amends Gazette No. 2282/26 of May 31, 2022 by substituting sub paragraph (b) of paragraph 1: \"(b) On the import and/or supply of goods or supply of services, other than the import of goods as referred to under Sub-paragraph (a) of this paragraph, at the rate of eighteen per centum (18%).\" Gazette No. 2295/08 of August 31, 2022 rescinded w.e.f. January 01, 2024. Signed Ranil Wickremesinghe, Minister of Finance.",
+  "annex": "Annex 14 - Extraordinary Gazette of Revision of Value Added Tax",
+  "file": "v1b",
+  "page": 197,
+  "printed_page": 317,
+  "estimate_usage": "Total Cost Estimate format: VAT = 18% of Sub Total 3 (v1a p.17 step 19 and p.19 Table 1)."
+ },
+ "water_tariff_summary": {
+  "ref": "Annex 7 - NWS&DB Water Tariff: Gazette Extraordinary No. 2398/19 of 21 August 2024 (Notice under Section 84, NWSDB Law No. 2 of 1974); effective 21 August 2024; replaces Gazette 2343/28 of 02 Aug 2023.",
+  "unit": "1 unit = 1 m3 (1,000 L); Usage Charge Rs./unit and Monthly Service Charge Rs. are tabulated per monthly-consumption band (No. of units). Bill = water charges + monthly service charge + other charges + applicable taxes (VAT). Whether a band rate applies to all units or only units within the band is not stated in the gazette text.",
+  "file": "v1b",
+  "pages": "164-171",
+  "printed_pages": "284-291",
+  "tables": {
+   "T01 Samurdhi recipients & tenement gardens (cat 14,17,20,24)": [
+    {
+     "units": "00-05",
+     "usage_LKR_per_m3": 5.0,
+     "monthly_service_LKR": 100.0
+    },
+    {
+     "units": "06-10",
+     "usage_LKR_per_m3": 10.0,
+     "monthly_service_LKR": 100.0
+    },
+    {
+     "units": "11-15",
+     "usage_LKR_per_m3": 15.0,
+     "monthly_service_LKR": 100.0
+    },
+    {
+     "units": "16-20",
+     "usage_LKR_per_m3": 40.0,
+     "monthly_service_LKR": 100.0
+    },
+    {
+     "units": "21-25",
+     "usage_LKR_per_m3": 58.0,
+     "monthly_service_LKR": 100.0
+    },
+    {
+     "units": "26-30",
+     "usage_LKR_per_m3": 88.0,
+     "monthly_service_LKR": 200.0
+    },
+    {
+     "units": "31-40",
+     "usage_LKR_per_m3": 105.0,
+     "monthly_service_LKR": 400.0
+    },
+    {
+     "units": "41-50",
+     "usage_LKR_per_m3": 120.0,
+     "monthly_service_LKR": 650.0
+    },
+    {
+     "units": "51-75",
+     "usage_LKR_per_m3": 130.0,
+     "monthly_service_LKR": 1000.0
+    },
+    {
+     "units": "Over 75",
+     "usage_LKR_per_m3": 140.0,
+     "monthly_service_LKR": 1600.0
+    }
+   ],
+   "T02 Domestic other than Samurdhi (cat 10,11,13,16,18,19)": [
+    {
+     "units": "00-05",
+     "usage_LKR_per_m3": 50.0,
+     "monthly_service_LKR": 300.0
+    },
+    {
+     "units": "06-10",
+     "usage_LKR_per_m3": 70.0,
+     "monthly_service_LKR": 300.0
+    },
+    {
+     "units": "11-15",
+     "usage_LKR_per_m3": 90.0,
+     "monthly_service_LKR": 300.0
+    },
+    {
+     "units": "16-20",
+     "usage_LKR_per_m3": 100.0,
+     "monthly_service_LKR": 400.0
+    },
+    {
+     "units": "21-25",
+     "usage_LKR_per_m3": 120.0,
+     "monthly_service_LKR": 500.0
+    },
+    {
+     "units": "26-30",
+     "usage_LKR_per_m3": 150.0,
+     "monthly_service_LKR": 600.0
+    },
+    {
+     "units": "31-40",
+     "usage_LKR_per_m3": 170.0,
+     "monthly_service_LKR": 1500.0
+    },
+    {
+     "units": "41-50",
+     "usage_LKR_per_m3": 195.0,
+     "monthly_service_LKR": 3000.0
+    },
+    {
+     "units": "51-75",
+     "usage_LKR_per_m3": 225.0,
+     "monthly_service_LKR": 3500.0
+    },
+    {
+     "units": "76-100",
+     "usage_LKR_per_m3": 250.0,
+     "monthly_service_LKR": 4000.0
+    },
+    {
+     "units": "Over 100",
+     "usage_LKR_per_m3": 280.0,
+     "monthly_service_LKR": 4500.0
+    }
+   ],
+   "T03 Public stand posts / garden taps (cat 51,52,53)": {
+    "usage_LKR_per_m3": 60.0,
+    "monthly_service_LKR": {
+     "00-25": 400.0,
+     "26-50": 500.0,
+     "51-100": 1000.0,
+     "101-200": 1600.0,
+     "Over 200": 2500.0
+    }
+   },
+   "T04 Religious & non-profit (cat 81,85)": {
+    "usage_LKR_per_m3": 60.0,
+    "monthly_service_LKR": {
+     "00-05": 400.0,
+     "06-10": 400.0,
+     "11-15": 500.0,
+     "16-20": 600.0,
+     "21-25": 1000.0,
+     "26-30": 1200.0,
+     "31-40": 1200.0,
+     "41-50": 2400.0,
+     "51-75": 2400.0,
+     "Over 75": 3500.0
+    }
+   },
+   "T05 Government institutions & industries other than BOI zone (cat 60,61,62,64,73,75)": {
+    "usage_LKR_per_m3": 110.0,
+    "monthly_service_LKR": {
+     "00-25": 500.0,
+     "26-50": 750.0,
+     "51-75": 1500.0,
+     "76-100": 1750.0,
+     "101-200": 2000.0,
+     "201-500": 3000.0,
+     "501-1,000": 5000.0,
+     "1,001-2,000": 10000.0,
+     "2,001-4,000": 15000.0,
+     "4,001-10,000": 30000.0,
+     "10,001-20,000": 60000.0,
+     "Over 20,000": 130000.0
+    }
+   },
+   "T06 Govt & assisted schools, approved charitable (cat 12,15,88)": {
+    "usage_LKR_per_m3": 55.0,
+    "monthly_service_LKR": {
+     "00-05": 400.0,
+     "06-10": 400.0,
+     "11-15": 500.0,
+     "16-20": 600.0,
+     "21-25": 1000.0,
+     "26-30": 1200.0,
+     "31-40": 1200.0,
+     "41-50": 2400.0,
+     "51-75": 2400.0,
+     "Over 75": 3500.0
+    }
+   },
+   "T07 Government hospitals (cat 63)": {
+    "usage_LKR_per_m3": 95.0,
+    "monthly_service_LKR": {
+     "00-25": 400.0,
+     "26-50": 500.0,
+     "51-75": 1000.0,
+     "76-100": 1000.0,
+     "101-200": 1600.0,
+     "201-500": 2500.0,
+     "501-1,000": 4000.0,
+     "1,001-2,000": 7500.0,
+     "2,001-4,000": 12500.0,
+     "4,001-10,000": 25000.0,
+     "10,001-20,000": 50000.0,
+     "Over 20,000": 100000.0
+    }
+   },
+   "T08 Commercial, SOE, tourist, BOI zone, NWSDB premises, bowser (cat 65,70,71,74,77,79,80,82,98)": {
+    "usage_LKR_per_m3": 150.0,
+    "monthly_service_LKR": {
+     "00-25": 500.0,
+     "26-50": 750.0,
+     "51-75": 1500.0,
+     "76-100": 1750.0,
+     "101-200": 2000.0,
+     "201-500": 3000.0,
+     "501-1,000": 5000.0,
+     "1,001-2,000": 10000.0,
+     "2,001-4,000": 15000.0,
+     "4,001-10,000": 30000.0,
+     "10,001-20,000": 60000.0,
+     "Over 20,000": 130000.0
+    }
+   },
+   "T09 Port City & shipping (cat 72,78)": {
+    "usage_LKR_per_m3": 750.0,
+    "monthly_service_LKR": {
+     "00-25": 500.0,
+     "26-50": 750.0,
+     "51-75": 1500.0,
+     "76-100": 1750.0,
+     "101-200": 2000.0,
+     "201-500": 3000.0,
+     "501-1,000": 5000.0,
+     "1,001-2,000": 10000.0,
+     "2,001-4,000": 15000.0,
+     "4,001-10,000": 30000.0,
+     "10,001-20,000": 60000.0,
+     "Over 20,000": 130000.0
+    }
+   },
+   "T10 Bulk supply to Local Authorities & CBOs (cat 90,91)": {
+    "usage_LKR_per_m3": 60.0,
+    "monthly_service_LKR": {
+     "00-25": 500.0,
+     "26-50": 750.0,
+     "51-75": 1500.0,
+     "76-100": 1750.0,
+     "101-200": 2000.0,
+     "201-500": 3000.0,
+     "501-1,000": 5000.0,
+     "1,001-2,000": 10000.0,
+     "2,001-4,000": 15000.0,
+     "4,001-10,000": 30000.0,
+     "10,001-20,000": 60000.0,
+     "Over 20,000": 130000.0
+    }
+   }
+  },
+  "summary": "Domestic (T02): increasing-block usage charge Rs.50-280/m3 with service charge Rs.300-4,500/month; Samurdhi (T01): Rs.5-140/m3, service Rs.100-1,600. Non-domestic tables use a flat usage rate (Govt/industry Rs.110, commercial Rs.150, hospitals Rs.95, schools Rs.55, religious/stand posts/bulk Rs.60, port/shipping Rs.750 per m3) plus a service charge rising with monthly consumption band (Rs.400-130,000). Prompt-payment rebate 1.5% within 14 days; late surcharge 2.5%/month after 30 days."
+ },
+ "estimate_format": {
+  "file": "v1a",
+  "pages": "17-22",
+  "printed_pages": "i-v",
+  "steps": [
+   "Obtain rates from Section A tables/graphs; if composite rates not available use Section B unit rates.",
+   "Add 27% of the rates obtained if Contractor's markup is not included (unless otherwise stated). If included, add nothing.",
+   "Apply Table-2 factors to split each rate into local currency (LC) and foreign currency (FC) components.",
+   "Amount = Unit rate x Quantity.",
+   "Price escalation for implementation beyond 31.12.2025: LC 5% per annum; FC 3% per annum.",
+   "Sub Total 1 = sum of all items.",
+   "(i) Investigation, feasibility, design, tender docs, tendering, supervision = % of Sub Total 1 per Table 4.",
+   "(ii) Road reinstatement & power supply, (iii) land acquisition = provisional sums.",
+   "(iv) Allow 5% of Sub Total 1 for improvement of Rural Water Supply & Sanitation and Water Resource Development.",
+   "Optional provisional sums: vehicles, quarters, training; (v) Duties & Fiscal Levies if applicable.",
+   "Sub Total 2 = sum of items 8-15.",
+   "Physical contingencies: maximum 10% of (Sub Total 1 + Duties and Fiscal Levies).",
+   "Sub Total 3 = Sub Total 2 + contingencies.",
+   "VAT = 18% of Sub Total 3.",
+   "Total; TCE valid for one year; state FC conversion rate."
+  ],
+  "preliminaries": "Preliminaries approx. 4% of Sub Total 1 (excl. preliminaries) for projects above LKR 500 million; approx. 5% for projects below LKR 500 million.",
+  "table2_LC_FC_factors": {
+   "columns": [
+    "NCB local",
+    "NCB foreign",
+    "ICB local",
+    "ICB foreign"
+   ],
+   "Preliminaries": [
+    1.0,
+    0,
+    0.8,
+    0.2
+   ],
+   "Soil Investigation": [
+    1.0,
+    0,
+    0.9,
+    0.1
+   ],
+   "Intake": [
+    0.8,
+    0.2,
+    0.6,
+    0.4
+   ],
+   "Treatment Plant (incl. chemical dosing system, chlorinators, air blowers, backwash pumps, landscaping etc.)": [
+    0.7,
+    0.3,
+    0.6,
+    0.4
+   ],
+   "Ground Reservoirs": [
+    0.8,
+    0.2,
+    0.8,
+    0.2
+   ],
+   "Towers": [
+    0.75,
+    0.25,
+    0.75,
+    0.25
+   ],
+   "DI pipe supply": [
+    0.05,
+    0.95,
+    0.05,
+    0.95
+   ],
+   "HDPE pipe supply": [
+    0.05,
+    0.95,
+    0.05,
+    0.95
+   ],
+   "PVC pipe supply": [
+    0.95,
+    0.05,
+    0.95,
+    0.05
+   ],
+   "Laying of pipes (incl. chambers)": [
+    0.95,
+    0.05,
+    0.95,
+    0.05
+   ],
+   "M&E equipment (pumps, generators, gantry cranes, monorails etc.)": [
+    0.1,
+    0.9,
+    0.1,
+    0.9
+   ],
+   "Buildings (office, quarters, pump house etc.)": [
+    1.0,
+    0,
+    0.95,
+    0.05
+   ],
+   "Sludge treatment": [
+    0.8,
+    0.2,
+    0.2,
+    0.8
+   ],
+   "SCADA System": [
+    0.1,
+    0.9,
+    0.1,
+    0.9
+   ],
+   "Bulk meters": [
+    0.1,
+    0.9,
+    0.1,
+    0.9
+   ],
+   "Vehicles": [
+    1.0,
+    0,
+    0.05,
+    0.95
+   ],
+   "Investigation/Feasibility, Design/Bid docs, Procurement, Supervision": [
+    1.0,
+    0,
+    0.4,
+    0.6
+   ],
+   "Land acquisition": [
+    1.0,
+    0,
+    1.0,
+    0
+   ],
+   "Training": [
+    1.0,
+    0,
+    0.7,
+    0.3
+   ],
+   "Power supply": [
+    1.0,
+    0,
+    1.0,
+    0
+   ],
+   "Catchment protection": [
+    1.0,
+    0,
+    1.0,
+    0
+   ]
+  },
+  "table3_factors": {
+   "columns": [
+    "Design&Build ICB",
+    "Design&Build NCB",
+    "Measure&Pay ICB",
+    "Measure&Pay NCB"
+   ],
+   "Detail investigation & detail design (fixed price margin)": [
+    "8%",
+    "8%",
+    "0%",
+    "0%"
+   ],
+   "Credit terms (foreign purchase >10% of basic cost)": [
+    "3%",
+    "0%",
+    "3%",
+    "0%"
+   ],
+   "Foreign country project management cost / country risk": [
+    "2.5%",
+    "0%",
+    "2.5%",
+    "0%"
+   ],
+   "Summation": [
+    "13.5%",
+    "8%",
+    "5.5%",
+    "0%"
+   ]
+  },
+  "table4_engineering_pct_total": {
+   "Less than LKR 100 Million": {
+    "Capital (GOSL)": 20,
+    "NHDA": 20,
+    "Rechargeable": 20,
+    "BOI": 7,
+    "Government (concession)": 5,
+    "Government": 12
+   },
+   "Not less than LKR 100 Million": {
+    "Capital (GOSL)": 18,
+    "GOSL + Foreign": 18,
+    "NHDA": 18,
+    "Rechargeable": 18,
+    "BOI": 7,
+    "Government (concession)": 5,
+    "Government": 11
+   }
+  },
+  "table4_note": "Total % of works cost for investigation/feasibility, design & bid docs, procurement and construction supervision (D/C + O/H split given in book p.22)."
+ }
+}

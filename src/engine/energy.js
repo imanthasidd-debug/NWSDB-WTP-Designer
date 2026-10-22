@@ -2,16 +2,18 @@
 import { Calc, n } from '../core/calc.js';
 import { DIESEL_KG_PER_KWH, ref } from '../core/d2.js';
 import { GENSET_KVA, TRANSFORMER_KVA, nextStd } from '../core/util.js';
+import { DIESEL, RB, TARIFFS, TOU_HOURS, blendedRate, rbRef } from '../core/ratebook.js';
 
 export const DEFAULTS = {
   pf: 0.85,
   diversity: 0.9,
-  energyRate: 26,        // LKR/kWh blended (CEB industrial, after May-2026 revision – update to current tariff)
-  demandRate: 1600,      // LKR/kVA/month
-  fixedCharge: 5700,     // LKR/month
+  tariff: 'auto',        // CEB tariff category (NWSDB RB 2025 Annex 8, June 2025): auto | I-2 | I-3 | GP-2 | GP-3 | GV-2 | GV-3
+  energyRate: 0,         // LKR/kWh – 0 = time-of-use blend of the selected tariff (+ 2.5 % SSCL)
+  demandRate: 0,         // LKR/kVA/month – 0 = tariff
+  fixedCharge: 0,        // LKR/month – 0 = tariff
   genEssentialPumps: 1,  // duty pumps per station on generator
   outageHours: 120,      // h/yr of standby generation (CEB outages, maintenance)
-  dieselPrice: 380,      // LKR/L
+  dieselPrice: DIESEL.v, // LKR/L (RB 2025 Annex 1, July 2025)
   extraLoads: [],        // [{name, kw, hours}]
 };
 
@@ -87,9 +89,20 @@ export function compute(inp, ctx) {
   const kwhOp = kwhD * (0.25 + 0.75 * scale);
   const spec = kwhOp / Qop;
   calc.step('Specific energy at operating flow', 'e = E/Q', `${n(kwhOp, 0)}/${n(Qop, 0)}`, spec, 'kWh/m³');
-  const monthlyBill = kwhOp * 30.4 * d.energyRate + kva * d.demandRate + d.fixedCharge;
-  calc.step('Monthly electricity bill (CEB)', 'B = 30.4E\\,c_e + S\\,c_d + F', `30.4\\times${n(kwhOp, 0)}\\times${n(d.energyRate)} + ${n(kva, 0)}\\times${n(d.demandRate)} + ${n(d.fixedCharge)}`, monthlyBill, 'LKR');
+  calc.section('Electricity tariff (CEB, NWSDB RB 2025 Annex 8 – effective 12.06.2025)');
+  const tcode = d.tariff && d.tariff !== 'auto' ? d.tariff : kva >= 100 ? 'I-3' : 'I-2';
+  const bl = blendedRate(tcode);
+  const eRate = d.energyRate > 0 ? d.energyRate : bl.rate;
+  const dRate = d.demandRate > 0 ? d.demandRate : bl.t.demand;
+  const fCharge = d.fixedCharge > 0 ? d.fixedCharge : bl.t.fixed;
+  calc.text(`Tariff category ${tcode} – ${TARIFFS[tcode].label}${d.tariff === 'auto' ? ' (auto: 11 kV bulk supply above 100 kVA, else 400 V; the Rate Book does not state the category for NWSDB plants – confirm with CEB)' : ''}.`);
+  calc.step('Time-of-use blended energy charge (24 h operation, incl. SSCL)', 'c_e = \frac{13c_{day}+4c_{peak}+7c_{off}}{24}(1+SSCL)', `\frac{13\times${bl.t.day}+4\times${bl.t.peak}+7\times${bl.t.off}}{24}\times${n(1 + RB.sscl / 100, 3)}`, eRate, 'LKR/kWh', bl.ref);
+  calc.step('Demand charge', 'c_d', '', dRate, 'LKR/kVA/month', rbRef('Annex 8'));
+  calc.step('Fixed charge', 'F', '', fCharge, 'LKR/month', rbRef('Annex 8'));
+  void TOU_HOURS;
+  const monthlyBill = kwhOp * 30.4 * eRate + kva * dRate + fCharge;
+  calc.step('Monthly electricity bill (CEB)', 'B = 30.4E\\,c_e + S\\,c_d + F', `30.4\\times${n(kwhOp, 0)}\\times${n(eRate)} + ${n(kva, 0)}\\times${n(dRate)} + ${n(fCharge)}`, monthlyBill, 'LKR');
   const groups = {};
   for (const x of L) groups[x.group] = (groups[x.group] || 0) + x.kwh;
-  return { inputs: d, loads: L, kwConnected, kwRunning, md, kva, tx, genKva, kwhD, kwhOp, spec, monthlyBill, annualBill: monthlyBill * 12, fuelL, fuelCost, groups, ...calc.result() };
+  return { inputs: d, tariff: tcode, energyRate: eRate, demandRate: dRate, fixedCharge: fCharge, loads: L, kwConnected, kwRunning, md, kva, tx, genKva, kwhD, kwhOp, spec, monthlyBill, annualBill: monthlyBill * 12, fuelL, fuelCost, groups, ...calc.result() };
 }

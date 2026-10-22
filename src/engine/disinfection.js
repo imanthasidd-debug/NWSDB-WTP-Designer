@@ -1,15 +1,16 @@
 // Disinfection: chlorine dose (demand + residual, breakpoint), CT compliance (NWSDB D3 §6.2, Tables 6-2/6-4/6-5/6-7 –
 // USEPA SWTR method), contact-tank sizing & baffling, chlorinators, cylinder logistics, hypochlorite alternatives (D3 §6.3–6.5).
+import { CHEM as RBCHEM } from '../core/ratebook.js';
 import { Calc, n } from '../core/calc.js';
 import { fracHOCl, pKaHOCl } from '../core/water.js';
 import { BLEACH, CREDITS, GAS, RESIDUAL, baffleFactorFor, ctGiardiaD3, ctVirusD3 } from '../core/d3.js';
 import { ceilTo, nextStd } from '../core/util.js';
 
 export const AGENTS = {
-  gas: { label: 'Chlorine gas', strength: 1.0, price: 450, unit: 'kg Cl₂' },
+  gas: { label: 'Chlorine gas', strength: 1.0, price: RBCHEM.cl2.v, unit: 'kg Cl₂' },
   naocl: { label: 'Sodium hypochlorite (10 % av. Cl)', strength: 0.10, price: 130, unit: 'kg solution', density: 1170 },
   hth: { label: 'Calcium hypochlorite – HTH (65 %)', strength: 0.65, price: 950, unit: 'kg granules' },
-  bleach: { label: 'Bleaching powder (35 % av. Cl – D3 design value)', strength: 0.35, price: 330, unit: 'kg powder' },
+  bleach: { label: 'Bleaching powder (35 % av. Cl – D3 design value)', strength: 0.35, price: RBCHEM.bleach.v, unit: 'kg powder' },
 };
 export const CHLORINATORS = [0.5, 1, 2, 4, 5, 10, 20, 25, 50, 100, 200];
 
@@ -51,7 +52,8 @@ export function compute(inp, ctx) {
   const T = q.T;
   const key = d.agent === 'auto' ? proc.disinfectant : d.agent;
   const A = AGENTS[key] || AGENTS.gas;
-  const price = d.price > 0 ? d.price : A.price;
+  // NWSDB RB 2025 A-CH/02: 900 kg drums (225 LKR/kg) for large plants, 68 kg cylinders (544 LKR/kg) for small ones
+  const price = d.price > 0 ? d.price : key === 'gas' && ((+d.demand || 1.2) + (+d.residual || 0.8)) * ctx.res.demand.Qd / 1000 < 15 ? RBCHEM.cl2small.v : A.price;
   const cd = chlorineDose(ctx);
   const Qd = dem.Qd, Qh = dem.Qh;
   const Qop = dem.design.gross * (1 + dem.inputs.ownUse / 100);

@@ -152,6 +152,7 @@ export const KPI_DEFS = [
   K('energy', 'Maximum demand', (r) => r.energy?.md, 'kW', 0),
   K('energy', 'Specific energy', (r) => r.energy?.spec, 'kWh/m³', 3),
   K('cost', 'Capital cost', (r) => (r.cost?.capex ? r.cost.capex / 1e6 : null), 'LKR M', 1),
+  K('cost', "Engineer's estimate (BOQ)", (r) => (r.cost?.boqWorks ? r.cost.boqWorks / 1e6 : null), 'LKR M', 1),
   K('cost', 'O&M cost', (r) => (r.cost?.omTot ? r.cost.omTot / 1e6 : null), 'LKR M/yr', 1),
   K('cost', 'Full cost of water', (r) => r.cost?.fullPerM3, 'LKR/m³', 1),
 ];

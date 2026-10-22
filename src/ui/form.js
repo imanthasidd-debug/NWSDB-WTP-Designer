@@ -86,7 +86,8 @@ function fieldNode(mod, f, refs) {
       const parts = [];
       const c = f.crit ? critOf(f.crit) : null;
       let st = 'ok';
-      const autoV = f.auto && (!v || v === 0) && f.autoVal ? f.autoVal(store.results) : null;
+      let autoV = null;
+      if (f.auto && (!v || v === 0) && f.autoVal) { try { autoV = f.autoVal(store.results); } catch { autoV = null; } }
       if (f.auto) { const tag = lab.querySelector('.auto-tag'); tag.style.display = !v || v === 0 ? '' : 'none'; }
       if (autoV !== null && autoV !== undefined) { input.placeholder = 'auto = ' + (typeof autoV === 'number' ? fmtAuto(autoV) : autoV); }
       if (c && c.label) {
@@ -94,7 +95,7 @@ function fieldNode(mod, f, refs) {
         st = typeof checkV === 'number' ? evaluate(c, checkV) : 'na';
         parts.push(`typ. ${rangeText(c)}${c.unit && c.unit !== '–' ? ' ' + c.unit : ''}`);
       }
-      if (f.note) parts.push(typeof f.note === 'function' ? f.note(store.results) : f.note);
+      if (f.note) { try { parts.push(typeof f.note === 'function' ? f.note(store.results) : f.note); } catch { /* module disabled */ } }
       hint.innerHTML = parts.join(' · ') + (st === 'warn' ? ' <span class="st" style="color:var(--warn)">● outside range</span>' : st === 'fail' ? ' <span class="st" style="color:var(--fail)">● outside limit</span>' : '');
       box.classList.toggle('st-warn', st === 'warn');
       box.classList.toggle('st-fail', st === 'fail');

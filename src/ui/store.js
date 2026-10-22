@@ -26,7 +26,18 @@ function loadSettings() {
 export function saveSettings() { try { localStorage.setItem('wtp.settings', JSON.stringify(store.settings)); } catch { /* storage unavailable */ } }
 
 /** normalise a loaded project so every module has complete inputs */
+// prices / rates that v1.3 and earlier stored as indicative values – reset to the NWSDB Rate Book 2025 on opening
+const RB2025_RESET = {
+  cost: ['rExcavation', 'rConcrete', 'rSteel', 'rBuilding', 'rBeds', 'rBaffle', 'rSiteWorks', 'rSand', 'rGravel', 'rAnthracite', 'rPipePerMmM', 'pumpBase', 'pumpPerKw', 'drivePerKw', 'driveBase',
+    'txPerKva', 'genPerKva', 'elecPct', 'icaPct', 'rAirValve', 'rWashout', 'rIsoValvePerMm', 'surgeBase', 'surgePerKw', 'prelimPct', 'contPct', 'engPct', 'vatPct', 'steelPerM3', 'chemSystem', 'chlorGas', 'chlorHypo', 'screens', 'filterEquip'],
+  coag: ['priceCoag', 'priceLime', 'pricePoly', 'pricePac'], dis: ['price'], stab: ['price'], energy: ['energyRate', 'demandRate', 'fixedCharge', 'dieselPrice'],
+};
 export function normalise(p) {
+  if (p && p.inputs && !p.rb2025) {
+    p = JSON.parse(JSON.stringify(p));
+    for (const [mod, keys] of Object.entries(RB2025_RESET)) for (const k of keys) if (p.inputs[mod]) delete p.inputs[mod][k];
+    p.migratedRB2025 = true;
+  }
   const base = newProject();
   const out = { ...base, ...p, inputs: deepMerge(DEFAULT_INPUTS(), p.inputs || {}), criteria: p.criteria || {} };
   // projects saved before the NWSDB D2 update (v1.0): keep their diurnal pattern and pump choices
@@ -37,6 +48,7 @@ export function normalise(p) {
     for (const k of ['intake', 'storage']) if (typeof p.inputs?.[k]?.surgeProtect === 'boolean') out.inputs[k].surgeProtect = p.inputs[k].surgeProtect ? 'yes' : 'auto';
   }
   out.d2 = true;
+  out.rb2025 = true;
   return out;
 }
 

@@ -1,0 +1,5084 @@
+{
+ "meta": {
+  "source": "NWSDB Rate Book 2025 (RB 2025) Vol I",
+  "files": {
+   "part1": "RB_2025_Vol_I_no_pw-1-200.pdf (file page = book page)",
+   "part2": "RB_2025_Vol_I_no_pw-201-398.pdf (file page = book page - 200)"
+  },
+  "method": "Curves extracted from the PDF vector paths of the Excel charts (exact curve geometry, Bezier/polyline evaluated), axes calibrated by snapping tick labels to gridlines (calibration residual <0.4% of one major division). Every series was checked by overlaying the points on a 130 dpi render. Points are on the curve at nice x values (tick values + endpoints + extra points where linear interpolation would err >0.5%); linear interpolation between points reproduces the printed curve to about 0.5%. Typical reading accuracy ~0.1-0.3% of axis span.",
+  "units": "x and y are stored in REAL units (axis display multipliers such as Thousands/Millions already applied); see x.unit, y.unit; x.multiplier / y.multiplier record the factor that was applied to the printed axis labels.",
+  "fit_note": "'fit' (where present) is a least-squares convenience formula on the digitised curve, real units, max_rel_err over the visible range; use points for fidelity.",
+  "not_found": "No graph pages exist after M/18 in Section A (book p115 is the Elevators section divider)."
+ },
+ "graphs": [
+  {
+   "id": "UC/01",
+   "title": "Unit cost for ground reservoirs (excluding M&E)",
+   "file": "part1",
+   "page": 51,
+   "book_page": 51,
+   "x": {
+    "label": "Capacity",
+    "unit": "m3",
+    "multiplier": 1000,
+    "axis_note": "axis labels 0.0-10.0 with 'Thousands' display unit (title 'CAPACITY (Thousands m3)')"
+   },
+   "y": {
+    "label": "Unit cost",
+    "unit": "LKR/m3",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Ground reservoir",
+     "points": [
+      [
+       100.0,
+       128600.0
+      ],
+      [
+       150.0,
+       118200.0
+      ],
+      [
+       200.0,
+       111400.0
+      ],
+      [
+       250.0,
+       106500.0
+      ],
+      [
+       375.0,
+       98000.0
+      ],
+      [
+       500.0,
+       92440.0
+      ],
+      [
+       625.0,
+       88300.0
+      ],
+      [
+       750.0,
+       85070.0
+      ],
+      [
+       1000.0,
+       80210.0
+      ],
+      [
+       1250.0,
+       76630.0
+      ],
+      [
+       1500.0,
+       73840.0
+      ],
+      [
+       2000.0,
+       69610.0
+      ],
+      [
+       2500.0,
+       66510.0
+      ],
+      [
+       3000.0,
+       64080.0
+      ],
+      [
+       3500.0,
+       62080.0
+      ],
+      [
+       4000.0,
+       60430.0
+      ],
+      [
+       4500.0,
+       58990.0
+      ],
+      [
+       5000.0,
+       57730.0
+      ],
+      [
+       5500.0,
+       56610.0
+      ],
+      [
+       6000.0,
+       55620.0
+      ],
+      [
+       6500.0,
+       54710.0
+      ],
+      [
+       7000.0,
+       53890.0
+      ],
+      [
+       7500.0,
+       53130.0
+      ],
+      [
+       8000.0,
+       52430.0
+      ],
+      [
+       8500.0,
+       51790.0
+      ],
+      [
+       9000.0,
+       51190.0
+      ],
+      [
+       9500.0,
+       50630.0
+      ],
+      [
+       10000,
+       50100.0
+      ]
+     ],
+     "clipped": [
+      "curve runs outside the plot frame (y-axis limits) for x < 100 m3; only the visible part is digitised"
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       329404.0,
+       -0.204474
+      ],
+      "max_rel_err": 0.000556,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "01. General items & site works, yard piping, pile foundation are not included. Cost of all Pipes and Specials are included.",
+    "02. Contractor's markup included.",
+    "03. Duties & Fiscal Levies included in the total cost. Duties & Fiscal Levies shall be considered 1.5% of total cost.",
+    "04. VAT not included.",
+    "Source: Based on NWS&DB rates & forecast to 2025."
+   ],
+   "remarks": "Curve rises above the 130k plot top for capacity < ~0.1 thousand m3 (clipped)."
+  },
+  {
+   "id": "UC/02",
+   "title": "Unit cost for water towers (excluding M&E)",
+   "file": "part1",
+   "page": 52,
+   "book_page": 52,
+   "x": {
+    "label": "Volume",
+    "unit": "m3",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Unit cost",
+    "unit": "LKR/m3",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Water tower",
+     "points": [
+      [
+       100.0,
+       231100.0
+      ],
+      [
+       125,
+       219300.0
+      ],
+      [
+       150,
+       210000.0
+      ],
+      [
+       200.0,
+       196100.0
+      ],
+      [
+       250,
+       186000.0
+      ],
+      [
+       300.0,
+       178000.0
+      ],
+      [
+       400.0,
+       166200.0
+      ],
+      [
+       500.0,
+       157600.0
+      ],
+      [
+       600.0,
+       150900.0
+      ],
+      [
+       700.0,
+       145500.0
+      ],
+      [
+       800.0,
+       140900.0
+      ],
+      [
+       900.0,
+       137000.0
+      ],
+      [
+       1000.0,
+       133600.0
+      ],
+      [
+       1100.0,
+       130600.0
+      ],
+      [
+       1200.0,
+       127900.0
+      ],
+      [
+       1300.0,
+       125500.0
+      ],
+      [
+       1400.0,
+       123300.0
+      ],
+      [
+       1500.0,
+       121300.0
+      ],
+      [
+       1600.0,
+       119400.0
+      ],
+      [
+       1700.0,
+       117700.0
+      ],
+      [
+       1800.0,
+       116100.0
+      ],
+      [
+       1900.0,
+       114600.0
+      ],
+      [
+       2000.0,
+       113300.0
+      ]
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       693427.0,
+       -0.238402
+      ],
+      "max_rel_err": 0.000814,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "01. General items & site works, yard piping, pile foundation are not included. Cost of all Pipes and Specials are included.",
+    "02. Contractor's markup included.",
+    "03. VAT not included.",
+    "03. Add 10% for yard piping.",
+    "Source: Based on NWS&DB rates & forecast to 2025."
+   ]
+  },
+  {
+   "id": "UC/03",
+   "title": "Unit cost for sedimentation tanks (excluding M&E)",
+   "file": "part1",
+   "page": 53,
+   "book_page": 53,
+   "x": {
+    "label": "Volume",
+    "unit": "m3",
+    "multiplier": 1000,
+    "axis_note": "axis labels 0-5 in thousand m3 (title 'VOLUME (Thousand m3)')"
+   },
+   "y": {
+    "label": "Unit cost",
+    "unit": "LKR/m3",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Sedimentation tank",
+     "points": [
+      [
+       250.0,
+       123200.0
+      ],
+      [
+       375.0,
+       112100.0
+      ],
+      [
+       500.0,
+       104200.0
+      ],
+      [
+       625.0,
+       98120.0
+      ],
+      [
+       750.0,
+       93150.0
+      ],
+      [
+       1000.0,
+       85240.0
+      ],
+      [
+       1250.0,
+       79110.0
+      ],
+      [
+       1500.0,
+       74110.0
+      ],
+      [
+       2000.0,
+       66220.0
+      ],
+      [
+       2500.0,
+       60090.0
+      ],
+      [
+       3000.0,
+       55100.0
+      ],
+      [
+       3500.0,
+       50870.0
+      ],
+      [
+       4000.0,
+       47210.0
+      ],
+      [
+       4500.0,
+       43970.0
+      ],
+      [
+       5000.0,
+       41090.0
+      ]
+     ],
+     "fit": {
+      "type": "log",
+      "form": "y=c0*ln(x)+c1",
+      "coef": [
+       -27405.8,
+       274523.0
+      ],
+      "max_rel_err": 0.00283,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "01. General items & site works, yard piping, pile foundation are not included. Cost of all Pipes and Specials are included.",
+    "02. Contractor's markup included.",
+    "03. VAT not included.",
+    "Source: Based on NWS&DB past contracts & forecast to 2025."
+   ]
+  },
+  {
+   "id": "UC/04",
+   "title": "Cost for rapid sand filters (excluding M&E)",
+   "file": "part1",
+   "page": 54,
+   "book_page": 54,
+   "x": {
+    "label": "Treatment plant capacity",
+    "unit": "m3/day",
+    "multiplier": 1000,
+    "axis_note": "axis labels 0-100 with 'Thousands' display unit"
+   },
+   "y": {
+    "label": "Total cost of filter",
+    "unit": "LKR",
+    "multiplier": 1000000.0,
+    "axis_note": "left axis, labels in 'Millions'"
+   },
+   "y2": {
+    "label": "Cost per bed area",
+    "unit": "LKR/m2",
+    "multiplier": 1000,
+    "axis_note": "right axis, labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Total cost",
+     "points": [
+      [
+       2500.0,
+       44990000.0
+      ],
+      [
+       3000.0,
+       50250000.0
+      ],
+      [
+       4000.0,
+       59730000.0
+      ],
+      [
+       5000,
+       68370000.0
+      ],
+      [
+       7500.0,
+       87390000.0
+      ],
+      [
+       10000.0,
+       104000000.0
+      ],
+      [
+       15000,
+       132900000.0
+      ],
+      [
+       20000.0,
+       158200000.0
+      ],
+      [
+       30000.0,
+       202100000.0
+      ],
+      [
+       40000.0,
+       240500000.0
+      ],
+      [
+       50000.0,
+       275200000.0
+      ],
+      [
+       60000.0,
+       307400000.0
+      ],
+      [
+       70000.0,
+       337400000.0
+      ],
+      [
+       80000.0,
+       365700000.0
+      ],
+      [
+       90000.0,
+       392800000.0
+      ],
+      [
+       100000,
+       418600000.0
+      ]
+     ],
+     "clipped": [
+      "curve runs outside the plot frame (y-axis limits) for x < 2500 m3/day; only the visible part is digitised"
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       396193.0,
+       0.604779
+      ],
+      "max_rel_err": 0.000592,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    },
+    {
+     "name": "Cost per bed area",
+     "points": [
+      [
+       1800.0,
+       2408000.0
+      ],
+      [
+       2500.0,
+       2190000.0
+      ],
+      [
+       3000.0,
+       2069000.0
+      ],
+      [
+       3500.0,
+       1977000.0
+      ],
+      [
+       4000.0,
+       1896000.0
+      ],
+      [
+       5000,
+       1768000.0
+      ],
+      [
+       6000.0,
+       1665000.0
+      ],
+      [
+       7500.0,
+       1552000.0
+      ],
+      [
+       9000.0,
+       1465000.0
+      ],
+      [
+       10000.0,
+       1420000.0
+      ],
+      [
+       11000.0,
+       1374000.0
+      ],
+      [
+       12500.0,
+       1321000.0
+      ],
+      [
+       15000,
+       1247000.0
+      ],
+      [
+       20000.0,
+       1139000.0
+      ],
+      [
+       25000.0,
+       1061000.0
+      ],
+      [
+       30000.0,
+       1002000.0
+      ],
+      [
+       40000.0,
+       914400.0
+      ],
+      [
+       50000.0,
+       852400.0
+      ],
+      [
+       60000.0,
+       805400.0
+      ],
+      [
+       70000.0,
+       766900.0
+      ],
+      [
+       80000.0,
+       734900.0
+      ],
+      [
+       90000.0,
+       708300.0
+      ],
+      [
+       99750.0,
+       685500.0
+      ]
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       25655700.0,
+       -0.314636
+      ],
+      "max_rel_err": 0.0122,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     },
+     "axis": "right",
+     "clipped": [
+      "curve rises above the 2,400k LKR/m2 plot top for capacity < ~1,800 m3/day; only the visible part is digitised"
+     ]
+    }
+   ],
+   "notes": [
+    "01. General items & site works, yard piping, pile foundation, MOVV, automated system associated with SCADA, mechanical works & electrical works are not included.",
+    "02. Cost of pipes, fittings, specials and internal lighting arrangement are included (Filter beds are with drain boxes).",
+    "03. Filter bed area considered as internal dimensions of plan view.",
+    "04. Contractor's markup included.",
+    "05. VAT not included.",
+    "Source: Based on NWS&DB Rate Book 2025."
+   ]
+  },
+  {
+   "id": "UC/05",
+   "title": "Unit cost for slow sand filter",
+   "file": "part1",
+   "page": 55,
+   "book_page": 55,
+   "x": {
+    "label": "Area",
+    "unit": "m2",
+    "multiplier": 1000,
+    "axis_note": "axis labels 0.5-3 in thousand m2 (title 'AREA (Thousand m2)')"
+   },
+   "y": {
+    "label": "Unit cost",
+    "unit": "LKR/m2",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Slow sand filter",
+     "points": [
+      [
+       500.0,
+       169200.0
+      ],
+      [
+       625.0,
+       155700.0
+      ],
+      [
+       750.0,
+       144700.0
+      ],
+      [
+       1000.0,
+       127200.0
+      ],
+      [
+       1250.0,
+       113600.0
+      ],
+      [
+       1500.0,
+       102600.0
+      ],
+      [
+       1750.0,
+       93200.0
+      ],
+      [
+       2000.0,
+       85080.0
+      ],
+      [
+       2500.0,
+       71540.0
+      ],
+      [
+       3000.0,
+       60470.0
+      ]
+     ],
+     "fit": {
+      "type": "log",
+      "form": "y=c0*ln(x)+c1",
+      "coef": [
+       -60730.5,
+       546693.0
+      ],
+      "max_rel_err": 0.000233,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "01. General items & site works, yard piping, pile foundation are not included. Cost of all Pipes and Specials are included.",
+    "02. Contractor's markup included.",
+    "03. VAT not included.",
+    "Source: Based on NWS&DB past contracts & forecast to 2025."
+   ]
+  },
+  {
+   "id": "UC/06",
+   "title": "Cost for GAC filters (excluding M&E)",
+   "file": "part1",
+   "page": 56,
+   "book_page": 56,
+   "x": {
+    "label": "Treatment plant capacity",
+    "unit": "m3/day",
+    "multiplier": 1,
+    "axis_note": "x-axis starts at 2,000 with ticks every 20,000 (last labelled tick 142,000); plot frame extends to ~152,000 m3/day"
+   },
+   "y": {
+    "label": "Total cost of filter",
+    "unit": "LKR",
+    "multiplier": 1000000.0,
+    "axis_note": "left axis, labels in 'Millions'"
+   },
+   "y2": {
+    "label": "Cost per bed area",
+    "unit": "LKR/m2",
+    "multiplier": 1000000.0,
+    "axis_note": "right axis, labels 1.25-3 in 'Millions'"
+   },
+   "series": [
+    {
+     "name": "Total cost",
+     "points": [
+      [
+       2000.0,
+       58090000.0
+      ],
+      [
+       3000,
+       76960000.0
+      ],
+      [
+       4000,
+       95010000.0
+      ],
+      [
+       6000,
+       128000000.0
+      ],
+      [
+       7000,
+       143100000.0
+      ],
+      [
+       10000,
+       185600000.0
+      ],
+      [
+       12000,
+       211900000.0
+      ],
+      [
+       17000,
+       273100000.0
+      ],
+      [
+       22000.0,
+       329600000.0
+      ],
+      [
+       32000,
+       432600000.0
+      ],
+      [
+       42000.0,
+       527700000.0
+      ],
+      [
+       62000.0,
+       700800000.0
+      ],
+      [
+       82000.0,
+       858900000.0
+      ],
+      [
+       102000.0,
+       1007000000.0
+      ],
+      [
+       122000.0,
+       1147000000.0
+      ],
+      [
+       142000.0,
+       1281000000.0
+      ],
+      [
+       151000,
+       1340000000.0
+      ]
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       228146.0,
+       0.727684
+      ],
+      "max_rel_err": 0.00862,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    },
+    {
+     "name": "Cost per bed area",
+     "points": [
+      [
+       2000.0,
+       2945000.0
+      ],
+      [
+       3000,
+       2799000.0
+      ],
+      [
+       4000,
+       2692000.0
+      ],
+      [
+       7000,
+       2481000.0
+      ],
+      [
+       10000,
+       2344000.0
+      ],
+      [
+       12000,
+       2277000.0
+      ],
+      [
+       17000,
+       2146000.0
+      ],
+      [
+       22000.0,
+       2049000.0
+      ],
+      [
+       32000,
+       1906000.0
+      ],
+      [
+       42000.0,
+       1805000.0
+      ],
+      [
+       62000.0,
+       1658000.0
+      ],
+      [
+       82000.0,
+       1552000.0
+      ],
+      [
+       102000.0,
+       1470000.0
+      ],
+      [
+       122000.0,
+       1402000.0
+      ],
+      [
+       142000.0,
+       1345000.0
+      ],
+      [
+       150000.0,
+       1324000.0
+      ]
+     ],
+     "fit": {
+      "type": "log",
+      "form": "y=c0*ln(x)+c1",
+      "coef": [
+       -376868.0,
+       5816030.0
+      ],
+      "max_rel_err": 0.00216,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     },
+     "axis": "right"
+    }
+   ],
+   "notes": [
+    "01. General items & site works, yard piping, pile foundation are not included. Cost of all Pipes and Specials are included.",
+    "02. Contractor's markup included.",
+    "03. VAT not included.",
+    "04. Filter bed area considered as Bed area.",
+    "Source: Based on NWS&DB Rate Book 2025."
+   ]
+  },
+  {
+   "id": "UC/07",
+   "title": "Unit cost for treatment plant (base cost)",
+   "file": "part1",
+   "page": 57,
+   "book_page": 57,
+   "x": {
+    "label": "Capacity",
+    "unit": "m3/day",
+    "multiplier": 1000,
+    "axis_note": "axis labels 0-180 with 'Thousands' display unit"
+   },
+   "y": {
+    "label": "Unit cost",
+    "unit": "LKR per m3/day of capacity",
+    "multiplier": 1000,
+    "axis_note": "axis title 'UNIT COST (Rs./m3)', labels in 'Thousands'; total plant cost = unit cost x capacity (m3/day)"
+   },
+   "series": [
+    {
+     "name": "Treatment plant base cost",
+     "points": [
+      [
+       5000.0,
+       156900.0
+      ],
+      [
+       10000.0,
+       151500.0
+      ],
+      [
+       15000,
+       146300.0
+      ],
+      [
+       20000.0,
+       141300.0
+      ],
+      [
+       25000,
+       136400.0
+      ],
+      [
+       30000.0,
+       131700.0
+      ],
+      [
+       40000.0,
+       122700.0
+      ],
+      [
+       50000.0,
+       114400.0
+      ],
+      [
+       60000.0,
+       106900.0
+      ],
+      [
+       70000.0,
+       99930.0
+      ],
+      [
+       80000.0,
+       93670.0
+      ],
+      [
+       90000.0,
+       88080.0
+      ],
+      [
+       100000.0,
+       83160.0
+      ],
+      [
+       110000.0,
+       78900.0
+      ],
+      [
+       120000.0,
+       75300.0
+      ],
+      [
+       130000.0,
+       72390.0
+      ],
+      [
+       140000.0,
+       70140.0
+      ],
+      [
+       150000.0,
+       68560.0
+      ],
+      [
+       160000.0,
+       67640.0
+      ],
+      [
+       170000.0,
+       67400.0
+      ],
+      [
+       180000.0,
+       67830.0
+      ]
+     ],
+     "fit": {
+      "type": "poly2",
+      "form": "y=c0*x^2+c1*x+c2",
+      "coef": [
+       3.34078e-06,
+       -1.12706,
+       162451.0
+      ],
+      "max_rel_err": 0.000695,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "01. Cost of pump house & reservoir within treatment plant site, structures of sludge treatment process, site works, automation, electrical & mechanical works and other all associated structure & works included in the cost of treatment plant. (Not include other service building such as administration building & quarters.)",
+    "02. Duties & Fiscal Levies (Customs & duties) included in the total cost. Duties & Fiscal Levies can be considered as 9% of total cost.",
+    "02. Contractor's markup included.",
+    "03. VAT not included.",
+    "Source: Based on NWS&DB past contract & predict to relevant year."
+   ]
+  },
+  {
+   "id": "A/01",
+   "title": "Supply & delivery of electro-magnetic flow meters",
+   "file": "part1",
+   "page": 90,
+   "book_page": 90,
+   "x": {
+    "label": "Flowmeter diameter",
+    "unit": "mm",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "EM flow meter",
+     "points": [
+      [
+       80.0,
+       1040000.0
+      ],
+      [
+       100.0,
+       1124000.0
+      ],
+      [
+       120.0,
+       1198000.0
+      ],
+      [
+       140.0,
+       1265000.0
+      ],
+      [
+       160.0,
+       1325000.0
+      ],
+      [
+       180.0,
+       1381000.0
+      ],
+      [
+       200.0,
+       1433000.0
+      ],
+      [
+       220.0,
+       1481000.0
+      ],
+      [
+       240.0,
+       1527000.0
+      ],
+      [
+       260.0,
+       1571000.0
+      ],
+      [
+       280.0,
+       1612000.0
+      ],
+      [
+       300.0,
+       1651000.0
+      ]
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       224620.0,
+       0.34973
+      ],
+      "max_rel_err": 0.000332,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Installation cost can be taken as 5% of Sri Lankan rupees (i.e. of supply cost).",
+    "2. Cost of Spare parts can be taken as 10% of Sri Lankan rupees (supply cost).",
+    "3. Cost for flow meter chamber with CI opening not included.",
+    "4. Cost for pipe fittings not included.",
+    "5. Supplier's markup included.",
+    "6. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "M/03",
+   "title": "Supply & delivery of bore hole type submersible pumps complete with motors (2850 rpm)",
+   "file": "part1",
+   "page": 99,
+   "book_page": 99,
+   "x": {
+    "label": "Motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "2850 rpm",
+     "points": [
+      [
+       2.5,
+       168700.0
+      ],
+      [
+       5.0,
+       241100.0
+      ],
+      [
+       10.0,
+       385800.0
+      ],
+      [
+       15.0,
+       530500.0
+      ],
+      [
+       20.0,
+       675300.0
+      ],
+      [
+       25.0,
+       820000.0
+      ],
+      [
+       30.0,
+       964700.0
+      ],
+      [
+       35.0,
+       1109000.0
+      ],
+      [
+       40.0,
+       1254000.0
+      ],
+      [
+       45.0,
+       1399000.0
+      ],
+      [
+       50.0,
+       1544000.0
+      ],
+      [
+       55.0,
+       1688000.0
+      ],
+      [
+       60.0,
+       1833000.0
+      ]
+     ],
+     "fit": {
+      "type": "linear",
+      "form": "y=c0*x+c1",
+      "coef": [
+       28944.4,
+       96394.8
+      ],
+      "max_rel_err": 0.00423,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Pump/Motor Spare parts can be taken as maximum 20% of Supply Price for Preparing TCE.",
+    "2. Cost of Pump/Motor Spare parts for Engineer's Estimates can be taken according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "3. Duties and Fiscal Levies is taken as 10.44% of respective CIF value (HS Code 8413.70.99).",
+    "4. Cost of Electrical switch gears & Cables not included.",
+    "5. Cost for pipes, fittings & specials should be added separately.",
+    "6. Supplier's markup included.",
+    "7. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "M/04",
+   "title": "Installation of bore hole type submersible pumps complete with motors",
+   "file": "part1",
+   "page": 100,
+   "book_page": 100,
+   "x": {
+    "label": "Motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Installation",
+     "points": [
+      [
+       2.5,
+       8246.0
+      ],
+      [
+       3.75,
+       8176.0
+      ],
+      [
+       5.0,
+       8351.0
+      ],
+      [
+       6.25,
+       8779.0
+      ],
+      [
+       7.5,
+       9410.0
+      ],
+      [
+       8.75,
+       10290.0
+      ],
+      [
+       10.0,
+       11350.0
+      ],
+      [
+       11.25,
+       12610.0
+      ],
+      [
+       12.5,
+       14090.0
+      ],
+      [
+       13.75,
+       15750.0
+      ],
+      [
+       15.0,
+       17580.0
+      ],
+      [
+       16.25,
+       19540.0
+      ],
+      [
+       17.5,
+       21700.0
+      ],
+      [
+       20.0,
+       26430.0
+      ],
+      [
+       22.5,
+       31650.0
+      ],
+      [
+       25.0,
+       37300.0
+      ],
+      [
+       30.0,
+       49570.0
+      ],
+      [
+       35.0,
+       62670.0
+      ],
+      [
+       40.0,
+       75990.0
+      ],
+      [
+       45.0,
+       88890.0
+      ],
+      [
+       50.0,
+       100800.0
+      ],
+      [
+       55.0,
+       111100.0
+      ],
+      [
+       60.0,
+       119200.0
+      ]
+     ],
+     "fit": {
+      "type": "poly3",
+      "form": "y=c0*x^3+c1*x^2+c2*x+c3",
+      "coef": [
+       -0.804933,
+       88.7047,
+       -590.501,
+       9187.97
+      ],
+      "max_rel_err": 0.00133,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Installation cost include storage, protection, handling, transporting to the site, fixing, connection to hydraulic piping system and connection to electrical power system.",
+    "2. Testing and commissioning cost not included.",
+    "3. Contractor's markup not included.",
+    "Source: Based on Work Studies."
+   ]
+  },
+  {
+   "id": "M/05",
+   "title": "Supply & delivery of end suction vertical delivery type pumps complete with motors & base plates",
+   "file": "part1",
+   "page": 101,
+   "book_page": 101,
+   "x": {
+    "label": "Motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "1500 rpm",
+     "points": [
+      [
+       0.75,
+       795500.0
+      ],
+      [
+       1,
+       876900.0
+      ],
+      [
+       1.5,
+       1040000.0
+      ],
+      [
+       1.75,
+       1110000.0
+      ],
+      [
+       2.5,
+       1290000.0
+      ],
+      [
+       3.75,
+       1533000.0
+      ],
+      [
+       5.0,
+       1732000.0
+      ],
+      [
+       7.5,
+       2055000.0
+      ],
+      [
+       10.0,
+       2322000.0
+      ],
+      [
+       15.0,
+       2757000.0
+      ],
+      [
+       20.0,
+       3113000.0
+      ],
+      [
+       25.0,
+       3422000.0
+      ],
+      [
+       30.0,
+       3696000.0
+      ],
+      [
+       35.0,
+       3947000.0
+      ],
+      [
+       40.0,
+       4176000.0
+      ],
+      [
+       45.0,
+       4389000.0
+      ],
+      [
+       50.0,
+       4590000.0
+      ],
+      [
+       55.0,
+       4777000.0
+      ],
+      [
+       60.0,
+       4957000.0
+      ],
+      [
+       65.0,
+       5129000.0
+      ],
+      [
+       70.0,
+       5292000.0
+      ],
+      [
+       75.0,
+       5450000.0
+      ],
+      [
+       80.0,
+       5600000.0
+      ],
+      [
+       85.0,
+       5745000.0
+      ],
+      [
+       90.0,
+       5886000.0
+      ],
+      [
+       95.0,
+       6022000.0
+      ],
+      [
+       100.0,
+       6155000.0
+      ],
+      [
+       105.0,
+       6283000.0
+      ],
+      [
+       110.0,
+       6407000.0
+      ]
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       881795.0,
+       0.421667
+      ],
+      "max_rel_err": 0.0177,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    },
+    {
+     "name": "3000 rpm",
+     "points": [
+      [
+       0.75,
+       691400.0
+      ],
+      [
+       1,
+       764200.0
+      ],
+      [
+       1.5,
+       908300.0
+      ],
+      [
+       1.75,
+       969900.0
+      ],
+      [
+       2.5,
+       1129000.0
+      ],
+      [
+       3.0,
+       1222000.0
+      ],
+      [
+       3.75,
+       1345000.0
+      ],
+      [
+       5.0,
+       1524000.0
+      ],
+      [
+       7.5,
+       1812000.0
+      ],
+      [
+       10.0,
+       2052000.0
+      ],
+      [
+       15.0,
+       2443000.0
+      ],
+      [
+       20.0,
+       2764000.0
+      ],
+      [
+       25.0,
+       3042000.0
+      ],
+      [
+       30.0,
+       3289000.0
+      ],
+      [
+       35.0,
+       3514000.0
+      ],
+      [
+       40.0,
+       3722000.0
+      ],
+      [
+       45.0,
+       3914000.0
+      ],
+      [
+       50.0,
+       4095000.0
+      ],
+      [
+       55.0,
+       4268000.0
+      ],
+      [
+       60.0,
+       4431000.0
+      ],
+      [
+       65.0,
+       4586000.0
+      ],
+      [
+       70.0,
+       4734000.0
+      ],
+      [
+       75.0,
+       4877000.0
+      ],
+      [
+       80.0,
+       5014000.0
+      ],
+      [
+       85.0,
+       5145000.0
+      ],
+      [
+       90.0,
+       5274000.0
+      ],
+      [
+       95.0,
+       5398000.0
+      ],
+      [
+       100.0,
+       5518000.0
+      ],
+      [
+       105.0,
+       5634000.0
+      ],
+      [
+       110.0,
+       5747000.0
+      ]
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       767587.0,
+       0.428079
+      ],
+      "max_rel_err": 0.018,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Pump/Motor Spare parts can be taken as maximum 20% of Supply Price for Preparing TCE.",
+    "2. Cost of Pump/Motor Spare parts for Engineer's Estimates can be taken according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "3. Cost of Electrical switch gears & cables not included.",
+    "4. Duties and Fiscal Levies is taken as 10.44% of respective CIF value (HS Code 8413.70.99).",
+    "5. Cost for pipes, fittings and specials should be added separately.",
+    "6. Contractor's markup included.",
+    "7. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "M/06",
+   "title": "Installation of end suction vertical delivery type pumps complete with motors & base plates",
+   "file": "part1",
+   "page": 102,
+   "book_page": 102,
+   "x": {
+    "label": "Motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Installation",
+     "points": [
+      [
+       1.325,
+       29640.0
+      ],
+      [
+       2.0,
+       46740.0
+      ],
+      [
+       2.5,
+       56270.0
+      ],
+      [
+       3.75,
+       73620.0
+      ],
+      [
+       5.0,
+       85720.0
+      ],
+      [
+       6.25,
+       95260.0
+      ],
+      [
+       7.5,
+       103100.0
+      ],
+      [
+       10.0,
+       115200.0
+      ],
+      [
+       12.5,
+       124600.0
+      ],
+      [
+       15.0,
+       132400.0
+      ],
+      [
+       20.0,
+       144600.0
+      ],
+      [
+       25.0,
+       154100.0
+      ],
+      [
+       30.0,
+       161800.0
+      ],
+      [
+       35.0,
+       168300.0
+      ],
+      [
+       40.0,
+       174000.0
+      ],
+      [
+       45.0,
+       179000.0
+      ],
+      [
+       50.0,
+       183400.0
+      ],
+      [
+       55.0,
+       187500.0
+      ],
+      [
+       60.0,
+       191200.0
+      ],
+      [
+       65.0,
+       194600.0
+      ],
+      [
+       70.0,
+       197700.0
+      ],
+      [
+       75.0,
+       200600.0
+      ],
+      [
+       80.0,
+       203400.0
+      ],
+      [
+       85.0,
+       206000.0
+      ],
+      [
+       90.0,
+       208400.0
+      ],
+      [
+       95.0,
+       210700.0
+      ],
+      [
+       100.0,
+       212800.0
+      ],
+      [
+       105.0,
+       214900.0
+      ],
+      [
+       110.0,
+       216900.0
+      ]
+     ],
+     "clipped": [
+      "curve runs outside the plot frame (y-axis limits) for x < 1.325 kW; only the visible part is digitised"
+     ],
+     "fit": {
+      "type": "log",
+      "form": "y=c0*ln(x)+c1",
+      "coef": [
+       42397.3,
+       17587.7
+      ],
+      "max_rel_err": 0.00428,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Installation cost include storage, protection, handling, transporting to the site, fixing, connection to hydraulic piping system and connection to electrical power system.",
+    "2. Testing and commissioning cost not included.",
+    "3. Contractor's markup included.",
+    "Source: Based on Work Studies."
+   ]
+  },
+  {
+   "id": "M/07",
+   "title": "Supply & delivery of horizontal/vertical shaft driven double suction split casing centrifugal pumps complete with motors & base plates",
+   "file": "part1",
+   "page": 103,
+   "book_page": 103,
+   "x": {
+    "label": "Motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "1500 rpm",
+     "points": [
+      [
+       20.0,
+       3574000.0
+      ],
+      [
+       30.0,
+       4506000.0
+      ],
+      [
+       40.0,
+       5318000.0
+      ],
+      [
+       50.0,
+       6052000.0
+      ],
+      [
+       60.0,
+       6726000.0
+      ],
+      [
+       70.0,
+       7352000.0
+      ],
+      [
+       80.0,
+       7942000.0
+      ],
+      [
+       90.0,
+       8500000.0
+      ],
+      [
+       100.0,
+       9036000.0
+      ],
+      [
+       110.0,
+       9551000.0
+      ],
+      [
+       120.0,
+       10040000.0
+      ],
+      [
+       130.0,
+       10520000.0
+      ],
+      [
+       140.0,
+       10980000.0
+      ],
+      [
+       150.0,
+       11420000.0
+      ],
+      [
+       160.0,
+       11860000.0
+      ],
+      [
+       170.0,
+       12290000.0
+      ],
+      [
+       180.0,
+       12700000.0
+      ],
+      [
+       190.0,
+       13100000.0
+      ],
+      [
+       200.0,
+       13490000.0
+      ],
+      [
+       210.0,
+       13880000.0
+      ],
+      [
+       220.0,
+       14260000.0
+      ],
+      [
+       230.0,
+       14630000.0
+      ],
+      [
+       240.0,
+       15000000.0
+      ],
+      [
+       250.0,
+       15360000.0
+      ],
+      [
+       260.0,
+       15700000.0
+      ]
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       630133.0,
+       0.578308
+      ],
+      "max_rel_err": 0.00244,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    },
+    {
+     "name": "3000 rpm",
+     "points": [
+      [
+       20.0,
+       2234000.0
+      ],
+      [
+       30.0,
+       2817000.0
+      ],
+      [
+       40.0,
+       3323000.0
+      ],
+      [
+       50.0,
+       3782000.0
+      ],
+      [
+       60.0,
+       4202000.0
+      ],
+      [
+       70.0,
+       4594000.0
+      ],
+      [
+       80.0,
+       4966000.0
+      ],
+      [
+       90.0,
+       5314000.0
+      ],
+      [
+       100.0,
+       5650000.0
+      ],
+      [
+       110.0,
+       5969000.0
+      ],
+      [
+       120.0,
+       6276000.0
+      ],
+      [
+       130.0,
+       6575000.0
+      ],
+      [
+       140.0,
+       6861000.0
+      ],
+      [
+       150.0,
+       7141000.0
+      ],
+      [
+       160.0,
+       7413000.0
+      ],
+      [
+       170.0,
+       7677000.0
+      ],
+      [
+       180.0,
+       7934000.0
+      ],
+      [
+       190.0,
+       8187000.0
+      ],
+      [
+       200.0,
+       8435000.0
+      ],
+      [
+       210.0,
+       8675000.0
+      ],
+      [
+       220.0,
+       8911000.0
+      ],
+      [
+       230.0,
+       9143000.0
+      ],
+      [
+       240.0,
+       9373000.0
+      ],
+      [
+       250.0,
+       9597000.0
+      ],
+      [
+       260.0,
+       9814000.0
+      ]
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       393857.0,
+       0.578295
+      ],
+      "max_rel_err": 0.00247,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Pump/Motor Spare parts can be taken as maximum 20% of Supply Price for Preparing TCE.",
+    "2. Cost of Pump/Motor Spare parts for Engineer's Estimates can be taken according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "3. Duties and Fiscal Levies is taken as 10.44% of respective CIF value (HS Code 8413.70.99).",
+    "4. Cost of Electrical switch gears & cables not included.",
+    "5. Cost for pipes, fittings and specials should be added separately.",
+    "6. Contractor's markup included.",
+    "(No VAT note printed on this page.)",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "M/08",
+   "title": "Installation of horizontal/vertical shaft driven double suction split casing centrifugal pumps complete with motors & base plates",
+   "file": "part1",
+   "page": 104,
+   "book_page": 104,
+   "x": {
+    "label": "Motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Installation",
+     "points": [
+      [
+       20.0,
+       124500.0
+      ],
+      [
+       30.0,
+       145100.0
+      ],
+      [
+       40.0,
+       165100.0
+      ],
+      [
+       50.0,
+       184300.0
+      ],
+      [
+       60.0,
+       202700.0
+      ],
+      [
+       70.0,
+       220200.0
+      ],
+      [
+       80.0,
+       236900.0
+      ],
+      [
+       90.0,
+       252800.0
+      ],
+      [
+       100.0,
+       267800.0
+      ],
+      [
+       110.0,
+       282000.0
+      ],
+      [
+       120.0,
+       295300.0
+      ],
+      [
+       130.0,
+       307900.0
+      ],
+      [
+       140.0,
+       319600.0
+      ],
+      [
+       150.0,
+       330500.0
+      ],
+      [
+       160.0,
+       340600.0
+      ],
+      [
+       170.0,
+       349800.0
+      ],
+      [
+       180.0,
+       358200.0
+      ],
+      [
+       190.0,
+       365700.0
+      ],
+      [
+       200.0,
+       372500.0
+      ],
+      [
+       210.0,
+       378400.0
+      ],
+      [
+       220.0,
+       383500.0
+      ],
+      [
+       230.0,
+       387700.0
+      ],
+      [
+       240.0,
+       391100.0
+      ],
+      [
+       250.0,
+       393700.0
+      ],
+      [
+       260.0,
+       395500.0
+      ]
+     ],
+     "fit": {
+      "type": "poly2",
+      "form": "y=c0*x^2+c1*x+c2",
+      "coef": [
+       -4.14853,
+       2291.4,
+       80134.7
+      ],
+      "max_rel_err": 0.00165,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Installation cost include storage, protection, handling, transporting to the site, fixing, connection to hydraulic piping system and connection to electrical power system.",
+    "2. Testing and commissioning cost not included.",
+    "3. Contractor's markup included.",
+    "Source: Based on Work Studies."
+   ]
+  },
+  {
+   "id": "M/09",
+   "title": "Supply & delivery of submersible sewerage pumps",
+   "file": "part1",
+   "page": 105,
+   "book_page": 105,
+   "x": {
+    "label": "Motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "1500 rpm",
+     "points": [
+      [
+       0.2,
+       1100000.0
+      ],
+      [
+       2.5,
+       1203000.0
+      ],
+      [
+       5.0,
+       1329000.0
+      ],
+      [
+       7.5,
+       1467000.0
+      ],
+      [
+       10.0,
+       1621000.0
+      ],
+      [
+       12.5,
+       1790000.0
+      ],
+      [
+       15.0,
+       1975000.0
+      ],
+      [
+       17.5,
+       2181000.0
+      ],
+      [
+       20.0,
+       2409000.0
+      ],
+      [
+       22.5,
+       2661000.0
+      ],
+      [
+       25.0,
+       2937000.0
+      ],
+      [
+       27.5,
+       3243000.0
+      ],
+      [
+       30.0,
+       3581000.0
+      ],
+      [
+       32.5,
+       3955000.0
+      ],
+      [
+       35.0,
+       4368000.0
+      ],
+      [
+       37.5,
+       4824000.0
+      ],
+      [
+       40.0,
+       5325000.0
+      ],
+      [
+       42.5,
+       5880000.0
+      ],
+      [
+       45.0,
+       6492000.0
+      ],
+      [
+       47.5,
+       7169000.0
+      ],
+      [
+       50.0,
+       7916000.0
+      ]
+     ],
+     "fit": {
+      "type": "exp",
+      "form": "y=c0*exp(c1*x)",
+      "coef": [
+       1089910.0,
+       0.0396585
+      ],
+      "max_rel_err": 0.00105,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    },
+    {
+     "name": "3000 rpm",
+     "points": [
+      [
+       0.2,
+       1007000.0
+      ],
+      [
+       2.5,
+       1101000.0
+      ],
+      [
+       5.0,
+       1216000.0
+      ],
+      [
+       7.5,
+       1341000.0
+      ],
+      [
+       10.0,
+       1479000.0
+      ],
+      [
+       12.5,
+       1633000.0
+      ],
+      [
+       15.0,
+       1799000.0
+      ],
+      [
+       17.5,
+       1986000.0
+      ],
+      [
+       20.0,
+       2192000.0
+      ],
+      [
+       22.5,
+       2417000.0
+      ],
+      [
+       25.0,
+       2667000.0
+      ],
+      [
+       27.5,
+       2942000.0
+      ],
+      [
+       30.0,
+       3245000.0
+      ],
+      [
+       32.5,
+       3580000.0
+      ],
+      [
+       35.0,
+       3951000.0
+      ],
+      [
+       37.5,
+       4358000.0
+      ],
+      [
+       40.0,
+       4807000.0
+      ],
+      [
+       42.5,
+       5302000.0
+      ],
+      [
+       45.0,
+       5850000.0
+      ],
+      [
+       47.5,
+       6453000.0
+      ],
+      [
+       50.0,
+       7120000.0
+      ]
+     ],
+     "fit": {
+      "type": "exp",
+      "form": "y=c0*exp(c1*x)",
+      "coef": [
+       998899.0,
+       0.0392809
+      ],
+      "max_rel_err": 0.00101,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Pump/Motor Spare parts can be taken as maximum 20% of Supply Price for Preparing TCE.",
+    "2. Cost of Pump/Motor Spare parts for Engineer's Estimates can be taken according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "3. Duties and Fiscal Levies is taken as 10.44% of respective CIF value (HS Code 8413.70.99).",
+    "4. Cost of Electrical switch gears & cables not included.",
+    "5. Cost for pipes, fittings and specials should be added separately.",
+    "6. Supplier's markup included.",
+    "7. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "M/10",
+   "title": "Installation of submersible sewerage pumps",
+   "file": "part1",
+   "page": 106,
+   "book_page": 106,
+   "x": {
+    "label": "Motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Installation",
+     "points": [
+      [
+       2.2,
+       22570.0
+      ],
+      [
+       2.5,
+       23520.0
+      ],
+      [
+       5.0,
+       31770.0
+      ],
+      [
+       7.5,
+       40520.0
+      ],
+      [
+       10.0,
+       49770.0
+      ],
+      [
+       12.5,
+       59400.0
+      ],
+      [
+       15.0,
+       69440.0
+      ],
+      [
+       17.5,
+       79770.0
+      ],
+      [
+       20.0,
+       90420.0
+      ],
+      [
+       22.5,
+       101200.0
+      ],
+      [
+       25.0,
+       112300.0
+      ],
+      [
+       27.5,
+       123400.0
+      ],
+      [
+       30.0,
+       134600.0
+      ],
+      [
+       32.5,
+       145900.0
+      ],
+      [
+       35.0,
+       157100.0
+      ],
+      [
+       37.5,
+       168300.0
+      ],
+      [
+       40.0,
+       179300.0
+      ],
+      [
+       42.5,
+       190200.0
+      ],
+      [
+       45.0,
+       200900.0
+      ],
+      [
+       47.5,
+       211300.0
+      ],
+      [
+       50.0,
+       221400.0
+      ]
+     ],
+     "fit": {
+      "type": "poly3",
+      "form": "y=c0*x^3+c1*x^2+c2*x+c3",
+      "coef": [
+       -0.52014,
+       49.1856,
+       2951.2,
+       15858.0
+      ],
+      "max_rel_err": 0.00279,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Installation cost include storage, protection, handling, transporting to the site, fixing, connection to hydraulic piping system and connection to electrical power system.",
+    "2. Testing and commissioning cost not included.",
+    "3. Contractor's markup not included.",
+    "Source: Based on Work Studies."
+   ]
+  },
+  {
+   "id": "M/11",
+   "title": "Supply & delivery of motor operated valves (Asian)",
+   "file": "part1",
+   "page": 107,
+   "book_page": 107,
+   "x": {
+    "label": "MOV diameter",
+    "unit": "mm",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Asian",
+     "points": [
+      [
+       105.0,
+       219200.0
+      ],
+      [
+       110,
+       227100.0
+      ],
+      [
+       120,
+       247700.0
+      ],
+      [
+       130,
+       273500.0
+      ],
+      [
+       140,
+       304600.0
+      ],
+      [
+       150,
+       339200.0
+      ],
+      [
+       160,
+       378600.0
+      ],
+      [
+       175,
+       447300.0
+      ],
+      [
+       190,
+       524900.0
+      ],
+      [
+       200.0,
+       581700.0
+      ],
+      [
+       225,
+       741000.0
+      ],
+      [
+       250,
+       922800.0
+      ],
+      [
+       275,
+       1123000.0
+      ],
+      [
+       300.0,
+       1342000.0
+      ],
+      [
+       325,
+       1575000.0
+      ],
+      [
+       350,
+       1824000.0
+      ],
+      [
+       400.0,
+       2348000.0
+      ],
+      [
+       500.0,
+       3455000.0
+      ],
+      [
+       600.0,
+       4521000.0
+      ],
+      [
+       650,
+       4992000.0
+      ],
+      [
+       700.0,
+       5399000.0
+      ],
+      [
+       750,
+       5723000.0
+      ],
+      [
+       800.0,
+       5946000.0
+      ]
+     ],
+     "fit": {
+      "type": "poly3",
+      "form": "y=c0*x^3+c1*x^2+c2*x+c3",
+      "coef": [
+       -0.0240455,
+       33.9426,
+       -4804.56,
+       377839.0
+      ],
+      "max_rel_err": 0.00183,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. MOV supply cost include all relevant associated accessories.",
+    "2. Duties and Fiscal Levies is taken as 10.44% of respective CIF value (HS Code 8481.80.90).",
+    "3. Supplier's markup included.",
+    "4. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "M/12",
+   "title": "Supply & delivery of motor operated valves (non-Asian - Europe)",
+   "file": "part1",
+   "page": 108,
+   "book_page": 108,
+   "x": {
+    "label": "MOV diameter",
+    "unit": "mm",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Non-Asian (Europe)",
+     "points": [
+      [
+       105.0,
+       1676000.0
+      ],
+      [
+       130,
+       2002000.0
+      ],
+      [
+       150,
+       2281000.0
+      ],
+      [
+       200.0,
+       3034000.0
+      ],
+      [
+       250,
+       3853000.0
+      ],
+      [
+       300.0,
+       4714000.0
+      ],
+      [
+       400.0,
+       6501000.0
+      ],
+      [
+       500.0,
+       8229000.0
+      ],
+      [
+       600.0,
+       9746000.0
+      ],
+      [
+       650,
+       10370000.0
+      ],
+      [
+       700.0,
+       10890000.0
+      ],
+      [
+       750,
+       11270000.0
+      ],
+      [
+       800.0,
+       11500000.0
+      ]
+     ],
+     "fit": {
+      "type": "poly3",
+      "form": "y=c0*x^3+c1*x^2+c2*x+c3",
+      "coef": [
+       -0.0264028,
+       28.9286,
+       7362.87,
+       616073.0
+      ],
+      "max_rel_err": 0.0017,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. MOV supply cost include all relevant associated accessories.",
+    "2. Duties and Fiscal Levies is taken as 10.44% of respective CIF value (HS Code 8481.80.90).",
+    "3. Supplier's markup included.",
+    "4. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "M/13",
+   "title": "Installation of motor operated valves",
+   "file": "part1",
+   "page": 109,
+   "book_page": 109,
+   "x": {
+    "label": "MOV diameter",
+    "unit": "mm",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Installation",
+     "points": [
+      [
+       105.0,
+       3185.0
+      ],
+      [
+       200.0,
+       6407.0
+      ],
+      [
+       300.0,
+       9798.0
+      ],
+      [
+       400.0,
+       13190.0
+      ],
+      [
+       500.0,
+       16580.0
+      ],
+      [
+       600.0,
+       19970.0
+      ],
+      [
+       700.0,
+       23360.0
+      ],
+      [
+       800.0,
+       26750.0
+      ]
+     ],
+     "fit": {
+      "type": "linear",
+      "form": "y=c0*x+c1",
+      "coef": [
+       33.9108,
+       -374.815
+      ],
+      "max_rel_err": 0.00317,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Installation cost includes storage, protection, handling, mounting the valve and actuator and electrical connection.",
+    "2. Contractor's markup not included.",
+    "Source: Based on Work Studies."
+   ]
+  },
+  {
+   "id": "M/14",
+   "title": "Supply of air blowers complete with motors & base frames",
+   "file": "part1",
+   "page": 110,
+   "book_page": 110,
+   "x": {
+    "label": "Motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Air blower",
+     "points": [
+      [
+       11.0,
+       3730000.0
+      ],
+      [
+       15.0,
+       3978000.0
+      ],
+      [
+       20.0,
+       4422000.0
+      ],
+      [
+       25.0,
+       5015000.0
+      ],
+      [
+       30.0,
+       5759000.0
+      ],
+      [
+       35.0,
+       6653000.0
+      ],
+      [
+       40.0,
+       7696000.0
+      ],
+      [
+       45.0,
+       8885000.0
+      ]
+     ],
+     "fit": {
+      "type": "poly2",
+      "form": "y=c0*x^2+c1*x+c2",
+      "coef": [
+       2996.1,
+       -16058.8,
+       3544380.0
+      ],
+      "max_rel_err": 0.00037,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Spare parts can be taken as maximum 25% of Supply Price for Preparing TCE.",
+    "2. Cost of Spare parts for Engineer's Estimates can be taken according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "3. Duties and Fiscal Levies is taken as 28.38% of respective CIF value (HS Code 8414.59).",
+    "4. Cost of pipes, fittings & specials not included.",
+    "5. Contractor's markup included.",
+    "6. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "M/15",
+   "title": "Installation of air blowers complete with motors & base frames",
+   "file": "part1",
+   "page": 111,
+   "book_page": 111,
+   "x": {
+    "label": "Motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Installation",
+     "points": [
+      [
+       11.0,
+       140500.0
+      ],
+      [
+       15.0,
+       156300.0
+      ],
+      [
+       20.0,
+       178600.0
+      ],
+      [
+       25.0,
+       204000.0
+      ],
+      [
+       30.0,
+       233100.0
+      ],
+      [
+       35.0,
+       266300.0
+      ],
+      [
+       40.0,
+       304300.0
+      ],
+      [
+       45.0,
+       347700.0
+      ]
+     ],
+     "fit": {
+      "type": "exp",
+      "form": "y=c0*exp(c1*x)",
+      "coef": [
+       104784.0,
+       0.0266546
+      ],
+      "max_rel_err": 0.000404,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Contractor's markup not included."
+   ]
+  },
+  {
+   "id": "M/16",
+   "title": "Supply of bladder type surge vessels",
+   "file": "part1",
+   "page": 112,
+   "book_page": 112,
+   "x": {
+    "label": "Capacity of vessel",
+    "unit": "m3",
+    "multiplier": 1,
+    "axis_note": "ticks labelled 1,3,...,19; plot frame extends to 20 m3"
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Bladder surge vessel",
+     "points": [
+      [
+       1.0,
+       4493000.0
+      ],
+      [
+       1.5,
+       5624000.0
+      ],
+      [
+       2.0,
+       6686000.0
+      ],
+      [
+       3.0,
+       8637000.0
+      ],
+      [
+       4.0,
+       10370000.0
+      ],
+      [
+       5.0,
+       11880000.0
+      ],
+      [
+       6.0,
+       13210000.0
+      ],
+      [
+       7.0,
+       14360000.0
+      ],
+      [
+       9.0,
+       16210000.0
+      ],
+      [
+       11.0,
+       17570000.0
+      ],
+      [
+       13.0,
+       18580000.0
+      ],
+      [
+       15.0,
+       19380000.0
+      ],
+      [
+       17.0,
+       20100000.0
+      ],
+      [
+       19.0,
+       20890000.0
+      ],
+      [
+       20.0,
+       21350000.0
+      ]
+     ],
+     "fit": {
+      "type": "poly3",
+      "form": "y=c0*x^3+c1*x^2+c2*x+c3",
+      "coef": [
+       2880.14,
+       -138897.0,
+       2591560.0,
+       2034930.0
+      ],
+      "max_rel_err": 0.000557,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Spare parts can be taken as maximum 25% of Supply Price for Preparing TCE.",
+    "2. Cost of Spare parts for Engineer's Estimates can be taken according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "3. Cost for flow meter chamber with CI opening not included. (sic)",
+    "4. Cost for pipes and specials not included.",
+    "5. Supplier's markup included.",
+    "6. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "M/17",
+   "title": "Installation of bladder type surge vessels",
+   "file": "part1",
+   "page": 113,
+   "book_page": 113,
+   "x": {
+    "label": "Capacity of vessel",
+    "unit": "m3",
+    "multiplier": 1,
+    "axis_note": "ticks labelled 1,3,...,19; plot frame extends to 20 m3"
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Installation",
+     "points": [
+      [
+       1.0,
+       137700.0
+      ],
+      [
+       2.0,
+       181900.0
+      ],
+      [
+       3.0,
+       222400.0
+      ],
+      [
+       4.0,
+       259100.0
+      ],
+      [
+       5.0,
+       292100.0
+      ],
+      [
+       6.0,
+       321900.0
+      ],
+      [
+       7.0,
+       348500.0
+      ],
+      [
+       9.0,
+       393400.0
+      ],
+      [
+       11.0,
+       428700.0
+      ],
+      [
+       13.0,
+       456500.0
+      ],
+      [
+       15.0,
+       478700.0
+      ],
+      [
+       17.0,
+       497100.0
+      ],
+      [
+       19.0,
+       513800.0
+      ],
+      [
+       20.0,
+       522000.0
+      ]
+     ],
+     "fit": {
+      "type": "poly3",
+      "form": "y=c0*x^3+c1*x^2+c2*x+c3",
+      "coef": [
+       40.3008,
+       -2278.26,
+       51119.4,
+       88495.1
+      ],
+      "max_rel_err": 0.00232,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Contractor's markup not included."
+   ]
+  },
+  {
+   "id": "M/18",
+   "title": "Supply & delivery of gas chlorinators (cost per one unit)",
+   "file": "part1",
+   "page": 114,
+   "book_page": 114,
+   "x": {
+    "label": "Capacity",
+    "unit": "kg/h",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Gas chlorinator",
+     "points": [
+      [
+       0,
+       143300.0
+      ],
+      [
+       0.5,
+       309200.0
+      ],
+      [
+       1.0,
+       467900.0
+      ],
+      [
+       1.5,
+       618500.0
+      ],
+      [
+       2.0,
+       760900.0
+      ],
+      [
+       2.5,
+       896500.0
+      ],
+      [
+       3.0,
+       1024000.0
+      ],
+      [
+       3.5,
+       1144000.0
+      ],
+      [
+       4.0,
+       1257000.0
+      ],
+      [
+       4.5,
+       1361000.0
+      ],
+      [
+       5.0,
+       1458000.0
+      ],
+      [
+       5.5,
+       1547000.0
+      ],
+      [
+       6.0,
+       1629000.0
+      ],
+      [
+       6.5,
+       1703000.0
+      ],
+      [
+       7.0,
+       1769000.0
+      ],
+      [
+       7.5,
+       1828000.0
+      ],
+      [
+       8.0,
+       1879000.0
+      ],
+      [
+       8.5,
+       1922000.0
+      ]
+     ],
+     "fit": {
+      "type": "poly2",
+      "form": "y=c0*x^2+c1*x+c2",
+      "coef": [
+       -15337.6,
+       339637.0,
+       143380.0
+      ],
+      "max_rel_err": 0.0011,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Costs for vacuum regulators, flow meters, injectors or chlorine gas detectors are not included.",
+    "2. Cost of chlorine gas leak detectors or emergency shutoff systems are not included.",
+    "3. Duties and Fiscal Levies is taken as 7.88% of respective CIF value (HS Code 8421.39).",
+    "4. Supplier's markup included.",
+    "5. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "ELE/01",
+   "title": "Supply & delivery of water cooled generators, 3 phase 400/230V, 50Hz, 1500rpm",
+   "file": "part2",
+   "page": 39,
+   "book_page": 239,
+   "x": {
+    "label": "Output power (prime)",
+    "unit": "kVA",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Generator supply",
+     "points": [
+      [
+       10.0,
+       6548000.0
+      ],
+      [
+       250.0,
+       17690000.0
+      ],
+      [
+       500.0,
+       29660000.0
+      ],
+      [
+       750.0,
+       41990000.0
+      ],
+      [
+       1000.0,
+       54720000.0
+      ],
+      [
+       1250.0,
+       67780000.0
+      ],
+      [
+       1500.0,
+       81240000.0
+      ],
+      [
+       1750.0,
+       95050000.0
+      ],
+      [
+       2000.0,
+       109200000.0
+      ],
+      [
+       2250.0,
+       123800000.0
+      ]
+     ],
+     "fit": {
+      "type": "poly3",
+      "form": "y=c0*x^3+c1*x^2+c2*x+c3",
+      "coef": [
+       -7.43481e-06,
+       2.99132,
+       45618.9,
+       6101430.0
+      ],
+      "max_rel_err": 0.00488,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Spare parts can be taken as maximum 25% of Supply Price for Preparing TCE.",
+    "2. Cost of Spare parts for Engineer's Estimates can be taken according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "3. Duties and Fiscal Levies is taken as 13.00% of respective CIF value (HS Code 8502).",
+    "4. Cost of cable price not included.",
+    "5. Soundproof canopy cost can be taken as 2%-5% of Supply Price.",
+    "6. Supplier's markup included.",
+    "7. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "ELE/02",
+   "title": "Installation of water cooled generators, 3 phase 400/230V, 50Hz, 1500rpm",
+   "file": "part2",
+   "page": 40,
+   "book_page": 240,
+   "x": {
+    "label": "Output power",
+    "unit": "kVA",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Generator installation",
+     "points": [
+      [
+       11.4,
+       99050.0
+      ],
+      [
+       30,
+       141000.0
+      ],
+      [
+       40,
+       156500.0
+      ],
+      [
+       60,
+       181200.0
+      ],
+      [
+       70,
+       191900.0
+      ],
+      [
+       100,
+       218400.0
+      ],
+      [
+       130,
+       240100.0
+      ],
+      [
+       190,
+       275500.0
+      ],
+      [
+       250.0,
+       304200.0
+      ],
+      [
+       380,
+       353900.0
+      ],
+      [
+       500.0,
+       390900.0
+      ],
+      [
+       750.0,
+       452600.0
+      ],
+      [
+       1000.0,
+       502400.0
+      ],
+      [
+       1250.0,
+       544500.0
+      ],
+      [
+       1500.0,
+       581700.0
+      ],
+      [
+       1750.0,
+       615000.0
+      ],
+      [
+       2000.0,
+       645400.0
+      ],
+      [
+       2250.0,
+       673500.0
+      ]
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       41162.3,
+       0.362157
+      ],
+      "max_rel_err": 0.00325,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Installation cost includes product delivery, storage, handling and run all outgoing cables from the generator to the control boards in the floor trenches.",
+    "2. Contractor's markup not included."
+   ]
+  },
+  {
+   "id": "ELE/03",
+   "title": "Supply of main power incoming panel including ATS & capacitor banks (7.5kW-90kW)",
+   "file": "part2",
+   "page": 41,
+   "book_page": 241,
+   "x": {
+    "label": "Panel capacity",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands' (300-900 labelled; frame top ~1,050k)"
+   },
+   "series": [
+    {
+     "name": "Main incoming panel supply 7.5-90kW",
+     "points": [
+      [
+       7.5,
+       346400.0
+      ],
+      [
+       9.0,
+       383100.0
+      ],
+      [
+       10.0,
+       404200.0
+      ],
+      [
+       12.5,
+       449000.0
+      ],
+      [
+       15.0,
+       485800.0
+      ],
+      [
+       20.0,
+       543600.0
+      ],
+      [
+       25.0,
+       588600.0
+      ],
+      [
+       30.0,
+       625300.0
+      ],
+      [
+       40.0,
+       683100.0
+      ],
+      [
+       50.0,
+       728100.0
+      ],
+      [
+       60.0,
+       764700.0
+      ],
+      [
+       70.0,
+       795700.0
+      ],
+      [
+       80.0,
+       822600.0
+      ],
+      [
+       90.0,
+       846200.0
+      ],
+      [
+       100,
+       867500.0
+      ]
+     ],
+     "fit": {
+      "type": "log",
+      "form": "y=c0*ln(x)+c1",
+      "coef": [
+       201091.0,
+       -58636.7
+      ],
+      "max_rel_err": 0.00281,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Main power cable not included.",
+    "2. Cost of Spare parts can be considered as maximum 20% of Supply Price for Preparing TCE.",
+    "3. Cost of Spare parts for Engineer's Estimates can be considered according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "4. Duties and Fiscal Levies is taken 33.50% of respective CIF value (HS Code 8537).",
+    "5. Contractor's markup included.",
+    "6. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "ELE/04",
+   "title": "Installation of main power incoming panel including ATS & capacitor banks (7.5kW-90kW)",
+   "file": "part2",
+   "page": 42,
+   "book_page": 242,
+   "x": {
+    "label": "Panel capacity",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Main incoming panel installation 7.5-90kW",
+     "points": [
+      [
+       7.5,
+       47160.0
+      ],
+      [
+       10.0,
+       53250.0
+      ],
+      [
+       12.5,
+       58050.0
+      ],
+      [
+       15.0,
+       61980.0
+      ],
+      [
+       20.0,
+       68180.0
+      ],
+      [
+       25.0,
+       73000.0
+      ],
+      [
+       30.0,
+       76930.0
+      ],
+      [
+       40.0,
+       83150.0
+      ],
+      [
+       50.0,
+       87950.0
+      ],
+      [
+       60.0,
+       91880.0
+      ],
+      [
+       70.0,
+       95210.0
+      ],
+      [
+       80.0,
+       98090.0
+      ],
+      [
+       90.0,
+       100600.0
+      ]
+     ],
+     "fit": {
+      "type": "log",
+      "form": "y=c0*ln(x)+c1",
+      "coef": [
+       21564.1,
+       3596.05
+      ],
+      "max_rel_err": 0.00225,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Contractor's markup included."
+   ]
+  },
+  {
+   "id": "ELE/05",
+   "title": "Supply of main power incoming panel including ATS & capacitor banks (90kW-1100kW)",
+   "file": "part2",
+   "page": 43,
+   "book_page": 243,
+   "x": {
+    "label": "Panel capacity",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Main incoming panel supply 90-1100kW",
+     "points": [
+      [
+       110.0,
+       829900.0
+      ],
+      [
+       115,
+       873200.0
+      ],
+      [
+       120,
+       933900.0
+      ],
+      [
+       130,
+       1055000.0
+      ],
+      [
+       155,
+       1359000.0
+      ],
+      [
+       200.0,
+       1906000.0
+      ],
+      [
+       300.0,
+       3121000.0
+      ],
+      [
+       400.0,
+       4336000.0
+      ],
+      [
+       500.0,
+       5551000.0
+      ],
+      [
+       600.0,
+       6766000.0
+      ],
+      [
+       700.0,
+       7981000.0
+      ],
+      [
+       800.0,
+       9196000.0
+      ],
+      [
+       900.0,
+       10410000.0
+      ],
+      [
+       1000.0,
+       11630000.0
+      ],
+      [
+       1100.0,
+       12840000.0
+      ]
+     ],
+     "fit": {
+      "type": "poly3",
+      "form": "y=c0*x^3+c1*x^2+c2*x+c3",
+      "coef": [
+       -1.11526e-05,
+       0.0227797,
+       12135.5,
+       -521457.0
+      ],
+      "max_rel_err": 0.00503,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Main power cable not included.",
+    "2. Cost of Spare parts can be considered as maximum 20% of Supply Price for Preparing TCE.",
+    "3. Cost of Spare parts for Engineer's Estimates can be considered according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "4. Duties and Fiscal Levies is taken 33.50% of respective CIF value (HS Code 8537).",
+    "5. Contractor's markup included.",
+    "6. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "ELE/06",
+   "title": "Installation of main power incoming panel including ATS & capacitor banks (90kW-1100kW)",
+   "file": "part2",
+   "page": 44,
+   "book_page": 244,
+   "x": {
+    "label": "Panel capacity",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Main incoming panel installation 90-1100kW",
+     "points": [
+      [
+       110.0,
+       106800.0
+      ],
+      [
+       130,
+       122100.0
+      ],
+      [
+       155,
+       139300.0
+      ],
+      [
+       180,
+       154200.0
+      ],
+      [
+       200.0,
+       164600.0
+      ],
+      [
+       250,
+       186600.0
+      ],
+      [
+       300.0,
+       204600.0
+      ],
+      [
+       400.0,
+       233000.0
+      ],
+      [
+       500.0,
+       255000.0
+      ],
+      [
+       600.0,
+       273000.0
+      ],
+      [
+       700.0,
+       288200.0
+      ],
+      [
+       800.0,
+       301400.0
+      ],
+      [
+       900.0,
+       313000.0
+      ],
+      [
+       1000.0,
+       323400.0
+      ],
+      [
+       1100.0,
+       332800.0
+      ]
+     ],
+     "fit": {
+      "type": "log",
+      "form": "y=c0*ln(x)+c1",
+      "coef": [
+       98670.6,
+       -358213.0
+      ],
+      "max_rel_err": 0.00328,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Contractor's markup included."
+   ]
+  },
+  {
+   "id": "ELE/07",
+   "title": "Supply of power distribution panel (7.5kW-90kW)",
+   "file": "part2",
+   "page": 45,
+   "book_page": 245,
+   "x": {
+    "label": "Panel capacity",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Distribution panel supply 7.5-90kW",
+     "points": [
+      [
+       5.0,
+       198700.0
+      ],
+      [
+       5.5,
+       218400.0
+      ],
+      [
+       6.0,
+       235700.0
+      ],
+      [
+       7.5,
+       281000.0
+      ],
+      [
+       9.0,
+       317600.0
+      ],
+      [
+       10.0,
+       339000.0
+      ],
+      [
+       12.5,
+       384300.0
+      ],
+      [
+       15.0,
+       421300.0
+      ],
+      [
+       20.0,
+       479500.0
+      ],
+      [
+       25.0,
+       524700.0
+      ],
+      [
+       30.0,
+       561600.0
+      ],
+      [
+       40.0,
+       619900.0
+      ],
+      [
+       50.0,
+       665100.0
+      ],
+      [
+       60.0,
+       702000.0
+      ],
+      [
+       70.0,
+       733300.0
+      ],
+      [
+       80.0,
+       760400.0
+      ],
+      [
+       90.0,
+       784100.0
+      ],
+      [
+       100,
+       805500.0
+      ]
+     ],
+     "clipped": [
+      "curve runs outside the plot frame (y-axis limits) for x < 5 kW; only the visible part is digitised"
+     ],
+     "fit": {
+      "type": "log",
+      "form": "y=c0*ln(x)+c1",
+      "coef": [
+       202531.0,
+       -127224.0
+      ],
+      "max_rel_err": 0.0003,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Main power cable & Change over switch are not included.",
+    "2. Cost of Spare parts can be considered as maximum 20% of Supply Price for Preparing TCE.",
+    "3. Cost of Spare parts for Engineer's Estimates can be considered according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "4. Duties and Fiscal Levies is taken 33.50% of respective CIF value (HS Code 8537).",
+    "5. Contractor's markup included.",
+    "6. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "ELE/08",
+   "title": "Installation of power distribution panel (7.5kW-90kW)",
+   "file": "part2",
+   "page": 46,
+   "book_page": 246,
+   "x": {
+    "label": "Panel capacity",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Distribution panel installation 7.5-90kW",
+     "points": [
+      [
+       7.5,
+       33190.0
+      ],
+      [
+       9.0,
+       37080.0
+      ],
+      [
+       10.0,
+       39330.0
+      ],
+      [
+       12.5,
+       44080.0
+      ],
+      [
+       15.0,
+       47970.0
+      ],
+      [
+       20.0,
+       54130.0
+      ],
+      [
+       25.0,
+       58880.0
+      ],
+      [
+       30.0,
+       62770.0
+      ],
+      [
+       40.0,
+       68910.0
+      ],
+      [
+       50.0,
+       73680.0
+      ],
+      [
+       60.0,
+       77570.0
+      ],
+      [
+       70.0,
+       80860.0
+      ],
+      [
+       80.0,
+       83710.0
+      ],
+      [
+       90.0,
+       86210.0
+      ],
+      [
+       100,
+       88480.0
+      ]
+     ],
+     "fit": {
+      "type": "log",
+      "form": "y=c0*ln(x)+c1",
+      "coef": [
+       21332.4,
+       -9776.96
+      ],
+      "max_rel_err": 0.00321,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Contractor's markup included."
+   ]
+  },
+  {
+   "id": "ELE/09",
+   "title": "Supply of power distribution panel (90kW-1100kW)",
+   "file": "part2",
+   "page": 47,
+   "book_page": 247,
+   "x": {
+    "label": "Panel capacity",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Distribution panel supply 90-1100kW",
+     "points": [
+      [
+       136.0,
+       976500.0
+      ],
+      [
+       200.0,
+       1728000.0
+      ],
+      [
+       300.0,
+       2902000.0
+      ],
+      [
+       400.0,
+       4076000.0
+      ],
+      [
+       500.0,
+       5250000.0
+      ],
+      [
+       600.0,
+       6424000.0
+      ],
+      [
+       700.0,
+       7598000.0
+      ],
+      [
+       800.0,
+       8772000.0
+      ],
+      [
+       900.0,
+       9946000.0
+      ],
+      [
+       1000.0,
+       11120000.0
+      ],
+      [
+       1100.0,
+       12290000.0
+      ]
+     ],
+     "clipped": [
+      "curve runs outside the plot frame (y-axis limits) for x < 136 kW; only the visible part is digitised"
+     ],
+     "fit": {
+      "type": "linear",
+      "form": "y=c0*x+c1",
+      "coef": [
+       11740.6,
+       -620255.0
+      ],
+      "max_rel_err": 2.6e-15,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Main power cable not included.",
+    "2. Cost of Spare parts can be considered as maximum 20% of Supply Price for Preparing TCE.",
+    "3. Cost of Spare parts for Engineer's Estimates can be considered according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "4. Duties and Fiscal Levies is taken 33.50% of respective CIF value (HS Code 8537).",
+    "5. Contractor's markup included.",
+    "6. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "ELE/10",
+   "title": "Installation of power distribution panel (90kW-1100kW)",
+   "file": "part2",
+   "page": 48,
+   "book_page": 248,
+   "x": {
+    "label": "Panel capacity",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "Distribution panel installation 90-1100kW",
+     "points": [
+      [
+       110.0,
+       92000.0
+      ],
+      [
+       130,
+       107300.0
+      ],
+      [
+       155,
+       124700.0
+      ],
+      [
+       180,
+       139500.0
+      ],
+      [
+       200.0,
+       149900.0
+      ],
+      [
+       250,
+       172000.0
+      ],
+      [
+       300.0,
+       190000.0
+      ],
+      [
+       400.0,
+       218500.0
+      ],
+      [
+       500.0,
+       240600.0
+      ],
+      [
+       600.0,
+       258600.0
+      ],
+      [
+       700.0,
+       273900.0
+      ],
+      [
+       800.0,
+       287200.0
+      ],
+      [
+       900.0,
+       298800.0
+      ],
+      [
+       1000.0,
+       309200.0
+      ],
+      [
+       1100.0,
+       318700.0
+      ]
+     ],
+     "fit": {
+      "type": "log",
+      "form": "y=c0*ln(x)+c1",
+      "coef": [
+       98968.0,
+       -374428.0
+      ],
+      "max_rel_err": 0.00382,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Contractor's markup included."
+   ]
+  },
+  {
+   "id": "ELE/11",
+   "title": "Supply & delivery of switch mode capacitor banks",
+   "file": "part2",
+   "page": 49,
+   "book_page": 249,
+   "x": {
+    "label": "Capacitor bank rating",
+    "unit": "kVAr",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Capacitor bank",
+     "points": [
+      [
+       0,
+       52500.0
+      ],
+      [
+       50.0,
+       190900.0
+      ],
+      [
+       100.0,
+       329600.0
+      ],
+      [
+       150.0,
+       468300.0
+      ],
+      [
+       200.0,
+       607100.0
+      ],
+      [
+       250.0,
+       745500.0
+      ]
+     ],
+     "fit": {
+      "type": "linear",
+      "form": "y=c0*x+c1",
+      "coef": [
+       2774.29,
+       52197.8
+      ],
+      "max_rel_err": 0.00039,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Installation cost can be taken as 10% of Supply Price.",
+    "2. Power cables are included.",
+    "3. Supplier's markup included.",
+    "4. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "ELE/12",
+   "title": "Supply & delivery of soft starter type motor starter unit with enclosure",
+   "file": "part2",
+   "page": 50,
+   "book_page": 250,
+   "x": {
+    "label": "Rated motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Soft starter",
+     "points": [
+      [
+       1.5,
+       725700.0
+      ],
+      [
+       50.0,
+       1091000.0
+      ],
+      [
+       100.0,
+       1441000.0
+      ],
+      [
+       150.0,
+       1772000.0
+      ],
+      [
+       200.0,
+       2099000.0
+      ],
+      [
+       250.0,
+       2427000.0
+      ],
+      [
+       300.0,
+       2771000.0
+      ],
+      [
+       350.0,
+       3138000.0
+      ],
+      [
+       400.0,
+       3542000.0
+      ],
+      [
+       450.0,
+       3991000.0
+      ],
+      [
+       500.0,
+       4495000.0
+      ],
+      [
+       550.0,
+       5067000.0
+      ],
+      [
+       600.0,
+       5716000.0
+      ],
+      [
+       650.0,
+       6452000.0
+      ]
+     ],
+     "fit": {
+      "type": "poly3",
+      "form": "y=c0*x^3+c1*x^2+c2*x+c3",
+      "coef": [
+       0.0139874,
+       -7.64381,
+       7886.89,
+       714608.0
+      ],
+      "max_rel_err": 0.00235,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Installation cost can be taken as 5% of Supply Price.",
+    "2. Cost of starter to motor power cable not included.",
+    "3. Cost of Spare parts can be considered as 20% of Supply Cost.",
+    "4. Supplier's markup included.",
+    "5. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "ELE/13",
+   "title": "Supply & delivery of star-delta type motor starter unit with enclosure",
+   "file": "part2",
+   "page": 51,
+   "book_page": 251,
+   "x": {
+    "label": "Rated motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Star-delta starter",
+     "points": [
+      [
+       4.55,
+       98640.0
+      ],
+      [
+       5.0,
+       105900.0
+      ],
+      [
+       7.5,
+       142100.0
+      ],
+      [
+       10.0,
+       175300.0
+      ],
+      [
+       15.0,
+       235800.0
+      ],
+      [
+       20.0,
+       290700.0
+      ],
+      [
+       25.0,
+       342100.0
+      ],
+      [
+       30.0,
+       390800.0
+      ],
+      [
+       35.0,
+       437400.0
+      ],
+      [
+       40.0,
+       482000.0
+      ],
+      [
+       45.0,
+       525400.0
+      ],
+      [
+       50.0,
+       567300.0
+      ],
+      [
+       55.0,
+       608300.0
+      ],
+      [
+       60.0,
+       648100.0
+      ],
+      [
+       65.0,
+       687000.0
+      ],
+      [
+       70.0,
+       725300.0
+      ],
+      [
+       75.0,
+       762700.0
+      ],
+      [
+       80.0,
+       799600.0
+      ]
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       32650.9,
+       0.729839
+      ],
+      "max_rel_err": 0.000593,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Installation cost can be taken as 5% of Supply Price.",
+    "2. Cost of starter to motor power cable not included.",
+    "3. Cost of Spare parts can be considered as 20% of Supply Cost.",
+    "4. Supplier's markup included.",
+    "5. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "ELE/14",
+   "title": "Supply of auto transformer type motor starter unit with enclosure",
+   "file": "part2",
+   "page": 52,
+   "book_page": 252,
+   "x": {
+    "label": "Rated motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "Auto-transformer starter",
+     "points": [
+      [
+       22.0,
+       946800.0
+      ],
+      [
+       28,
+       1098000.0
+      ],
+      [
+       35.0,
+       1261000.0
+      ],
+      [
+       48,
+       1530000.0
+      ],
+      [
+       60.0,
+       1755000.0
+      ],
+      [
+       85.0,
+       2175000.0
+      ],
+      [
+       110.0,
+       2550000.0
+      ],
+      [
+       135.0,
+       2891000.0
+      ],
+      [
+       160.0,
+       3211000.0
+      ],
+      [
+       185.0,
+       3511000.0
+      ],
+      [
+       210.0,
+       3796000.0
+      ],
+      [
+       235.0,
+       4068000.0
+      ],
+      [
+       260.0,
+       4329000.0
+      ]
+     ],
+     "fit": {
+      "type": "power",
+      "form": "y=c0*x^c1",
+      "coef": [
+       141422.0,
+       0.61525
+      ],
+      "max_rel_err": 0.00238,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Installation cost can be taken as 5% of Supply Price.",
+    "2. Cost of starter to motor power cable not included.",
+    "3. Cost of Spare parts can be considered as 25% of Supply Cost.",
+    "4. Supplier's markup included.",
+    "5. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "ELE/15",
+   "title": "Supply of variable speed drives (frequency inverter) type motor controller/starter unit with enclosure",
+   "file": "part2",
+   "page": 53,
+   "book_page": 253,
+   "x": {
+    "label": "Capacity (rated motor power)",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1000,
+    "axis_note": "axis labels in 'Thousands'"
+   },
+   "series": [
+    {
+     "name": "VSD supply",
+     "points": [
+      [
+       7.5,
+       841400.0
+      ],
+      [
+       50.0,
+       1651000.0
+      ],
+      [
+       100.0,
+       2658000.0
+      ],
+      [
+       150.0,
+       3732000.0
+      ],
+      [
+       200.0,
+       4870000.0
+      ],
+      [
+       250.0,
+       6069000.0
+      ],
+      [
+       300.0,
+       7331000.0
+      ],
+      [
+       350.0,
+       8661000.0
+      ],
+      [
+       400.0,
+       10050000.0
+      ],
+      [
+       450.0,
+       11500000.0
+      ],
+      [
+       500.0,
+       13010000.0
+      ]
+     ],
+     "fit": {
+      "type": "poly2",
+      "form": "y=c0*x^2+c1*x+c2",
+      "coef": [
+       12.6941,
+       18283.4,
+       704548.0
+      ],
+      "max_rel_err": 0.00395,
+      "note": "least-squares fit to the digitised curve (real units); for convenience only"
+     }
+    }
+   ],
+   "notes": [
+    "1. Cost of Spare parts can be taken as maximum 40% of Supply Price for Preparing TCE.",
+    "2. Cost of Spare parts for Engineer's Estimates can be taken according to the spare parts items mentioned in the General Specification or Particular Specification.",
+    "3. Duties and Fiscal Levies is taken as 7.88% of respective CIF value (HS Code 8504.40.10).",
+    "4. Supplier's markup included.",
+    "5. VAT not included.",
+    "Source: M&E Section, P&D."
+   ]
+  },
+  {
+   "id": "ELE/16",
+   "title": "Installation of variable speed drives (frequency inverter) type motor controller/starter unit with enclosure",
+   "file": "part2",
+   "page": 54,
+   "book_page": 254,
+   "x": {
+    "label": "Rated motor power",
+    "unit": "kW",
+    "multiplier": 1
+   },
+   "y": {
+    "label": "Cost",
+    "unit": "LKR/unit",
+    "multiplier": 1
+   },
+   "series": [
+    {
+     "name": "VSD installation",
+     "points": [
+      [
+       7.5,
+       18790.0
+      ],
+      [
+       10.0,
+       41420.0
+      ],
+      [
+       15.0,
+       72680.0
+      ],
+      [
+       17.5,
+       84880.0
+      ],
+      [
+       20.0,
+       95310.0
+      ],
+      [
+       25.0,
+       112800.0
+      ],
+      [
+       30.0,
+       127100.0
+      ],
+      [
+       35.0,
+       139000.0
+      ],
+      [
+       40.0,
+       149500.0
+      ],
+      [
+       50.0,
+       166900.0
+      ],
+      [
+       62.5,
+       184400.0
+      ],
+      [
+       75.0,
+       198600.0
+      ],
+      [
+       100.0,
+       221100.0
+      ],
+      [
+       125.0,
+       238500.0
+      ],
+      [
+       150.0,
+       252700.0
+      ],
+      [
+       200.0,
+       275200.0
+      ],
+      [
+       250.0,
+       292600.0
+      ],
+      [
+       300.0,
+       306900.0
+      ],
+      [
+       350.0,
+       319000.0
+      ],
+      [
+       400.0,
+       329400.0
+      ],
+      [
+       450.0,
+       338600.0
+      ],
+      [
+       500.0,
+       346800.0
+      ]
+     ]
+    }
+   ],
+   "notes": [
+    "1. Contractor's markup not included."
+   ]
+  }
+ ],
+ "tables": {
+  "motors_M01": [
+   {
+    "kW": 0.55,
+    "HP": 0.75,
+    "pole2_3000rpm": 17640.0,
+    "pole4_1500rpm": 20071.0,
+    "pole6_1000rpm": 26108.0,
+    "pole8_750rpm": 41866.0
+   },
+   {
+    "kW": 0.75,
+    "HP": 1.0,
+    "pole2_3000rpm": 18581.0,
+    "pole4_1500rpm": 20933.0,
+    "pole6_1000rpm": 32772.0,
+    "pole8_750rpm": 46413.0
+   },
+   {
+    "kW": 1.1,
+    "HP": 1.5,
+    "pole2_3000rpm": null,
+    "pole4_1500rpm": null,
+    "pole6_1000rpm": 36221.0,
+    "pole8_750rpm": 49941.0
+   },
+   {
+    "kW": 1.5,
+    "HP": 2.0,
+    "pole2_3000rpm": 28695.0,
+    "pole4_1500rpm": 32928.0,
+    "pole6_1000rpm": 47432.0,
+    "pole8_750rpm": 71580.0
+   },
+   {
+    "kW": 2.2,
+    "HP": 3.0,
+    "pole2_3000rpm": 34026.0,
+    "pole4_1500rpm": 38024.0,
+    "pole6_1000rpm": 59976.0,
+    "pole8_750rpm": 86240.0
+   },
+   {
+    "kW": 3.7,
+    "HP": 5.5,
+    "pole2_3000rpm": 42023.0,
+    "pole4_1500rpm": 56762.0,
+    "pole6_1000rpm": 84045.0,
+    "pole8_750rpm": 90317.0
+   },
+   {
+    "kW": 5.5,
+    "HP": 7.5,
+    "pole2_3000rpm": 59584.0,
+    "pole4_1500rpm": 74951.0,
+    "pole6_1000rpm": 98863.0,
+    "pole8_750rpm": 204546.0
+   },
+   {
+    "kW": 7.5,
+    "HP": 10.0,
+    "pole2_3000rpm": 85064.0,
+    "pole4_1500rpm": 89612.0,
+    "pole6_1000rpm": 154527.0,
+    "pole8_750rpm": 214660.0
+   },
+   {
+    "kW": 11.0,
+    "HP": 15.0,
+    "pole2_3000rpm": 147706.0,
+    "pole4_1500rpm": 163464.0,
+    "pole6_1000rpm": 178282.0,
+    "pole8_750rpm": 254565.0
+   },
+   {
+    "kW": 15.0,
+    "HP": 20.0,
+    "pole2_3000rpm": 158839.0,
+    "pole4_1500rpm": 214895.0,
+    "pole6_1000rpm": 237160.0,
+    "pole8_750rpm": 344412.0
+   },
+   {
+    "kW": 18.5,
+    "HP": 25.0,
+    "pole2_3000rpm": 181575.0,
+    "pole4_1500rpm": 214895.0,
+    "pole6_1000rpm": 311719.0,
+    "pole8_750rpm": 460365.0
+   },
+   {
+    "kW": 22.0,
+    "HP": 30.0,
+    "pole2_3000rpm": 203448.0,
+    "pole4_1500rpm": 225949.0,
+    "pole6_1000rpm": 339708.0,
+    "pole8_750rpm": 493372.0
+   },
+   {
+    "kW": 30.0,
+    "HP": 40.0,
+    "pole2_3000rpm": 240924.0,
+    "pole4_1500rpm": 252605.0,
+    "pole6_1000rpm": 391765.0,
+    "pole8_750rpm": 552093.0
+   },
+   {
+    "kW": 37.0,
+    "HP": 50.0,
+    "pole2_3000rpm": 261072.0,
+    "pole4_1500rpm": 295176.0,
+    "pole6_1000rpm": 445469.0,
+    "pole8_750rpm": 723711.0
+   },
+   {
+    "kW": 45.0,
+    "HP": 60.0,
+    "pole2_3000rpm": 289924.0,
+    "pole4_1500rpm": null,
+    "pole6_1000rpm": null,
+    "pole8_750rpm": null
+   },
+   {
+    "kW": 55.0,
+    "HP": 75.0,
+    "pole2_3000rpm": null,
+    "pole4_1500rpm": 380868.0,
+    "pole6_1000rpm": null,
+    "pole8_750rpm": null
+   }
+  ],
+  "motors_M01_info": {
+   "id": "Table A-M/01",
+   "title": "Supply of three phase induction motor",
+   "file": "part1",
+   "page": 93,
+   "book_page": 93,
+   "unit": "LKR/unit",
+   "columns": {
+    "pole2_3000rpm": "2 pole, synchronous speed 3000 rpm",
+    "pole4_1500rpm": "4 pole, 1500 rpm",
+    "pole6_1000rpm": "6 pole, 1000 rpm",
+    "pole8_750rpm": "8 pole, 750 rpm"
+   },
+   "specification": {
+    "Supply Voltage": "400+/-10% VAC",
+    "Supply Frequency": "50Hz",
+    "Motor Duty": "S-1 Duty",
+    "Mounting": "Foot mount",
+    "Insulation": "Class F insulation with temperature rise limited to Class B",
+    "IP Class": "IP55",
+    "Cooling": "Shaft driven Forced cooling fan (TEFC)"
+   },
+   "notes": [
+    "1. Contractor's markup not included.",
+    "2. VAT not included.",
+    "Source: Market Price as in August 2025.",
+    "null = '-' (not quoted). 15 kW and 18.5 kW 4-pole prices are both printed as 214,895.00."
+   ]
+  }
+ }
+}
