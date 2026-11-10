@@ -153,7 +153,7 @@ export function compute(inp, ctx) {
       // 150 mm RC baffle walls built up from the WRS rates (concrete + 2 faces of formwork + steel)
       const baffle = 0.15 * R.conc + 2 * R.form + 0.15 * d.steelPerM3 * R.steel;
       addCivil('Flocculator baffle walls (150 mm RC)', area, 'm²', baffle, 'Flocculators', rbRef('B-WRS/01 A–D (built-up: 0.15 m³ concrete + 2 m² formwork + steel per m²)'));
-    } else addME('Paddle flocculator drives – not in RB 2025, indicative', fl.stages.length * nT, 'nr', d.driveBase + d.drivePerKw * (fl.kw / Math.max(1, fl.stages.length * nT)), 'Process', 'indicative');
+    } else { const nDr = fl.stages.reduce((a, s) => a + (s.nSh || 1), 0) * nT; addME('Paddle flocculator drives – not in RB 2025, indicative', nDr, 'nr', d.driveBase + d.drivePerKw * (fl.kw / Math.max(1, nDr)), 'Process', 'indicative'); }
   }
   const sed = r.sed;
   if (sed?.enabled) {

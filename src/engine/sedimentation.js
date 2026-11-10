@@ -61,12 +61,20 @@ export function compute(inp, ctx) {
 
   if (type === 'rect' || type === 'tube') {
     let A, W, L;
-    const H = d.depth;
+    let H = d.depth;
     if (type === 'rect') {
       A = Qd / d.sor;
       calc.step('Required surface area', 'A = \\frac{Q_t}{SOR}', `\\frac{${n(Qd, 0)}}{${n(d.sor)}}`, A, 'm²', 'NWSDB D3 §5.7.1, Table 5-20; LN: V_o = Q/A');
-      W = Math.max(2, Math.round(Math.sqrt(A / d.LW) * 10) / 10);
-      L = ceilTo(A / W, 0.5);
+      let LWr = d.LW;
+      const dims = () => { W = Math.max(1.5, Math.round(Math.sqrt(A / LWr) * 10) / 10); L = ceilTo(A / W, 0.5); };
+      dims();
+      // short tanks of small plants: when the user has not changed depth / L:W, use a narrower (L:W ≤ 6) and shallower
+      // (≥ 2.5 m, detention ≥ 2 h) tank so that L/D approaches the D3 range (10–25)
+      if (d.depth === DEFAULTS.depth && d.LW === DEFAULTS.LW && !plain) {
+        if (L / H < 10) { LWr = 5.6; dims(); }
+        while (L / H < 10 && H > 2.5 + 1e-9 && ((H - 0.1) * 24) / d.sor >= 2) H = +(H - 0.1).toFixed(2);
+        if (LWr !== d.LW || H !== d.depth) calc.text(`Small tank: L:W ${LWr} and side water depth ${H.toFixed(2)} m adopted automatically to bring length : depth towards the NWSDB D3 range (change the depth or L:W input to override).`);
+      }
     } else {
       const Ac = Qh / d.tubeLoad;
       calc.step('Area covered by tube modules', 'A_c = \\frac{Q_t}{q_{tube}}', `\\frac{${n(Qh, 1)}}{${n(d.tubeLoad)}}`, Ac, 'm²');

@@ -19,6 +19,7 @@ export const DEFAULTS = {
   chanU: 0.4, chanW: 0,  // m/s, m (0 = auto, ≥ 0.6 m for raking)
   // intake conduit (river intake → jack well) – D2 §5.3.1 velocity 0.6–0.9 m/s
   conduitL: 30, conduitC: 120, conduitDN: 0, // 0 = automatic (D2 §5.3.1 0.6–0.9 m/s)
+  nConduits: 0,          // number of parallel intake pipes; 0 = automatic (as many as needed for 1.5 D submergence at LWL)
   // wet well
   wellHrt: 5, wellEffDepth: 1.5, submergence: 1.2,
   // pumps (D2 §6) – 0 = automatic (D2 Table 6.2 efficiencies, §6.4.1 stand-by)
@@ -119,9 +120,15 @@ export function compute(inp, ctx) {
     calc.text('Two sets of removable fine screens are provided so that one can be cleaned while the other is in place (D2 §5.4; duplicate screens, D3 §5.1.5.2).');
     // ---- conduit (D2 §5.3.1)
     calc.section('Intake pipe / conduit to jack well');
-    const cdn = d.conduitDN > 0 ? d.conduitDN : selectDNRange(Q, INTAKE.pipeV[0], INTAKE.pipeV[1], 0.75);
-    const cv = vel(Q, cdn / 1000);
-    const chl = hwLoss(Q, cdn / 1000, d.conduitL, d.conduitC) + 1.5 * cv * cv / (2 * G);
+    // parallel pipes: automatic count = fewest pipes whose crown is submerged ≥ 1.5 D at LWL (D2 §5.3.1)
+    const dnFor = (k) => (d.conduitDN > 0 ? d.conduitDN : selectDNRange(Q / k, INTAKE.pipeV[0], INTAKE.pipeV[1], 0.75));
+    let nC = d.nConduits > 0 ? Math.round(d.nConduits) : 1;
+    if (!(d.nConduits > 0)) { const avail = d.LWL - d.bedLevel - d.sill; while (nC < 6 && avail / (dnFor(nC) / 1000) - 1 < 1.5) nC++; if (avail / (dnFor(nC) / 1000) - 1 < 1.5) nC = 1; }
+    const Qc = Q / nC;
+    const cdn = dnFor(nC);
+    const cv = vel(Qc, cdn / 1000);
+    const chl = hwLoss(Qc, cdn / 1000, d.conduitL, d.conduitC) + 1.5 * cv * cv / (2 * G);
+    if (nC > 1) calc.step('Parallel intake pipes', 'n_c', d.nConduits > 0 ? '\\text{given}' : '\\text{auto: submergence} \\ge 1.5D', nC, 'nos.', ref('5.3.1'));
     calc.step('Intake pipe diameter', 'DN', `v=${n(cv)}\\,m/s`, cdn, 'mm', ref('5.3.1') + ' – pipe velocity 0.6–0.9 m/s');
     calc.step('Conduit head loss (friction + entry/exit)', 'h = h_f + 1.5\\frac{v^2}{2g}', '', chl, 'm');
     calc.check('pipe.gravV', cv, 'Velocity in intake pipe / conduit');
@@ -135,9 +142,12 @@ export function compute(inp, ctx) {
     const Vw = Q * 60 * d.wellHrt;
     const Aw = Vw / d.wellEffDepth;
     const nP = d.nDuty + (d.nStandby > 0 ? d.nStandby : 1);
-    const Apipe = Math.PI * (cdn / 1000) ** 2 / 4;
+    const Apipe = nC * Math.PI * (cdn / 1000) ** 2 / 4;
     const Dw = Math.max(ceilTo(Math.sqrt((4 * Aw) / Math.PI), 0.5), nP * 1.6 + 1.0, ceilTo(Math.sqrt((4 * 3 * Apipe) / Math.PI), 0.5));
     const wellLWL = d.LWL - Math.max(cs.hClog, 0) - Math.max(fs.hClog, 0) - chl;
+    // pump-suction submergence: at least 1.5 × bell-mouth / suction diameter (D2 §5.3.1); the default 1.2 m is raised automatically
+    const sdn0 = selectDN(Q / d.nDuty, 1.2, 1.5);
+    d.submergence = Math.max(d.submergence, Math.ceil((1.5 * sdn0) / 100) / 10);
     const floor = wellLWL - d.wellEffDepth - d.submergence;
     calc.step('Effective storage', 'V = Q\\,t', `${n(Q, 4)}\\times${n(d.wellHrt * 60, 0)}`, Vw, 'm³');
     calc.step('Well diameter (≥ pump spacing, ≥ 3 × intake-pipe area)', 'D = \\sqrt{4V/(\\pi h_e)}', `\\sqrt{4\\times${n(Vw)}/(\\pi\\times${n(d.wellEffDepth)})}`, Dw, 'm');
@@ -173,7 +183,7 @@ export function compute(inp, ctx) {
     calc.step('NPSH required at duty', 'NPSH_r', d.npshr > 0 ? '\\text{manufacturer}' : '\\text{indicative}', npshr, 'm');
     calc.check('pump.npshMargin', pumps.npsha - npshr, 'NPSH margin under storm conditions (NPSHa − NPSHr)');
     calc.text('Provide a low-level cut-out on the pump side of the screens, valves on suction and delivery, lifting gear for items > 45 kg and an engine-driven generator for essential pumping (D2 §6.2.2, §6.4).');
-    Object.assign(out, { deck, range, portA, nPorts, subDepth, cs, fs, screenW: chW, screenD: chD, cdn, cv, chl, subPipe, Vw, Dw, wellRatio, wellLWL, floor, inletWL, deliver, Hs, pumps, pumpCL, npshr, sdn, sv,
+    Object.assign(out, { deck, range, portA, nPorts, subDepth, cs, fs, screenW: chW, screenD: chD, cdn, nConduits: nC, cv, chl, subPipe, Vw, Dw, wellRatio, wellLWL, floor, inletWL, deliver, Hs, pumps, pumpCL, npshr, sdn, sv,
       kw: pumps.motor * d.nDuty, kWhD: pumps.kWhD, footprint: { L: Dw + 6, W: Dw + 4 } });
   }
   return { ...out, ...calc.result() };

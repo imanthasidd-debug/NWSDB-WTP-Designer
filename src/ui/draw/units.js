@@ -2,8 +2,8 @@
 import { fmt } from '../../core/util.js';
 
 const f2 = (v) => fmt(v, 2);
-const D = (title, items, bounds, extra = {}) => ({ title, items, bounds, ...extra });
-const bbox = (items) => {
+export const D = (title, items, bounds, extra = {}) => ({ title, items, bounds, ...extra });
+export const bbox = (items) => {
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   const pt = (x, y) => { if (!Number.isFinite(x) || !Number.isFinite(y)) return; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); };
   for (const it of items) {
@@ -15,7 +15,7 @@ const bbox = (items) => {
   }
   return { x0, y0, x1, y1 };
 };
-const auto = (title, items, extra = {}) => {
+export const auto = (title, items, extra = {}) => {
   const b = bbox(items);
   const th = extra.textH || Math.max(b.x1 - b.x0, b.y1 - b.y0) / 36;
   // extend bounds by estimated text extents so labels are never clipped
@@ -31,11 +31,11 @@ const auto = (title, items, extra = {}) => {
   }
   return D(title, items, b, { textH: th, ...extra });
 };
-const R = (x, y, w, h, cls, extra = {}) => ({ t: 'rect', x, y, w, h, cls, ...extra });
-const Ln = (x1, y1, x2, y2, cls = 'outline', extra = {}) => ({ t: 'line', x1, y1, x2, y2, cls, ...extra });
-const T = (x, y, text, extra = {}) => ({ t: 'text', x, y, text, ...extra });
-const Dm = (x1, y1, x2, y2, off, text) => ({ t: 'dim', x1, y1, x2, y2, off, text });
-const Lv = (x, y, text) => ({ t: 'level', x, y, text });
+export const R = (x, y, w, h, cls, extra = {}) => ({ t: 'rect', x, y, w, h, cls, ...extra });
+export const Ln = (x1, y1, x2, y2, cls = 'outline', extra = {}) => ({ t: 'line', x1, y1, x2, y2, cls, ...extra });
+export const T = (x, y, text, extra = {}) => ({ t: 'text', x, y, text, ...extra });
+export const Dm = (x1, y1, x2, y2, off, text) => ({ t: 'dim', x1, y1, x2, y2, off, text });
+export const Lv = (x, y, text) => ({ t: 'level', x, y, text });
 
 // ---------------------------------------------------------------- Intake
 export function intakeSection(ik) {
@@ -190,7 +190,7 @@ export function flocDrawing(fl) {
         const fromTop = k % 2 === 0;
         it.push(fromTop ? R(bx - 0.04, s.gap, 0.08, W - s.gap, 'baffle') : R(bx - 0.04, 0, 0.08, W - s.gap, 'baffle'));
       }
-      it.push(T(x + s.L / 2, W + 0.9, `Stage ${s.i}: G ${fmt(s.Ga, 0)} s⁻¹ · ${s.nInt} baffles @ ${f2(s.sp)} m`, { anchor: 'middle', size: 0.8, bold: true }));
+      it.push(T(x + s.L / 2, W + 0.9 + (i % 2) * (fl.L / 36) * 1.1, `Stage ${s.i}: G ${fmt(s.Ga, 0)} s⁻¹ · ${s.nInt} baffles @ ${f2(s.sp)} m`, { anchor: 'middle', size: 0.8, bold: true }));
       x += s.L;
       if (i < fl.stages.length - 1) { it.push(R(x, 0, t, W - 0.6, 'concrete')); x += t; }
     });
@@ -224,13 +224,13 @@ export function flocDrawing(fl) {
   const W = fl.W;
   let x = 0;
   it.push(R(-t, -t, fl.L + fl.stages.length * t + t, t, 'concrete'), R(-t, W, fl.L + fl.stages.length * t + t, t, 'concrete'), R(-t, 0, t, W, 'concrete'));
-  fl.stages.forEach((s) => {
+  fl.stages.forEach((s, i) => {
     it.push(R(x, 0, s.L, W, 'water'));
     it.push(Ln(x + s.L / 2, -0.6, x + s.L / 2, W + 0.6, 'center'));
     const pw = Math.min(s.L * 0.8, 2 * s.R);
     for (let k = 0; k < 3; k++) it.push(R(x + s.L / 2 - pw / 2, 0.4 + k * (W - 0.8) / 3, pw, (W - 0.8) / 3 - 0.3, 'equipFill'));
     it.push(R(x + s.L / 2 - 0.4, W + 0.6, 0.8, 0.8, 'equipFill'));
-    it.push(T(x + s.L / 2, W + 1.9, `G ${fmt(s.Ga, 0)} · ${fmt(s.rpm, 1)} rpm · ${s.kw} kW`, { anchor: 'middle', size: 0.8, bold: true }));
+    it.push(T(x + s.L / 2, W + 1.9 + (i % 2) * (Math.max(fl.L, W) / 36) * 1.1, `G ${fmt(s.Ga, 0)} · ${fmt(s.rpm, 1)} rpm · ${s.kw} kW`, { anchor: 'middle', size: 0.7, bold: true }));
     x += s.L;
     it.push(R(x, 0.6, t, W - 1.2, 'concrete'));
     x += t;
@@ -275,6 +275,7 @@ export function sedPlan(sd) {
   it.push(T(1.7, -1.1, 'Diffuser wall', { size: 0.75 }), T(L - sd.Llaund, -1.1, `${sd.nL} finger launders × ${f2(sd.Llaund)} m (V-notch)`, { size: 0.75 }));
   it.push(T(1.0, W * 0.5, 'Hopper', { size: 0.7 }));
   it.push(Dm(0, Wt + t, L, Wt + t, 1.2, `L = ${f2(L)} m`), Dm(L + t, 0, L + t, W, -1.2, `W = ${f2(W)} m`));
+  { const th = (L + 3) / 36; const a = th * 1.6; const mk = (x1, y1, x2, y2, lab, nx, ny) => { it.push(Ln(x1, y1, x2, y2, 'cut')); for (const [x, y] of [[x1, y1], [x2, y2]]) { it.push(Ln(x, y, x + nx * a, y + ny * a, 'thick'), { t: 'poly', pts: [[x + nx * a * 1.5, y + ny * a * 1.5], [x + nx * a + ny * a * 0.3, y + ny * a + nx * a * 0.3], [x + nx * a - ny * a * 0.3, y + ny * a - nx * a * 0.3]], cls: 'baffle' }); } it.push(T(x1 - (x2 - x1 ? th : 0) + nx * a * 0.6, y1 - (y2 - y1 ? th * 1.3 : th * 0.35) + ny * a * 0.6, lab, { anchor: 'middle', bold: true, size: 1.2 }), T(x2 + (x2 - x1 ? th : 0) + nx * a * 0.6, y2 + (y2 - y1 ? th * 0.6 : -th * 0.35) + ny * a * 0.6, lab, { anchor: 'middle', bold: true, size: 1.2 })); }; mk(-3.5, N > 1 ? W + t + W * 0.42 : W * 0.88, L + t + 1.5, N > 1 ? W + t + W * 0.42 : W * 0.88, 'A', 0, 1); mk(L * 0.8, -t - 2.2, L * 0.8, Wt + t + 0.8, 'B', -1, 0); }
   return auto(`Sedimentation tanks – plan (${sd.N} tanks${sd.N > 4 ? ', 4 shown' : ''})`, it);
 }
 export function sedSection(sd) {
@@ -291,12 +292,19 @@ export function sedSection(sd) {
   for (let i = 0; i < 6; i++) { const yy = -sl * 0.5 + (H * (i + 0.5)) / 6; it.push(Ln(1.0, yy, 2.0, yy, 'waterline', { arrow: true })); }
   it.push(R(L - sd.Llaund, H - sd.launderDepth + 0.08, sd.Llaund, sd.launderDepth, 'equipFill'));
   it.push(Ln(1.5, H * 0.7, L - sd.Llaund, 0, 'dash'));
+  if (sd.type === 'tube') {
+    const x0t = L * (1 - (sd.inputs.coverFrac || 0.75)), zt = H - 0.7, zb = H - 0.7 - (sd.inputs.tubeL || 1) * Math.sin(((sd.inputs.tubeAngle || 60) * Math.PI) / 180);
+    it.push(R(x0t, zb, L - x0t - 0.3, zt - zb, 'outline'));
+    for (let x = x0t; x < L - 0.3 - 0.5; x += 0.45) it.push(Ln(x, zb, x + (zt - zb) / Math.tan(((sd.inputs.tubeAngle || 60) * Math.PI) / 180), zt, 'thin'));
+    it.push(T((x0t + L) / 2, zb - 0.45, `Tube-settler modules (${sd.inputs.tubeAngle || 60}°)`, { anchor: 'middle', size: 0.75 }));
+  }
   it.push(T(L * 0.45, H * 0.45, 'Settling zone', { anchor: 'middle', size: 0.9 }));
-  it.push(T(L * 0.5, -sl + 0.5, 'Sludge zone (chain-and-flight scraper)', { anchor: 'middle', size: 0.75 }));
-  it.push(Lv(L * 0.62, H, `WL ${f2(H)} (rel.)`));
+  const ths = L / 55;
+  it.push(T(L * 0.5, -sl - t - 1.0 - 0.9 - ths * 2.4, 'Sludge zone on the floor – chain-and-flight scraper to the inlet-end hopper', { anchor: 'middle', size: 0.8 }));
+  it.push(Lv(L * 0.3, H, `WL ${f2(H)} (rel.)`));
   it.push(Dm(L + t, -sl, L + t, H, -1.0, `${f2(H + sl)} m`), Dm(0, -sl - t - 1.0, L, -sl - t - 1.0, -0.9, `${f2(L)} m`));
-  it.push(T(L / 2, H + 1.4, `SOR ${f2(sd.sorAct)} m³/m²·d · θ ${f2(sd.hrt)} h · u ${f2(sd.vh * 60)} m/min · Re ${fmt(sd.Re, 0)}`, { anchor: 'middle', size: 0.85, bold: true }));
-  return auto('Sedimentation tank – longitudinal section', it);
+  it.push(T(L / 2, H + fb + ths * 2.2, `SOR ${f2(sd.sorAct)} m³/m²·d · θ ${f2(sd.hrt)} h · u ${f2(sd.vh * 60)} m/min · Re ${fmt(sd.Re, 0)}`, { anchor: 'middle', size: 0.85, bold: true }));
+  return auto('Sedimentation tank – longitudinal section A–A', it, { textH: ths });
 }
 
 // ---------------------------------------------------------------- Filtration
@@ -402,7 +410,7 @@ export function cwrPlan(st) {
   it.push(Ln(-4, W * 0.15, -0.4, W * 0.15, 'pipe', { arrow: true }), T(-4, W * 0.15 + 0.8, 'Inlet', { size: 0.75 }));
   it.push(Ln(Lt + 0.4, W * 0.85, Lt + 4, W * 0.85, 'pipe', { arrow: true }), T(Lt + 0.6, W * 0.85 + 0.8, 'To pumps', { size: 0.75 }));
   it.push(Dm(0, -t, L, -t, -1.4, `${f2(L)} m`), Dm(Lt + t, 0, Lt + t, W, -1.6, `${f2(W)} m`));
-  it.push(T(Lt / 2, -4.2, `Clear water reservoir ${fmt(st.V, 0)} m³ · depth ${f2(st.depth)} m · flow-guiding walls`, { anchor: 'middle', size: 0.9, bold: true }));
+  it.push(T(Lt / 2, -t - 1.4 - (Lt / 36) * 2.6, `Clear water reservoir ${fmt(st.V, 0)} m³ · depth ${f2(st.depth)} m · flow-guiding walls`, { anchor: 'middle', size: 0.9, bold: true }));
   return auto('Clear water reservoir – plan', it);
 }
 

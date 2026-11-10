@@ -92,13 +92,15 @@ export function compute(inp, ctx) {
 
   // ---- Rapid mix
   let rapidMix = d.rapidMix;
-  if (rapidMix === 'auto' && !ssf) { rapidMix = Q > 50000 ? 'mechanical' : 'jump'; why('Rapid mixing', rapidMix === 'jump' ? 'Hydraulic jump (weir / Parshall flume, NWSDB D3 §5.5.3, Annex C.1) uses the available head – no moving parts, robust during power interruptions.' : 'Large plant – mechanical flash mixers give G independent of flow (NWSDB D3 §5.5.5: ≥ 2 tanks, variable speed).'); }
+  if (rapidMix === 'auto' && !ssf) { rapidMix = Q > 50000 || Q < 1500 ? 'mechanical' : 'jump'; why('Rapid mixing', Q < 1500 ? 'Flow is too small to form a stable hydraulic jump (Fr₁ ≥ 4.5 needs a channel narrower than 150 mm) – a small mechanical flash mixer is used (NWSDB D3 §5.5.5).' : rapidMix === 'jump' ? 'Hydraulic jump (weir / Parshall flume, NWSDB D3 §5.5.3, Annex C.1) uses the available head – no moving parts, robust during power interruptions.' : 'Large plant – mechanical flash mixers give G independent of flow (NWSDB D3 §5.5.5: ≥ 2 tanks, variable speed).'); }
 
   // ---- Flocculator
   let floc = d.floc;
   if (floc === 'auto' && !ssf) {
-    floc = Q <= 20000 ? 'hbaffle' : Q <= 60000 ? 'vbaffle' : 'paddle';
-    why('Flocculation', floc === 'paddle' ? 'Large capacity – mechanical paddles allow G adjustment over the flow range.' : `Hydraulic baffled flocculator (${floc === 'hbaffle' ? 'around-the-end' : 'over-and-under, compact for mid-size plants'}) – no power, simple O&M; tapered G by varying baffle spacing.`);
+    // hydraulic baffled channels need ≥ 0.45 m spacing, ≥ 1 m depth and 0.1–0.3 m/s (D3 Table 5-15): feasible above ≈ 0.05 m³/s per train
+    const qT = Q / 86400 / Math.max(1, ctx.res.demand.nTrains);
+    floc = qT < 0.068 ? 'paddle' : Q > 60000 ? 'paddle' : 'vbaffle';
+    why('Flocculation', qT < 0.068 ? `Flow per train (${(qT * 1000).toFixed(0)} L/s) is too small for baffled channels with ≥ 0.45 m spacing at 0.1–0.3 m/s (NWSDB D3 Table 5-15) – mechanical paddle flocculators are used.` : floc === 'paddle' ? 'Large capacity – mechanical paddles allow G adjustment over the flow range.' : `Hydraulic baffled flocculator (${floc === 'hbaffle' ? 'around-the-end' : 'over-and-under, compact'}) – no power, simple O&M; tapered G by varying baffle spacing.`);
   }
   // ---- Clarifier
   let clarifier = d.clarifier;
@@ -114,10 +116,11 @@ export function compute(inp, ctx) {
   let disinfectant = d.disinfectant;
   if (disinfectant === 'auto') {
     const dis = ctx.inp.dis || {};
-    const estKgD = ((+dis.demand || 1.2) + (+dis.residual || 0.8)) * Q / 1000;
-    const hypoLimit = BLEACH.hypoLimitLh * 0.01 * 24; // ≈ 10 kg/d available chlorine (42 L/h of 1 % solution)
+    const nh3n = (nh3 * 14) / 17;
+    const estKgD = ((+dis.demand || 1.2) + (+dis.residual || 0.8) + (prechlor === 'yes' ? (+dis.prechlorDose || 2) : 0) + (nh3n > 0.05 ? (+dis.bpRatio || 7.6) * nh3n : 0)) * Q / 1000;
+    const hypoLimit = (BLEACH.hypoLimitLh * 0.01 * 24) / 1.25; // ≈ 8 kg/d available chlorine (42 L/h of 1 % solution incl. the 25 % peak-dosing margin)
     disinfectant = estKgD > hypoLimit ? 'gas' : 'bleach';
-    why('Disinfection', disinfectant === 'gas' ? `Chlorine demand ≈ ${estKgD.toFixed(0)} kg/d exceeds the practical limit of hypochlorination (≈ 42 L/h of 1 % solution, NWSDB D3 §6.4.3) – gas chlorination with vacuum chlorinators, 1 duty + 1 standby (D3 §6.5).` : `Chlorine demand ≈ ${estKgD.toFixed(1)} kg/d is within the practical limit of hypochlorination (≈ 10 kg/d) – bleaching powder solution (designed on 35 % available chlorine, 1 % solution) is safest for a small plant (NWSDB D3 §6.4; HTH is not available in Sri Lanka).`);
+    why('Disinfection', disinfectant === 'gas' ? `Chlorine demand ≈ ${estKgD.toFixed(0)} kg/d exceeds the practical limit of hypochlorination (≈ 42 L/h of 1 % solution, NWSDB D3 §6.4.3) – gas chlorination with vacuum chlorinators, 1 duty + 1 standby (D3 §6.5).` : `Chlorine demand ≈ ${estKgD.toFixed(1)} kg/d is within the practical limit of hypochlorination (≈ 8 kg/d) – bleaching powder solution (designed on 35 % available chlorine, 1 % solution) is safest for a small plant (NWSDB D3 §6.4; HTH is not available in Sri Lanka).`);
   }
   if (nh3 > 0.3) calc.note('warn', `Raw ammonia ${nh3} mg/L: breakpoint chlorination (≈ 7.6 mg Cl₂ per mg NH₃-N) is required to obtain a free residual.`);
   // ---- Post lime / sludge

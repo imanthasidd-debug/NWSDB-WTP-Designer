@@ -8,7 +8,7 @@ import { AGENTS } from '../../engine/disinfection.js';
 import { synthGradation } from '../../engine/filtration.js';
 import { h, icon, modal } from '../dom.js';
 import { aeratorSection, contactPlan, filterPlan, filterSection, flocDrawing, intakeSection, rapidMixDrawing, sedPlan, sedSection } from '../draw/units.js';
-import { card, chartCard, drawingCard, kpis, kvTable, notes, table } from '../results.js';
+import { card, chartCard, drawingCard, kpis, kvTable, notes, structureCard, table } from '../results.js';
 import { getInput, setInput, store } from '../store.js';
 
 const f1 = (v) => fmt(v, 1), f2 = (v) => fmt(v, 2), f0 = (v) => fmt(v, 0);
@@ -64,6 +64,7 @@ export const intake = {
     { k: 'cClog', l: 'Clogging allowance', u: '%' },
     { sec: 'Intake pipe & jack well (D2 §5.3.1)', show: (i) => i.intake.type !== 'wells' },
     { k: 'conduitL', l: 'Intake pipe / conduit length', u: 'm' },
+    { k: 'nConduits', l: 'Number of parallel intake pipes', step: 1, auto: true, autoVal: (r) => r.intake?.nConduits, note: 'Auto: fewest pipes giving ≥ 1.5 D submergence at LWL' },
     { k: 'conduitDN', l: 'Intake pipe / conduit diameter', u: 'mm', auto: true, autoVal: (r) => r.intake.cdn, note: 'D2 §5.3.1: 0.6–0.9 m/s; 0 = automatic' },
     { k: 'wellHrt', l: 'Wet-well effective storage', u: 'min', crit: 'well.hrt' },
     { k: 'wellEffDepth', l: 'Effective depth (start–stop)', u: 'm', step: 0.1 },
@@ -101,7 +102,7 @@ export const intake = {
           { label: 'NPSH available', value: f1(p.npsha), unit: 'm', sub: `indicative NPSHr ${f1(ik.npshr)} m` },
         ]),
         notes(ik.notes),
-        drawingCard(intakeSection(ik), { height: 420 }),
+        structureCard(r, 'intake', { height: 420 }),
         h('div', { class: 'grid2' },
           card('Screens', kvTable([
             ['Submerged depth at LWL', f2(ik.subDepth), 'm'], ['Coarse screen width', f2(ik.cs.W), 'm'], ['Coarse – bars', ik.cs.nBars, 'nr'], ['Coarse – velocity (clean)', f2(ik.cs.vClear), 'm/s'], ['Coarse – head loss 50 % clogged', fmt(ik.cs.hClog * 1000, 0), 'mm'],
@@ -151,7 +152,7 @@ export const aeration = {
           { label: 'Head required', value: f2(ae.headloss), unit: 'm' },
         ]),
         notes(ae.notes),
-        drawingCard(aeratorSection(ae), { height: 340 }),
+        structureCard(r, 'aer', { height: 340 }),
       ],
       visuals: [chartCard('Dissolved oxygen through the aerator', { type: 'line', data: ae.steps.map((s) => ({ i: s.i, C: s.C })), x: { key: 'i', label: ae.type === 'cascade' ? 'Step number' : 'Tray number' }, y: { label: 'DO (mg/L)', min: 0 }, series: [{ key: 'C', label: 'Dissolved oxygen', marker: true }], refs: [{ value: ae.Cs, label: `Saturation Cs = ${f1(ae.Cs)} mg/L`, kind: 'target' }], unit: 'mg/L', height: 260 }, { sub: 'Cn = Cs − (Cs − C0)(1 − K/n)ⁿ' })],
     };
@@ -260,7 +261,7 @@ export const rapidmix = {
     const k = m.type === 'mechanical'
       ? [{ label: 'Mixer', value: 'Mechanical', sub: `${m.nBasins} × ${f1(m.V)} m³`, accent: true, icon: 'blend' }, { label: 'G × t', value: `${f0(m.Gact)} × ${f0(m.tAct)}`, unit: 's⁻¹·s', sub: `Gt = ${f0(m.Gact * m.tAct)}` }, { label: 'Basin', value: `${f2(m.B)} × ${f2(m.B)} × ${f2(m.H)}`, unit: 'm' }, { label: 'Power to water', value: f2(m.P / 1000), unit: 'kW', sub: `motor ${m.motor} kW` }, { label: 'Impeller', value: f2(m.Di), unit: 'm Ø', sub: `${f0(m.rpm)} rpm · tip ${f2(m.tip)} m/s` }, { label: 'Reynolds number', value: fmtAuto(m.Re), sub: 'turbulent > 10⁴' }]
       : [{ label: 'Mixer', value: 'Hydraulic jump', sub: `channel ${f2(m.b)} m wide`, accent: true, icon: 'blend' }, { label: 'Froude number', value: f2(m.Fr1), sub: 'steady jump 4.5–9', status: ctxStatus(r, 'rapidmix', 'rm.Fr') }, { label: 'Velocity gradient', value: f0(m.Gact), unit: 's⁻¹', sub: `t = ${f2(m.tAct)} s` }, { label: 'Head loss in jump', value: f2(m.hL), unit: 'm', sub: `total incl. weir ${f2(m.headloss)} m` }, { label: 'Depths y₁ → y₂', value: `${f2(m.inputs.y1)} → ${f2(m.y2)}`, unit: 'm' }, { label: 'Jump length', value: f2(m.Lj), unit: 'm' }];
-    return { overview: [kpis(k), notes(m.notes), drawingCard(rapidMixDrawing(m), { height: 320 })] };
+    return { overview: [kpis(k), notes(m.notes), structureCard(r, 'rm', { height: 320 })] };
   },
 };
 
@@ -302,7 +303,7 @@ export const floc = {
         ]),
         notes(fl.notes),
         card('Stage design', table(cols, stRows), { flush: true }),
-        drawingCard(flocDrawing(fl), { height: 420 }),
+        structureCard(r, 'floc', { height: 420 }),
       ],
       visuals: [chartCard('Velocity gradient by stage', { type: 'bar', data: fl.stages.map((s) => ({ s: 'Stage ' + s.i, Gt: s.Gt, Ga: s.Ga })), x: { key: 's', label: 'Stage' }, y: { label: 'G (s⁻¹)', min: 0, max: 90 }, series: [{ key: 'Gt', label: 'Target G' }, { key: 'Ga', label: 'Actual G' }], bands: [{ from: 20, to: 80, label: 'Lecture range 20–80 s⁻¹' }], unit: 's⁻¹', height: 260 })],
     };
@@ -353,7 +354,7 @@ export const sed = {
         { label: 'Settled turbidity', value: `${f1(s.settledAvg)} / ${f1(s.settledPeak)}`, unit: 'NTU', sub: `avg / monsoon peak · removal ${f1(s.rem.R * 100)} %` },
       ];
     return {
-      overview: [kpis(k), notes(s.notes), drawingCard(sedPlan(s), { height: 360 }), drawingCard(sedSection(s), { height: 300 })],
+      overview: [kpis(k), notes(s.notes), structureCard(r, 'sed', { height: 400 })],
       visuals: [chartCard('Ideal-basin removal & floc settling-velocity distribution', { type: 'line', data: s.curve.map((c) => ({ v: c.v, F: c.F * 100, eta: c.eta * 100 })), x: { key: 'v', label: 'Settling velocity (m/h)', type: 'log', domain: [0.05, 50] }, y: { label: '%', min: 0, max: 100 }, series: [{ key: 'F', label: 'Cumulative fraction with velocity ≤ v' }, { key: 'eta', label: 'Removal η = v / vc', dash: true }], refs: [{ axis: 'x', value: s.vcEff, label: `vc = ${f2(s.vcEff)} m/h`, kind: 'info' }], unit: '%', height: 280 }, { sub: 'lecture: particles with v ≥ vc fully removed; others in ratio v/vc' })],
     };
   },
@@ -424,7 +425,7 @@ export const filt = {
         { label: 'Slow sand beds', value: `${f.N} × ${f1(f.Af)}`, unit: 'm²', sub: `${f.N - 1} duty + 1 cleaning`, accent: true, icon: 'filter' },
         { label: 'Filtration rate', value: f2(f.rate), unit: 'm/h' }, { label: 'Bed size', value: `${f1(f.Lb)} × ${f1(f.B)}`, unit: 'm' },
         { label: 'Re-sanding interval', value: f1(f.resandYrs), unit: 'years' }, { label: 'Filtered turbidity', value: f2(f.filteredAvg), unit: 'NTU' },
-      ]), notes(f.notes), drawingCard(filterPlan(f), { height: 340 })] };
+      ]), notes(f.notes), structureCard(r, 'filt', { height: 400 })] };
     }
     const g = f.g;
     const sieveRows = [...g.sorted].map((s) => ({ size: s.size, pass: s.pass }));
@@ -441,7 +442,7 @@ export const filt = {
           { label: 'Filtered turbidity', value: `${f2(f.filteredAvg)} / ${f2(f.filteredPeak)}`, unit: 'NTU', sub: 'avg / peak · SLS 614 ≤ 2' },
         ]),
         notes(f.notes),
-        drawingCard(filterPlan(f), { height: 460 }), drawingCard(filterSection(f, r.hyd), { height: 460 }),
+        structureCard(r, 'filt', { height: 460 }),
         h('div', { class: 'grid2' },
           card('Underdrain & troughs (per bed)', kvTable([
             ['Orifices', `${f.nO} × Ø${f.inputs.orificeDia} mm`, ''], ['Laterals', `${f.nLat} × Ø${f.latDia} mm`, ''], ['Lateral length', f2(f.latLen), 'm'], ['Orifices per lateral', f.oPerLat, ''],
@@ -496,7 +497,7 @@ export const dis = {
           d.key === 'gas' ? { label: 'Cylinders / month', value: f1(d.cylPerMonth), sub: `${d.inputs.cylinder} kg · ${d.storeUnits} in store` } : { label: 'Product use', value: f0(d.productKgD), unit: 'kg/d' },
         ]),
         notes(d.notes),
-        d.footprint ? drawingCard(contactPlan(d), { height: 440 }) : null,
+        d.footprint ? structureCard(r, 'ct', { height: 440 }) : null,
       ],
       visuals: [
         chartCard('Log inactivation vs contact time', { type: 'line', data: d.killCurve.map((k) => ({ t: k.t, g: k.logG, v: Math.min(k.logV, 6) })), x: { key: 't', label: 'Effective contact time (min)' }, y: { label: 'Log inactivation', min: 0 }, series: [{ key: 'g', label: 'Giardia' }, { key: 'v', label: 'Viruses (capped at 6)' }], refs: [{ value: d.needG, label: `Giardia required ${d.needG} log`, kind: 'target' }, { axis: 'x', value: d.T10, label: `T₁₀ = ${f1(d.T10)} min`, kind: 'info' }], unit: 'log', height: 260 }, { sub: 'linear CT model (Chick–Watson, n = 1)' }),

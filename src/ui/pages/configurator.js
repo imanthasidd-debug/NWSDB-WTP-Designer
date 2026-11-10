@@ -48,7 +48,8 @@ function stageRows(r, rec) {
   const gw = inp.setup?.sourceType === 'groundwater';
   const dis = inp.dis || {};
   const estKgD = ((+dis.demand || 1.2) + (+dis.residual || 0.8)) * Q / 1000;
-  const hypoLimit = BLEACH.hypoLimitLh * 0.01 * 24;
+  const hypoLimit = (BLEACH.hypoLimitLh * 0.01 * 24) / 1.25;
+  const qTrain = Q / 86400 / Math.max(1, r.demand.nTrains);
   const lsiNoLime = r.stab?.s2?.LSI;
   const polymer = +(inp.coag?.polymer || 0) > 0;
   const autoCard = (k, resolved, labelMap) => ({ key: 'auto', label: `Auto → ${labelMap ? labelMap[resolved] || resolved : resolved}`, art: ART.auto, desc: 'Expert system + NWSDB D3 rules decide from raw-water quality and capacity', tip: 'Recommended – follows changes in raw water quality and capacity automatically' });
@@ -85,9 +86,9 @@ function stageRows(r, rec) {
       ] },
       { k: 'floc', l: 'Flocculator', d: 'G 10–75 s⁻¹ tapered, t ≥ 20 min, 3–6 stages (D3 §5.6)', opts: [
         autoCard('floc', rec?.floc, SHORT.floc),
-        { key: 'hbaffle', label: 'Around-the-end baffles', art: ART.hbaffle, desc: 'Horizontal flow; simple, small–medium plants', rec: rec?.floc === 'hbaffle' },
-        { key: 'vbaffle', label: 'Over-and-under baffles', art: ART.vbaffle, desc: 'Vertical flow; compact, deeper channels', rec: rec?.floc === 'vbaffle' },
-        { key: 'paddle', label: 'Mechanical paddles', art: ART.paddle, desc: 'Adjustable G over the flow range; large plants', rec: rec?.floc === 'paddle' },
+        { key: 'hbaffle', label: 'Around-the-end baffles', art: ART.hbaffle, desc: 'Horizontal flow; simple, long shallow channels', rec: rec?.floc === 'hbaffle', bad: qTrain < 0.068 ? `${fmt(qTrain * 1000, 0)} L/s per train – spacing < 0.45 m (D3 Table 5-15)` : null },
+        { key: 'vbaffle', label: 'Over-and-under baffles', art: ART.vbaffle, desc: 'Vertical flow; compact, deeper channels', rec: rec?.floc === 'vbaffle', bad: qTrain < 0.068 ? `${fmt(qTrain * 1000, 0)} L/s per train – spacing < 0.45 m (D3 Table 5-15)` : null },
+        { key: 'paddle', label: 'Mechanical paddles', art: ART.paddle, desc: 'Adjustable G over the flow range; small and large plants', rec: rec?.floc === 'paddle' },
       ] });
   }
   rows.push({ sec: 'Clarification & filtration', n: pr.ssf ? 3 : 4, sub: 'remove the flocs and polish the water' });

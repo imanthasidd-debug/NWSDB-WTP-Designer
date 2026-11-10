@@ -205,7 +205,7 @@ export function compute(inp, ctx) {
   calc.step('Total filtration area', 'A = \\frac{Q}{v_f}', `\\frac{${n(Qh, 1)}}{${n(rate)}}`, A, 'm²', 'NWSDB D3 Table 5-26 – rapid gravity 5–15 m/h');
   const Nrule = 0.0195 * Math.sqrt(dem.Qd);
   const NtwoOut = rate < RSF.rate[1] ? Math.ceil(2 / (1 - rate / RSF.rate[1]) - 1e-9) : 4; // (N−2) filters at ≤ 15 m/h (D3 §5.9.2.2)
-  let N = d.nFilters > 0 ? d.nFilters : Math.max(4, Math.ceil(Nrule), NtwoOut);
+  let N = d.nFilters > 0 ? d.nFilters : Math.max(4, Math.ceil(Nrule), NtwoOut, Math.ceil(A / (filterAreaMax(dem.Qd) * 0.98)));
   if (d.nFilters <= 0 && N % 2 === 1) N += 1;
   calc.step('Number of filters (N = 1.2√Q, Q in mgd ≡ 0.0195√Q m³/d; min 4, even)', 'N = 1.2\\sqrt{Q_{mgd}}', `1.2\\sqrt{${n(dem.Qd / 3785.4, 2)}}`, d.nFilters > 0 ? N : Nrule, '', 'NWSDB D3 §5.9.2.2 (Kawamura)');
   const Af = A / N;
@@ -224,7 +224,7 @@ export function compute(inp, ctx) {
   calc.step('Rate with one filter out for maintenance and one backwashing', "v_f'' = \\frac{Q}{(N-2) A_f}", `\\frac{${n(Qh, 1)}}{${N - 2}\\times${n(AfAct)}}`, rateTwo, 'm/h', 'NWSDB D3 §5.9.2.2, Annex F.1');
   calc.check(type === 'dual' ? 'f.rateDual' : 'f.rate', rateAct);
   calc.check('f.rateMax', rateTwo);
-  calc.check('f.area', AfAct, null, { crit: { max: filterAreaMax(dem.Qd) }, src: `NWSDB D3 §5.9.2.3 – practical maximum ≈ ${filterAreaMax(dem.Qd)} m² (${dem.Qd > 37854 ? '> 10 mgd' : '< 10 mgd'}); §5.9.1 up to 140 m²` });
+  calc.check('f.area', AfAct, null, { crit: { min: dem.Qd < 5000 ? 1.5 : 5, max: filterAreaMax(dem.Qd) }, src: `NWSDB D3 §5.9.2.3 – practical maximum ≈ ${filterAreaMax(dem.Qd)} m² (${dem.Qd > 37854 ? '> 10 mgd' : '< 10 mgd'}); §5.9.1 up to 140 m²` });
   calc.flag('Number of filters', N >= minFilters(dem.Qd), `${N}`, `≥ ${minFilters(dem.Qd)}`, 'Design for maximum flow with one filter out for maintenance and another backwashing', 'fail', 'NWSDB D3 §5.9.2');
   const LBo = Math.max(Lb, beds * B + (d.layout === 'twin' ? d.gulletW : 0)) / Math.min(Lb, beds * B + (d.layout === 'twin' ? d.gulletW : 0));
   calc.flag('Filter length / breadth', LBo >= 1.0 && LBo <= 2.0, LBo.toFixed(2), '1.25–1.33 (D3 list)', 'Advisory – governs the economy of common walls', LBo >= RSF.LB[0] - 0.05 && LBo <= RSF.LB[1] + 0.05 ? 'warn' : 'info', 'NWSDB D3 §5.9.1');

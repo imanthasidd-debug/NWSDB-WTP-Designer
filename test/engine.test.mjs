@@ -110,6 +110,27 @@ ok(rd.d2.total >= 40 && rd.d2.fail === 0, `D2 register for default project (${rd
   near(rD2.cost.om2, 2 * rD2.cost.omTot, 1e-6, 'D2 §10.2: two years O&M in capital');
   near(rD2.cost.capex, rD2.cost.sub3 * (1 + (rD2.cost.inputs.d2EngPct + rD2.cost.contPct + rD2.cost.inputs.vatPct) / 100), 1e-3, 'D2 §10.2 estimate format');
 }
+// ---- v1.5: automatic sizing gives a design without failing checks at any capacity; every structure is drawn in several views
+{
+  const { drawingGroups } = await import('../src/ui/draw/views.js');
+  for (const cap of [1000, 2500, 5000, 10000, 20000, 30000, 50000, 75000, 100000, 150000, 200000]) {
+    const p = newProject(); Object.assign(p.inputs.demand, { basis: 'capacity', capacity: cap });
+    const r = computeAll(p);
+    const fails = r.checks.filter((c) => c.status === 'fail');
+    ok(Object.keys(r.errors).length === 0 && fails.length === 0, `auto design at ${cap} m³/d: no errors, no failing checks (${fails.map((c) => c.label).join('; ')})`);
+    if (cap >= 7500) ok(r.summary.warn === 0, `auto design at ${cap} m³/d: no review items (${r.checks.filter((c) => c.status === 'warn').map((c) => c.label).join('; ')})`);
+    const g = drawingGroups(r);
+    const all = g.flatMap((x) => x.views);
+    const bad = all.filter((v) => ![v.dw.bounds.x0, v.dw.bounds.x1, v.dw.bounds.y0, v.dw.bounds.y1].every(Number.isFinite) || v.dw.items.some((it) => Object.values(it).some((x) => typeof x === 'number' && !Number.isFinite(x)) || (it.pts && it.pts.flat().some((x) => !Number.isFinite(x)))));
+    ok(all.length >= 25 && bad.length === 0, `drawings at ${cap} m³/d: ${all.length} views in ${g.length} structures, all finite (${bad.map((v) => v.dw.title).join('; ')})`);
+  }
+  ok(computeAll(newProject()).demand.nTrains === 2 && (() => { const p = newProject(); Object.assign(p.inputs.demand, { basis: 'capacity', capacity: 150000 }); return computeAll(p).demand.nTrains; })() === 6, 'automatic number of treatment streams (2 up to 50,000 m³/d, then a pair per 50,000)');
+  { const p = newProject(); Object.assign(p.inputs.demand, { basis: 'capacity', capacity: 150000 }); const r = computeAll(p); ok(r.intake.nConduits >= 2, `parallel intake pipes chosen automatically for submergence (${r.intake.nConduits})`); }
+  for (const proc of [{ clarifier: 'circ' }, { clarifier: 'tube' }, { floc: 'hbaffle' }, { floc: 'paddle' }, { route: 'ssf' }, { rapidMix: 'mechanical', aeration: 'cascade' }, { aeration: 'tray', route: 'direct' }]) {
+    const p = newProject(); Object.assign(p.inputs.process, proc); const g = drawingGroups(computeAll(p));
+    ok(g.every((x) => x.views.every((v) => Number.isFinite(v.dw.bounds.x0) && v.dw.code)), `drawings for ${JSON.stringify(proc)}: ${g.flatMap((x) => x.views).length} views`);
+  }
+}
 // ---- NWSDB Rate Book 2025 (default estimate)
 {
   const c = rd.cost, e = c.est;

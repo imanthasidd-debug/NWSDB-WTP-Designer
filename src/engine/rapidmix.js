@@ -76,8 +76,8 @@ export function compute(inp, ctx) {
   } else {
     calc.section('Hydraulic jump mixer (rectangular channel)');
     let y1 = d.y1 > 0 ? d.y1 : 0.12;
-    let b = d.chanWidth > 0 ? d.chanWidth : Math.max(0.3, Math.round((Q / (y1 * 5.5)) * 20) / 20);
-    if (!(d.y1 > 0) && Q / (b * y1) / Math.sqrt(G * y1) < 5) y1 = Math.max(0.03, Math.round(((Q / (b * 6 * Math.sqrt(G))) ** (2 / 3)) * 200) / 200);
+    let b = d.chanWidth > 0 ? d.chanWidth : Math.max(0.15, Math.round((Q / (y1 * 5.5)) * 20) / 20);
+    if (!(d.y1 > 0) && Q / (b * y1) / Math.sqrt(G * y1) < 5) y1 = Math.max(0.035, Math.round(((Q / (b * 6 * Math.sqrt(G))) ** (2 / 3)) * 200) / 200);
     d.y1 = y1;
     void b;
     const v1 = Q / (b * d.y1);

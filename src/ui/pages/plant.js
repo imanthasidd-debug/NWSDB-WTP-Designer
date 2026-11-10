@@ -5,7 +5,7 @@ import { PATTERNS } from '../../engine/storage.js';
 import { h, icon } from '../dom.js';
 import { mountDrawing } from '../draw/render.js';
 import { cwrPlan, hydraulicProfile, layoutPlan } from '../draw/units.js';
-import { card, chartCard, drawingCard, kpis, kvTable, notes, statusBadge, table } from '../results.js';
+import { card, chartCard, drawingCard, kpis, kvTable, notes, statusBadge, structureCard, table } from '../results.js';
 import { econChart, mainSpecCard } from './units.js';
 import { ENG_PCT, RB, TARIFFS } from '../../core/ratebook.js';
 import { setInput, store } from '../store.js';
@@ -73,7 +73,8 @@ export const storage = {
           { label: 'Flotation FoS', value: s.fos > 50 ? 'no uplift' : f2(s.fos), sub: s.toe > 0 ? `base toe ${f1(s.toe)} m (D2 §6.3)` : 'D2 §6.3 ≥ 1.5' },
         ]),
         notes(s.notes),
-        drawingCard(cwrPlan(s), { height: 320 }),
+        structureCard(r, 'cwr', { height: 380 }),
+        structureCard(r, 'twp', { height: 320 }),
         h('div', { class: 'grid2' },
           mainSpecCard(p, 'Transmission main – D2 §7 specification'),
           card('Service reservoir – D2 §9.2', kvTable([
@@ -129,6 +130,8 @@ export const sludge = {
           { label: 'Cake to dispose', value: f0(s.cakeT), unit: 't/yr', sub: `${s.trucks} truckloads · LKR ${fmt(s.cost / 1e6, 1)} Mn` },
         ]),
         notes(s.notes),
+        structureCard(r, 'thick', { height: 380 }),
+        structureCard(r, 'beds', { height: 340 }),
       ],
       visuals: [chartCard('Monthly dry-solids production', { type: 'bar', data: s.monthly.map((v, i) => ({ m: MONTHS[i], ds: v / 1000 })), x: { key: 'm', label: 'Month' }, y: { label: 't DS per day' }, series: [{ key: 'ds', label: 'Dry solids', color: 'var(--series-4)' }], unit: 't/d', height: 260 }, { sub: 'turbidity solids + coagulant hydroxide + polymer' })],
     };
@@ -248,6 +251,7 @@ export const layout = {
           { label: 'Structures', value: L.items.length },
         ]),
         card('Site plan (drag structures to arrange)', box, { flush: true, actions: [] }),
+        structureCard(r, 'site', { height: 520, title: 'Site – plan sheet and 3D view of the plant' }),
         h('div', { class: 'grid2' },
           card('Site planning checklist – NWSDB D2 §2.3', table([{ k: 'status', l: '', v: (c) => statusBadge(c.status, true) }, { k: 'label', l: 'Item' }, { k: 'value', l: 'Status / value' }, { k: 'range', l: 'Requirement' }], L.checks.filter((c) => !c.key)), { flush: true }),
           card('Site drainage (D2 §4.8.4 rational formula)', kvTable([['Weighted runoff coefficient', f2(L.Cw), ''], ['Storm intensity', L.inputs.rainI, 'mm/h'], ['Peak run-off from site', fmt(L.Qdr, 3), 'm³/s'], ['Perimeter drains (2 outlets)', `${f2(L.drainB)} × ${f2(L.drainB)}`, 'm'], ['Drain slope', L.inputs.drainSlope, '%']]), { flush: true })),

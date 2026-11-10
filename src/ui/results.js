@@ -4,6 +4,7 @@ import { esc, fmtAuto, isNum } from '../core/util.js';
 import { renderChart } from './charts.js';
 import { drawingSVG, mountDrawing } from './draw/render.js';
 import { drawingNumber, sheetDXF, sheetMeta, sheetSVG, sheetsHTML } from './draw/sheet.js';
+import { groupTitle, groupViews } from './draw/views.js';
 import { saveSettings, store } from './store.js';
 import { h, icon, toast } from './dom.js';
 
@@ -109,50 +110,74 @@ export async function exportSheetsPDF(html, name, title) {
   return null;
 }
 
-/** card containing a drawing: interactive model view or NWSDB A3 sheet, with DXF / SVG / PNG / PDF export */
-export function drawingCard(dw, { height = 380 } = {}) {
-  if (!dw) return null;
+const VIEW_STATE = new Map(); // remembers the selected view of each structure between re-renders
+/**
+ * card containing the drawings of one structure: a view switcher (plan, sections, general arrangement, 3D …),
+ * interactive model view or NWSDB A3 sheet, and DXF / SVG / PNG / PDF export of the view shown or of all views.
+ * views = a single drawing or [{id, label, dw}]
+ */
+export function drawingCard(views, { height = 380, title, key } = {}) {
+  if (!views) return null;
+  const list = (Array.isArray(views) ? views : [{ id: 'v', label: 'Drawing', dw: views }]).filter((v) => v && v.dw);
+  if (!list.length) return null;
+  const sk = key || title || list[0].dw.title;
   const box = h('div');
   const meta = () => sheetMeta(store.project);
-  const num = () => drawingNumber(store.project?.inputs?.setup, dw.title).replace(/\//g, '-');
-  const base = () => num() + '-' + slug(dw.title);
-  const exportSVG = () => saveFile(base() + '.svg', sheetSVG(dw, meta()).svg, 'image/svg+xml');
-  const exportDXF = () => saveFile(base() + '.dxf', sheetDXF(dw, meta()), 'application/dxf');
+  let cur = list.find((v) => v.id === VIEW_STATE.get(sk)) || list[0];
+  const num = (dw) => drawingNumber(store.project?.inputs?.setup, dw).replace(/\//g, '-');
+  const base = (dw) => num(dw) + '-' + slug(dw.title);
+  const exportSVG = () => saveFile(base(cur.dw) + '.svg', sheetSVG(cur.dw, meta()).svg, 'image/svg+xml');
+  const exportDXF = () => saveFile(base(cur.dw) + '.dxf', sheetDXF(cur.dw, meta()), 'application/dxf');
   const exportPNG = async () => {
     const W = 4961, H = 3508; // A3 at 300 dpi
-    const svg = sheetSVG(dw, meta()).svg.replace('width="420mm" height="297mm"', `width="${W}" height="${H}"`);
+    const svg = sheetSVG(cur.dw, meta()).svg.replace('width="420mm" height="297mm"', `width="${W}" height="${H}"`);
     const img = new Image();
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     await img.decode();
     const c = document.createElement('canvas');
     c.width = W; c.height = H;
     const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.drawImage(img, 0, 0, W, H);
-    c.toBlob((b) => saveFile(base() + '.png', b, 'image/png'));
+    c.toBlob((b) => saveFile(base(cur.dw) + '.png', b, 'image/png'));
   };
-  const exportPDF = () => exportSheetsPDF(sheetsHTML([sheetSVG(dw, meta()).svg], dw.title), base() + '.pdf', dw.title);
+  const exportPDF = () => exportSheetsPDF(sheetsHTML([sheetSVG(cur.dw, meta()).svg], cur.dw.title), base(cur.dw) + '.pdf', cur.dw.title);
+  const exportAll = () => exportSheetsPDF(sheetsHTML(list.map((v, i) => sheetSVG(v.dw, sheetMeta(store.project, { sheet: i + 1, sheets: list.length })).svg), title || cur.dw.title), num(list[0].dw).replace(/-\d+$/, '') + '-' + slug(title || 'drawings') + '-all-views.pdf', title || cur.dw.title);
   const seg = h('div', { class: 'seg dw-seg' });
+  const tabs = h('div', { class: 'view-tabs' });
+  const ttl = h('span', { class: 'view-title' });
   const draw = () => {
     const mode = store.settings.sheetView ? 'sheet' : 'model';
     seg.innerHTML = '';
     for (const [k, l] of [['model', 'Model'], ['sheet', 'A3 sheet']]) seg.append(h('button', { class: mode === k ? 'on' : '', onclick: () => { store.settings.sheetView = k === 'sheet'; saveSettings(); draw(); } }, l));
+    tabs.innerHTML = '';
+    if (list.length > 1) for (const v of list) tabs.append(h('button', { class: 'vt' + (v === cur ? ' on' : ''), title: v.dw.title, onclick: () => { cur = v; VIEW_STATE.set(sk, v.id); draw(); } }, icon(/3D/i.test(v.label) ? 'shapes' : /arrangement/i.test(v.label) ? 'grid' : /section|profile/i.test(v.label) ? 'layers' : 'map'), v.label));
+    ttl.textContent = `${cur.dw.title} · ${drawingNumber(store.project?.inputs?.setup, cur.dw)}`;
     box.innerHTML = '';
     box.className = '';
     if (mode === 'sheet') {
-      const s = sheetSVG(dw, meta());
+      const sh = sheetSVG(cur.dw, meta());
       box.className = 'sheet-view';
-      box.innerHTML = s.svg;
-    } else mountDrawing(box, dw, { height });
+      box.innerHTML = sh.svg;
+    } else mountDrawing(box, cur.dw, { height: /3D|arrangement/i.test(cur.label) ? Math.max(height, 460) : height });
   };
-  const el = card(dw.title, box, { flush: true, sub: drawingNumber(store.project?.inputs?.setup, dw.title), actions: [
+  const body = h('div', null, list.length > 1 ? h('div', { class: 'view-bar' }, tabs, ttl) : null, box);
+  const el = card(title || list[0].dw.title, body, { flush: true, sub: list.length > 1 ? `${list.length} views – plan, sections, general arrangement, 3D` : drawingNumber(store.project?.inputs?.setup, list[0].dw), actions: [
     seg,
-    h('button', { class: 'btn sm ghost', title: 'Export to AutoCAD DXF (with NWSDB title block)', onclick: exportDXF }, icon('pen'), 'DXF'),
-    h('button', { class: 'btn sm ghost', title: 'Export the A3 sheet as PDF', onclick: exportPDF }, icon('fileDown'), 'PDF'),
-    h('button', { class: 'btn sm ghost', title: 'Export the A3 sheet as SVG', onclick: exportSVG }, icon('image'), 'SVG'),
-    h('button', { class: 'btn sm ghost', title: 'Export the A3 sheet as PNG (300 dpi)', onclick: exportPNG }, icon('download'), 'PNG'),
-  ] });
+    h('button', { class: 'btn sm ghost', title: 'Export this view to AutoCAD DXF (with NWSDB title block)', onclick: exportDXF }, icon('pen'), 'DXF'),
+    h('button', { class: 'btn sm ghost', title: 'Export this view as an A3 PDF sheet', onclick: exportPDF }, icon('fileDown'), 'PDF'),
+    h('button', { class: 'btn sm ghost', title: 'Export this view as SVG', onclick: exportSVG }, icon('image'), 'SVG'),
+    h('button', { class: 'btn sm ghost', title: 'Export this view as PNG (300 dpi)', onclick: exportPNG }, icon('download'), 'PNG'),
+    list.length > 1 ? h('button', { class: 'btn sm ghost', title: 'Export all views of this structure as one A3 PDF', onclick: exportAll }, icon('copy'), 'All views') : null,
+  ].filter(Boolean) });
   requestAnimationFrame(draw);
-  el._dw = dw;
+  el._dw = list[0].dw;
+  el._dws = list;
   return el;
+}
+/** the drawings of one structure (all views) as a card; key = structure key of the drawing register */
+export function structureCard(r, key, opts = {}) {
+  const views = groupViews(r, key);
+  if (!views.length) return null;
+  return drawingCard(views, { key, ...opts, title: opts.title || `${groupTitle(r, key)} – drawings` });
 }
 /** card containing a chart */
 export function chartCard(title, spec, { sub, tableData } = {}) {

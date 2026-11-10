@@ -29,9 +29,11 @@ export function compute(inp, ctx) {
   const type = d.type === 'auto' ? (proc.floc && proc.floc !== 'auto' ? proc.floc : 'hbaffle') : d.type;
   const nT = dem.nTrains;
   const Q = dem.Qs / nT; // per train
-  let H = d.depth > 0 ? d.depth : type === 'hbaffle' ? 1.5 : type === 'vbaffle' ? 3.0 : 3.5;
   const ttot = d.stages.reduce((a, s) => a + s.t, 0);
   const Vtot = Q * ttot * 60;
+  // paddle basins: depth follows the stage volume for small plants (compartments roughly cubic), 1.5–3.5 m
+  const Vst1 = Q * d.stages[0].t * 60;
+  let H = d.depth > 0 ? d.depth : type === 'hbaffle' ? 1.5 : type === 'vbaffle' ? 3.0 : Math.max(1.5, Math.min(3.5, Math.round(Math.cbrt(Vst1 / 1.2) * 10) / 10));
   // spacing of the highest-G stage for a trial width (baffled types)
   const minSpacing = (W) => Math.min(...d.stages.map((s) => {
     const t = s.t * 60; const L = (Q * t) / (W * H); const dim = type === 'hbaffle' ? H : W;
@@ -42,7 +44,7 @@ export function compute(inp, ctx) {
   if (type === 'hbaffle' && !(d.depth > 0) && !(d.width > 0)) { while (H > 1.05 && minSpacing(1.5) < d.targetSpacing) H = +(H - 0.1).toFixed(2); } // D3 Table 5-15: depth ≥ 1.0 m
   let W = d.width;
   if (!(W > 0)) {
-    if (type === 'paddle') W = Math.max(2.5, Math.min(12, +((Q * d.stages[0].t * 60) / (H * H)).toFixed(1)));
+    if (type === 'paddle') W = Math.max(1.2, Math.min(20, +((Q * d.stages[0].t * 60) / (0.8 * H * H)).toFixed(1)));
     else {
       let lo = type === 'hbaffle' ? 1.5 : 0.6, hi = 40;
       for (let k = 0; k < 60; k++) { const m = (lo + hi) / 2; if (minSpacing(m) > d.targetSpacing) lo = m; else hi = m; }
@@ -88,8 +90,12 @@ export function compute(inp, ctx) {
       Gt += Ga * t;
     } else {
       // paddle (horizontal shaft across width W)
-      const P = s.G * s.G * mu * V;
-      calc.step('Power input', 'P = G^2\\mu V', `${n(s.G)}^2\\times${n(mu, 6)}\\times${n(V)}`, P, 'W', 'LN');
+      // one horizontal paddle shaft per ≈ 0.8 H of stage length (long stages of large plants carry several shafts)
+      const nSh = Math.max(1, Math.ceil(L / (0.8 * H) - 0.05));
+      const Ptot = s.G * s.G * mu * V;
+      const P = Ptot / nSh;
+      calc.step('Power input to the stage', 'P = G^2\\mu V', `${n(s.G)}^2\\times${n(mu, 6)}\\times${n(V)}`, Ptot, 'W', 'LN');
+      if (nSh > 1) calc.step('Paddle shafts in the stage (one per ≈ 0.8 H of length)', 'n_s = L_i / 0.8H', `${n(L)}/(0.8\\times${n(H)})`, nSh, 'nos.', 'power per shaft P/nₛ');
       const clr = d.clearance > 0 ? d.clearance : 0.125 * H;
       const R = (H - 2 * clr) / 2;
       const r = 0.85 * R;
@@ -103,12 +109,12 @@ export function compute(inp, ctx) {
       calc.step('Rotational speed', 'n = \\frac{v_p}{2\\pi k r}', `\\frac{${n(vp)}}{2\\pi\\times${n(d.kRel)}\\times${n(r)}}`, nrps * 60, 'rpm', 'LN: v_p = 2πkrn, k = 0.75');
       calc.step('Paddle tip speed', 'v_{tip} = 2\\pi R n', `2\\pi\\times${n(R)}\\times${n(nrps)}`, tip, 'm/s');
       calc.step('Tip velocity relative to water', 'v_r = 0.75\\,\\pi\\,n\\,D', `${n(d.kRel)}\\times${n(tip)}`, d.kRel * tip, 'm/s', 'NWSDB D3 Annex D.2 – ≤ 0.40 m/s (alum)');
-      const kw = nextStd((P / d.driveEff / 1000) * 1.2, MOTOR_KW);
+      const kw = nextStd((P / d.driveEff / 1000) * 1.2, MOTOR_KW) * nSh;
       calc.check('fl.tip', d.kRel * tip, `Stage ${i + 1} paddle velocity relative to water`);
       calc.check('fl.paddleRatio', d.areaRatio);
       calc.check('fl.G', s.G, `Stage ${i + 1} G`);
       void Across;
-      Object.assign(st, { P, R, r, Ap, vp, rpm: nrps * 60, tip, kw, Ga: s.G });
+      Object.assign(st, { P: Ptot, nSh, R, r, Ap, vp, rpm: nrps * 60, tip, kw, Ga: s.G });
       kwTot += kw;
       hlTot += 0.03;
       Gt += s.G * t;

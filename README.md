@@ -7,6 +7,25 @@ storage & pumping → residuals → hydraulic profile → site layout → power 
 
 *For the National Water Supply & Drainage Board, Sri Lanka.*
 
+**Version 1.5 – every structure in every view, and designs that size themselves**
+* **Multi-view drawings**: each structure now has a view switcher – **Plan**, **Section A–A** (longitudinal),
+  **Section B–B** (cross), a **General arrangement** sheet with the views laid out in projection, and a **3D isometric
+  view**. Section cutting lines (A–A, B–B) are marked on the plans. New drawings: intake well plan, aerator and
+  rapid-mixer plans, flocculator plan / longitudinal / cross-sections, sedimentation cross-section, circular-clarifier
+  section, general plan of the filter battery with pipe gallery, filter longitudinal section through the gallery,
+  slow-sand-filter section, contact-tank sections, clear-water-reservoir sections (levels in m MSL), treated-water pump
+  house plan, sludge thickener plan and section, drying-bed plan and section, and a **3D view of the whole plant**
+  on the Site layout page. Every view exports as an A3 sheet (PDF, DXF, SVG, PNG) and *All views* exports the set of
+  a structure; the drawing pack and register number them `D-<structure>-<view>`.
+* **Automatic sizing that passes at any capacity** (500 – 200,000 m³/d): number of treatment streams (2 up to
+  50,000 m³/d, then a pair per further 50,000), flocculator type by flow per stream (baffled channels are not offered
+  where D3 Table 5-15 spacing ≥ 0.45 m cannot be met), paddle shafts per stage, narrower hydraulic-jump channels for
+  small flows, sedimentation depth and L:W for short tanks, filter count limited by the D3 maximum bed area, parallel
+  intake pipes for 1.5 D submergence, pump-suction submergence, and the hypochlorination limit. A new plant at any
+  capacity now starts with no failing checks.
+* Fixes: stale values in automatic fields of disabled units, flocculator drive count in the cost estimate, label
+  overlaps on long sections, drawing numbers shared by different drawings.
+
 **Version 1.4 – priced from the NWSDB Rate Book 2025**
 * **Total cost estimate in the Rate Book format** (How to use; Table 1): contractual items → price escalation beyond
   31.12.2025 (LC 5 %, FC 3 % p.a. with the Table 2 NCB/ICB factors) → preliminaries (4 % above LKR 500 M, else 5 %) →
@@ -82,7 +101,7 @@ is listed in **Library → NWSDB Design Manual D2** and in a dedicated report ch
 
 ## Install on Windows 10 / 11
 
-1. Extract `NWSDB-WTP-Designer-1.4.0-win-x64.zip` (right-click → *Extract all*).
+1. Extract `NWSDB-WTP-Designer-1.5.0-win-x64.zip` (right-click → *Extract all*).
 2. Double-click **Install.cmd**. The app is installed for the current user (no administrator rights), with Start-menu and
    desktop shortcuts and the `.wtpd` project-file association. Uninstall from *Settings → Apps*.
 3. Or run it without installing: open the `NWSDB WTP Designer` folder and double-click `NWSDB WTP Designer.exe`.
@@ -101,6 +120,7 @@ choose **More info → Run anyway**, or ask ICT to sign/whitelist it (see *Build
 | Raw water quality | Laboratory results vs SLS 614:2013 and the SLS 722:1985 raw-water limits (D3 Tables 2-4, 2-6); monthly (monsoon) turbidity profile |
 | Source & hydrology | D2 §4: river-basin data (103 basins), dry-weather availability, reservoir mass diagram (Rippl), sediment, evaporation, flood estimate |
 | Plant configurator | Click one illustrated card per decision; D3 / expert recommendation and suitability on every option; live animated PFD; decision log, D3 Table 4-5 |
+| Drawings | On every unit page: Plan · Section A–A · Section B–B · General arrangement · 3D view; Model or A3 sheet; DXF / PDF / SVG / PNG of the view or all views |
 | Treatment units | Each page: inputs on the left (live criteria hints, failing checks under the field), connection strip (receives / hands over), results / charts / checks / calculation sheet / drawings (model or A3 sheet) on the right |
 | Plant-wide | Storage & pumping (mass curve, pump curves, surge), residuals, hydraulic profile, draggable site layout, power (CEB Annex 8 tariff), NWSDB Rate Book 2025 total cost estimate & BOQ |
 | Outputs | SLS 614 compliance & log credits, design-check register (Locate), PDF report, Excel workbook, NWSDB A3 drawing pack (PDF / DXF / SVG) |

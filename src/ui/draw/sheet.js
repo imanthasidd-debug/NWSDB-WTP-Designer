@@ -14,8 +14,9 @@ const NB = { x0: 24, y0: 218, x1: 226, y1: 283 };            // notes + legend
 export const SCALES = [5, 10, 20, 25, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 750, 1000, 1250, 1500, 2000, 2500, 5000];
 
 const CODES = [[/^Intake/i, '01'], [/aerator/i, '02'], [/mixer/i, '03'], [/flocculator/i, '04'], [/Sedimentation tanks – plan|Circular clarifier/i, '05'], [/Sedimentation tank – longitudinal/i, '06'], [/Slow sand filters – plan|filter – plan/i, '07'], [/filter – cross-section/i, '08'], [/Chlorine contact/i, '09'], [/Clear water/i, '10'], [/Hydraulic profile/i, '11'], [/Site layout/i, '12'], [/Process flow/i, '00']];
-export const drawingCode = (title) => (CODES.find(([re]) => re.test(title || ''))?.[1] || '99');
-export const drawingNumber = (setup, title) => `NWSDB/${(setup?.code || 'WTP').replace(/\s+/g, '')}/D-${drawingCode(title)}`;
+/** drawing code: the code assigned by the drawing register (dw.code = structure–view), else by title */
+export const drawingCode = (t) => (t && typeof t === 'object' ? t.code || drawingCode(t.title) : CODES.find(([re]) => re.test(t || ''))?.[1] || '99');
+export const drawingNumber = (setup, t) => `NWSDB/${(setup?.code || 'WTP').replace(/\s+/g, '')}/D-${drawingCode(t)}`;
 
 /** smallest standard scale at which the drawing fits the drawing area */
 export function chooseScale(dw) {
@@ -26,7 +27,6 @@ export function chooseScale(dw) {
   return SCALES.find((s) => s >= need) || Math.ceil(need / 1000) * 1000;
 }
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const kindOf = (title) => (/plan/i.test(title) ? 'PLAN' : /section|profile/i.test(title) ? 'SECTION' : 'DETAIL');
 
 /** metadata for the title block from the project */
 export function sheetMeta(project, extra = {}) {
@@ -48,6 +48,7 @@ const NOTES = [
 /** A3 landscape NWSDB sheet as an SVG string (always print colours) */
 export function sheetSVG(dw, meta, { scale: forceScale, nts = false, inner } = {}) {
   const scale = nts ? null : forceScale || chooseScale(dw);
+  const isoNts = !!dw.nts; // isometric views are placed to fit but are not measurable
   const title = dw.title || 'Drawing';
   const out = [];
   out.push(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${A3.w} ${A3.h}" width="${A3.w}mm" height="${A3.h}mm" font-family="Arial, Helvetica, sans-serif" style="background:#fff">`);
@@ -71,18 +72,18 @@ export function sheetSVG(dw, meta, { scale: forceScale, nts = false, inner } = {
   } else {
     const th = (3.0 * scale) / 1000; // 3 mm text on paper
     const d2 = { ...dw, textH: th };
-    const { svg, Wm, Hm } = drawingSVG(d2, { statik: true, idPrefix: 's' + drawingCode(title) + Math.random().toString(36).slice(2, 6) });
+    const { svg, Wm, Hm } = drawingSVG(d2, { statik: true, idPrefix: 's' + drawingCode(dw).replace(/\W/g, '') + Math.random().toString(36).slice(2, 6) });
     wmm = (Wm * 1000) / scale; hmm = (Hm * 1000) / scale;
     const x = DA.x0 + (DA.x1 - DA.x0 - wmm) / 2, y = DA.y0 + Math.max(2, (DA.y1 - DA.y0 - 22 - hmm) / 2);
     out.push(svg.replace(/^<svg /, `<svg x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${wmm.toFixed(2)}" height="${hmm.toFixed(2)}" `).replace(/style="background:[^"]*"/, ''));
     // north arrow for plans
-    if (/plan/i.test(title) && !dw.items.some((it) => it.t === 'text' && it.text === 'N')) out.push(`<g transform="translate(${DA.x1 - 14},${DA.y0 + 14})"><circle r="7" fill="none" stroke="#000" stroke-width="0.35"/><path d="M0,-9L3,4L0,2L-3,4Z" fill="#000"/><text y="-10.5" font-size="3.4" font-weight="700" text-anchor="middle">N</text></g>`);
+    if (/plan/i.test(title) && !/arrangement/i.test(title) && !dw.items.some((it) => it.t === 'text' && it.text === 'N')) out.push(`<g transform="translate(${DA.x1 - 14},${DA.y0 + 14})"><circle r="7" fill="none" stroke="#000" stroke-width="0.35"/><path d="M0,-9L3,4L0,2L-3,4Z" fill="#000"/><text y="-10.5" font-size="3.4" font-weight="700" text-anchor="middle">N</text></g>`);
   }
   // caption + scale bar (D3 annex style: bold, centred)
   const capY = DA.y1 - 9;
-  out.push(`<text x="${(DA.x0 + DA.x1) / 2}" y="${capY}" font-family="Times New Roman, Times, serif" font-size="4.4" font-weight="700" text-anchor="middle">${esc(`Drawing ${drawingCode(title)}: ${nts ? title : `${kindOf(title) === 'PLAN' ? 'Plan' : kindOf(title) === 'SECTION' ? 'Section' : 'Detail'} – ${title.replace(/ – (plan|section|longitudinal section|cross-section.*|profile.*|plan.*)$/i, '')}`}`)}</text>`);
-  out.push(`<text x="${(DA.x0 + DA.x1) / 2}" y="${capY + 5}" font-size="3" text-anchor="middle">${scale ? `SCALE 1:${scale} (A3)` : 'NOT TO SCALE'}</text>`);
-  if (scale) {
+  out.push(`<text x="${(DA.x0 + DA.x1) / 2}" y="${capY}" font-family="Times New Roman, Times, serif" font-size="4.4" font-weight="700" text-anchor="middle">${esc(`Drawing ${drawingCode(dw)}: ${title}`.slice(0, 120))}</text>`);
+  out.push(`<text x="${(DA.x0 + DA.x1) / 2}" y="${capY + 5}" font-size="3" text-anchor="middle">${scale && !isoNts ? `SCALE 1:${scale} (A3)` : isoNts ? 'ISOMETRIC VIEW – NOT TO SCALE' : 'NOT TO SCALE'}</text>`);
+  if (scale && !isoNts) {
     // graphic scale bar: about 60 mm long, in round metres
     const target = (60 * scale) / 1000; // metres
     const step = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100].find((v) => v * 5 >= target) || 100;
@@ -144,15 +145,15 @@ export function sheetSVG(dw, meta, { scale: forceScale, nts = false, inner } = {
     out.push(box(L + i * pw, TB.y0 + 36, pw, 9.5)); out.push(lab(L + i * pw + 1.5, TB.y0 + 38.6, k)); out.push(val(L + i * pw + 1.5, TB.y0 + 43, (v || '').slice(0, 22), 2.4));
   });
   // number row
-  const cols = [['DRAWING No.', drawingNumber({ code: meta.code }, title), 64], ['REV', meta.rev, 12], ['SCALE (A3)', scale ? `1:${scale}` : 'NTS', 24], ['SHEET', `${meta.sheet} of ${meta.sheets}`, 22], ['DATE', meta.date, W - 122]];
+  const cols = [['DRAWING No.', drawingNumber({ code: meta.code }, dw), 64], ['REV', meta.rev, 12], ['SCALE (A3)', scale && !isoNts ? `1:${scale}` : 'NTS', 24], ['SHEET', `${meta.sheet} of ${meta.sheets}`, 22], ['DATE', meta.date, W - 122]];
   let cx = L;
   for (const [k, v, w] of cols) { out.push(box(cx, TB.y0 + 45.5, w, 11)); out.push(lab(cx + 1.5, TB.y0 + 48.2, k)); out.push(val(cx + 1.5, TB.y0 + 53.6, v, k === 'DRAWING No.' ? 2.9 : 2.7, true)); cx += w; }
   // revision + credit
   out.push(lab(L + 2, TB.y0 + 59.3, 'REVISION'));
   out.push(val(L + 17, TB.y0 + 59.6, `${meta.rev} – ${meta.date} – Issued for design review`, 2.1));
-  out.push(`<text x="${R - 2}" y="${TB.y1 - 1.6}" font-size="2" text-anchor="end" fill="#0b4a92" font-weight="700">NWSDB WTP Designer v1.4</text>`);
+  out.push(`<text x="${R - 2}" y="${TB.y1 - 1.6}" font-size="2" text-anchor="end" fill="#0b4a92" font-weight="700">NWSDB WTP Designer v1.5</text>`);
   out.push('</svg>');
-  return { svg: out.join(''), scale, code: drawingCode(title), number: drawingNumber({ code: meta.code }, title) };
+  return { svg: out.join(''), scale: isoNts ? null : scale, code: drawingCode(dw), number: drawingNumber({ code: meta.code }, dw) };
 }
 
 /** HTML document with one A3 landscape sheet per page (for PDF printing) */
@@ -192,12 +193,12 @@ export function sheetDXFItems(dw, meta) {
   tx(L + 2, TB.y0 + 28.8, 1.9, 'DRAWING TITLE'); tx(L + 2, TB.y0 + 33.4, 3.3, (dw.title || '').toUpperCase().slice(0, 58));
   [['DESIGNED', meta.designer], ['DRAWN', meta.drawn || 'WTP Designer'], ['CHECKED', meta.checker], ['APPROVED', meta.approver]].forEach(([kk, v], i) => { tx(L + (i * W) / 4 + 1.5, TB.y0 + 38.6, 1.9, kk); tx(L + (i * W) / 4 + 1.5, TB.y0 + 43, 2.4, (v || '').slice(0, 22)); });
   cx = L;
-  for (const [kk, v, w] of [['DRAWING No.', drawingNumber({ code: meta.code }, dw.title), 64], ['REV', meta.rev, 12], ['SCALE (A3)', `1:${scale}`, 24], ['SHEET', `${meta.sheet} of ${meta.sheets}`, 22], ['DATE', meta.date, W - 122]]) { tx(cx + 1.5, TB.y0 + 48.2, 1.9, kk); tx(cx + 1.5, TB.y0 + 53.6, 2.7, v); cx += w; }
+  for (const [kk, v, w] of [['DRAWING No.', drawingNumber({ code: meta.code }, dw), 64], ['REV', meta.rev, 12], ['SCALE (A3)', dw.nts ? 'NTS' : `1:${scale}`, 24], ['SHEET', `${meta.sheet} of ${meta.sheets}`, 22], ['DATE', meta.date, W - 122]]) { tx(cx + 1.5, TB.y0 + 48.2, 1.9, kk); tx(cx + 1.5, TB.y0 + 53.6, 2.7, v); cx += w; }
   tx(L + 2, TB.y0 + 59.6, 2.1, `REVISION ${meta.rev} - ${meta.date} - Issued for design review`);
-  tx(TB.x1 - 2, TB.y1 - 1.6, 2, 'NWSDB WTP Designer v1.4', 2);
+  tx(TB.x1 - 2, TB.y1 - 1.6, 2, 'NWSDB WTP Designer v1.5', 2);
   tx(NB.x0 + 3, NB.y0 + 5, 3, 'NOTES');
   NOTES.forEach((n, i) => tx(NB.x0 + 3, NB.y0 + 10 + i * 7.5, 2.2, `${i + 1}. ${n.slice(0, 95)}`));
-  tx((DA.x0 + DA.x1) / 2, DA.y1 - 9, 4.4, `DRAWING ${drawingCode(dw.title)}: ${(dw.title || '').toUpperCase()}`, 1);
+  tx((DA.x0 + DA.x1) / 2, DA.y1 - 9, 4.4, `DRAWING ${drawingCode(dw)}: ${(dw.title || '').toUpperCase()}`, 1);
   tx((DA.x0 + DA.x1) / 2, DA.y1 - 4, 3, `SCALE 1:${scale} (A3)`, 1);
   return { lines, texts, scale };
 }

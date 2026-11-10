@@ -41,7 +41,7 @@ export const report = {
       const zip = new JSZip();
       const sheets = packSheets(r, store.project);
       sheets.forEach((sh, i) => {
-        const base = String(i).padStart(2, '0') + '-' + sh.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, '');
+        const base = (sh.code || '00') + '-' + sh.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, '').slice(0, 70);
         if (sh.dxf) zip.file('dxf/' + base + '.dxf', sh.dxf);
         zip.file('svg/' + base + '.svg', sh.svg);
       });
@@ -325,7 +325,8 @@ export const help = {
         <li><b>Treatment units</b> – each page shows what it <b>receives from</b> the unit upstream and <b>hands over</b> to the next (flow, water level, turbidity, pH, chemicals). Red / amber inputs show the failing check right under the field; <b>Locate</b> buttons jump to the input that controls any check.</li>
         <li><b>Impact of a change</b> – after every edit the Impact panel lists the knock-on effects on every downstream unit (sizes, levels, turbidity, energy, cost, checks); <b>Design chain & impact</b> shows the water path, profiles, dependency matrix and a what-if explorer.</li>
         <li><b>Plant-wide</b> – storage & pumping, residuals, hydraulic profile, site layout, power & cost.</li>
-        <li><b>Outputs</b> – compliance, design-check register, PDF report, Excel, and the NWSDB <b>A3 drawing pack</b> (title block, D3 concrete hatching, true scale) as PDF / DXF / SVG.</li></ol>` })),
+        <li><b>Outputs</b> – compliance, design-check register, PDF report, Excel, and the NWSDB <b>A3 drawing pack</b> (title block, D3 concrete hatching, true scale) as PDF / DXF / SVG.</li>
+        <li><b>Drawings in any view</b> – the drawing card on each unit page has a view switcher: Plan, Section A–A, Section B–B, General arrangement (views in projection on one sheet) and 3D view; the Site layout page shows the whole plant in 3D. Scroll to zoom, drag to pan, switch to <i>A3 sheet</i> for the titled sheet, and export the view or <i>All views</i>.</li></ol>` })),
       card('Keyboard shortcuts', table([{ k: 'k', l: 'Keys' }, { k: 'a', l: 'Action' }], [
         { k: 'Ctrl + N', a: 'New project' }, { k: 'Ctrl + O', a: 'Open project (.wtpd)' }, { k: 'Ctrl + S', a: 'Save' }, { k: 'Ctrl + Shift + S', a: 'Save as' },
         { k: 'Ctrl + Z / Ctrl + Y', a: 'Undo / redo' }, { k: 'Ctrl + P', a: 'Design report' }, { k: 'Ctrl + E', a: 'Export Excel workbook' }, { k: 'Ctrl + 1…9', a: 'Jump to pages' }, { k: 'F11', a: 'Full screen' }, { k: 'Ctrl + / −', a: 'Zoom' },
@@ -345,7 +346,7 @@ export const help = {
         <li>Disinfection: D3 Table 6-4/6-5 CT values (USEPA SWTR), Table 6-2 baffle factors, Table 6-7 credits, breakpoint chlorination, HOCl speciation.</li>
         <li>Stabilisation: Langelier & Ryznar indices with iterative post-lime solution.</li>
         <li>Residuals: D3 Method 02 mass balance (Table 5-44) with Method 01 cross-check; mass-curve service-reservoir sizing; quantity-based BOQ.</li></ul>` })),
-      card('About', h('div', { class: 'flex', style: { gap: '14px', alignItems: 'center' } }, h('div', { html: bannerImg(44), style: { background: '#fff', borderRadius: '8px', padding: '6px 8px', border: '1px solid var(--border)' } }), h('div', null, h('b', null, 'NWSDB WTP Designer v1.4'), h('div', { class: 'small' }, CREDIT), h('div', { class: 'small muted' }, 'Conventional water treatment plant design to NWSDB Design Manuals D2 (1989) & D3 (2020) and SLS 614:2013.')))),
+      card('About', h('div', { class: 'flex', style: { gap: '14px', alignItems: 'center' } }, h('div', { html: bannerImg(44), style: { background: '#fff', borderRadius: '8px', padding: '6px 8px', border: '1px solid var(--border)' } }), h('div', null, h('b', null, 'NWSDB WTP Designer v1.5'), h('div', { class: 'small' }, CREDIT), h('div', { class: 'small muted' }, 'Conventional water treatment plant design to NWSDB Design Manuals D2 (1989) & D3 (2020) and SLS 614:2013.')))),
       card('Important', h('div', { class: 'small', html: `This application supports – it does not replace – professional engineering judgement. Demand, source, intake, pumping, mains, storage and costing follow NWSDB Design Manual D2 (1989); water quality, process selection and treatment-unit design follow NWSDB Design Manual D3 (2020), supplemented by the lecture notes and AWWA/Kawamura where D3 is silent. Printed D3 inconsistencies and the interpretation adopted are listed under Library → D3 → Errata. Costs, chemical prices and the CEB tariff follow the NWSDB Rate Book 2025 (rates at 31.12.2025, VAT excluded); items not in the Rate Book are indicative and the CEB tariff category must be confirmed. Confirm all criteria, rates and tariffs against the current NWSDB documents before issue. Predicted water quality is a screening estimate; verify with jar tests and pilot data.` })),
     )];
   },
@@ -368,7 +369,7 @@ export const settings = {
         h('p', { class: 'small muted', style: { margin: '0 0 8px' } }, 'The official NWSDB logo is built in (title bar, dashboard, report cover and drawing title blocks). You may load another organisation logo for the title bar and report cover.'),
         h('div', { class: 'flex' }, h('button', { class: 'btn', onclick: () => file.click() }, icon('upload'), 'Choose logo…'), s.logo ? h('button', { class: 'btn ghost', onclick: () => { delete s.logo; saveSettings(); window.dispatchEvent(new Event('wtp-theme')); navigate('settings'); } }, 'Use built-in emblem') : null), file))),
       card('Defaults', h('div', { class: 'field' }, h('label', null, 'Designer name for new projects'), h('div', { class: 'inp' }, designer))),
-      card('About', h('div', { class: 'small', html: `<div style="margin-bottom:10px">${bannerImg(56)}</div><b>NWSDB WTP Designer</b> v1.4 – conventional water treatment plant design suite for the National Water Supply &amp; Drainage Board, Sri Lanka, incorporating NWSDB Design Manuals D2 (1989) and D3 (2020) and the NWSDB Rate Book 2025.<br>Built with Electron, d3 (ISC), KaTeX (MIT), JSZip (MIT) and Lucide icons (ISC).<br>Calculation engine: ${f2(store.calcMs)} ms per full plant recalculation.` })),
+      card('About', h('div', { class: 'small', html: `<div style="margin-bottom:10px">${bannerImg(56)}</div><b>NWSDB WTP Designer</b> v1.5 – conventional water treatment plant design suite for the National Water Supply &amp; Drainage Board, Sri Lanka, incorporating NWSDB Design Manuals D2 (1989) and D3 (2020) and the NWSDB Rate Book 2025.<br>Built with Electron, d3 (ISC), KaTeX (MIT), JSZip (MIT) and Lucide icons (ISC).<br>Calculation engine: ${f2(store.calcMs)} ms per full plant recalculation.` })),
     ];
   },
 };

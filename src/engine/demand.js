@@ -39,8 +39,10 @@ export const DEFAULTS = {
   opHours: 24,
   roundStep: 1000,
   overrideCap: 0,            // >0 to force adopted capacity (m3/d)
-  nTrains: 2,
+  nTrains: 0,                // 0 = automatic: 2 streams up to 50,000 m³/d, then one pair per further 50,000 m³/d (D3 §4.3.8: ≥ 2)
 };
+/** automatic number of parallel treatment streams */
+export const autoTrains = (Q) => Math.max(2, 2 * Math.ceil(Q / 50000));
 
 function fitMethods(census) {
   const c = [...census].filter((r) => num(r.year) > 0 && num(r.pop) > 0).sort((a, b) => a.year - b.year);
@@ -145,14 +147,15 @@ export function compute(inp, ctx) {
     c2.check('dem.phf', phfC);
     c2.check('dem.own', d.ownUse);
     c2.flag('Design basis', true, `specified ${Math.round(num(d.capacity)).toLocaleString('en-US')} m³/d`, 'pre-determined capacity', 'Demand forecast checks (D2 §2.4, §3.2.1) are not applied', 'info', ref('3.2'));
-    if (d.nTrains < 2) c2.note('warn', 'A single treatment stream gives no redundancy during maintenance – at least two parallel streams are recommended.');
+    const nTr = num(d.nTrains) > 0 ? Math.max(1, Math.round(d.nTrains)) : autoTrains(Qp);
+    if (nTr < 2) c2.note('warn', 'A single treatment stream gives no redundancy during maintenance – at least two parallel streams are recommended.');
     const tableC = years.map((y) => ({ ...Dc, year: y }));
     const clsC = communityOf(Peq);
     return {
       inputs: d, basis: 'capacity', method, table: tableC, years, design: Dc, stage: Dc, adopted: Qp, stageCap: Qp, methods: null,
       d2: { cls: clsC, pk: pkC, mdf: mdfC, phf: phfC, lpcd, hcPct, hcLpcd, items, instQ, horizon: horizonFor(Peq), range: lpcdRange(clsC), Pdesign: Peq },
       mdf: mdfC, phf: phfC, lpcd, census: d.census,
-      Qd: Qp, Qh: Qp / 24, Qs: Qp / 86400, nTrains: Math.max(1, Math.round(d.nTrains)),
+      Qd: Qp, Qh: Qp / 24, Qs: Qp / 86400, nTrains: nTr, nTrainsAuto: !(num(d.nTrains) > 0),
       ...c2.result(),
     };
   }
@@ -205,7 +208,8 @@ export function compute(inp, ctx) {
   if (d.mdf > 0 && Math.abs(d.mdf - pk.mdf) > 0.01) calc.note('info', `Maximum-day factor ${d.mdf} is a user value; D2 §3.2.5 gives ${pk.mdf} for ${pk.cls}. Clear the field to use the D2 value.`);
   if (d.opHours < 24) calc.note('warn', 'D2 §9.2: schemes involving treatment normally require continuous 24-hour operation to optimise the process; slow sand filters must not be operated intermittently.');
   if (adopted < D.plant * 0.98) calc.note('fail', 'Adopted capacity is lower than the computed requirement for the design year.');
-  if (d.nTrains < 2) calc.note('warn', 'A single treatment stream gives no redundancy during maintenance – at least two parallel streams are recommended.');
+  const nTr = num(d.nTrains) > 0 ? Math.max(1, Math.round(d.nTrains)) : autoTrains(adopted);
+  if (nTr < 2) calc.note('warn', 'A single treatment stream gives no redundancy during maintenance – at least two parallel streams are recommended.');
 
   const methods = fit ? {
     arith: years.map((y) => fit.arith(y)),
@@ -218,7 +222,7 @@ export function compute(inp, ctx) {
     d2: { cls, pk, mdf, phf, lpcd, hcPct, hcLpcd, items, instQ, horizon: hz, range: rng, Pdesign },
     mdf, phf, lpcd,
     census: d.census,
-    Qd: adopted, Qh: adopted / 24, Qs: adopted / 86400, nTrains: Math.max(1, Math.round(d.nTrains)),
+    Qd: adopted, Qh: adopted / 24, Qs: adopted / 86400, nTrains: nTr, nTrainsAuto: !(num(d.nTrains) > 0),
     ...calc.result(),
   };
 }
