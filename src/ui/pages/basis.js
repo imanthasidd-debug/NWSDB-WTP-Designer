@@ -40,7 +40,12 @@ export const setup = {
     { k: 'checker', l: 'Checked by', t: 'text' },
     { k: 'approver', l: 'Approved by', t: 'text' },
     { k: 'date', l: 'Date', t: 'date' },
-    { k: 'revision', l: 'Revision', t: 'text' },
+    { sec: 'Drawing title block' },
+    { k: 'drawnBy', l: 'Drawn by', t: 'text', ph: 'WTP Designer' },
+    { k: 'drawingStatus', l: 'Drawing status', t: 'sel', o: [['Preliminary design', 'Preliminary design'], ['For review', 'For review'], ['For approval', 'For approval'], ['Tender', 'Tender'], ['For construction', 'For construction'], ['As built', 'As built']] },
+    { k: 'revision', l: 'Current revision', t: 'text' },
+    { k: 'revDesc', l: 'Description of this revision', t: 'text' },
+    { k: 'revisions', t: 'table', l: 'Earlier revisions', cols: [{ k: 'rev', l: 'Rev', text: true, w: '14%' }, { k: 'date', l: 'Date', text: true, w: '28%' }, { k: 'desc', l: 'Description', text: true }], add: { rev: '', date: '', desc: '' }, minRows: 0 },
     { k: 'notes', l: 'Project notes', t: 'area', ph: 'Scope, assumptions, data sources…' },
   ],
   render(r) {

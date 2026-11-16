@@ -61,7 +61,7 @@ export function designChain(r) {
   }
   const conv = P.conv, ssf = P.ssf;
   if (r.sed && r.sed.enabled && r.sed.plain) {
-    push('presed', 'sed', 'Plain sedimentation', { turb: num(r.sed.settledPeak) ?? st.turb, turbAvg: num(r.sed.settledAvg) ?? st.turbAvg, wl: lvl.sed?.wl ?? st.wl },
+    push('presed', 'sed', r.sed.type === 'hrf' ? 'Roughing filters' : 'Plain sedimentation', { turb: num(r.sed.settledPeak) ?? st.turb, turbAvg: num(r.sed.settledAvg) ?? st.turbAvg, wl: lvl.sed?.wl ?? st.wl },
       { size: `${r.sed.N} × ${fx(r.sed.L, 1)} × ${fx(r.sed.W, 1)} m`, adds: [], removes: ['Silt / sand'] });
   }
   if (r.coag && P.has?.coag) {

@@ -225,6 +225,9 @@ export function compute(inp, ctx) {
   calc.check(type === 'dual' ? 'f.rateDual' : 'f.rate', rateAct);
   calc.check('f.rateMax', rateTwo);
   calc.check('f.area', AfAct, null, { crit: { min: dem.Qd < 5000 ? 1.5 : 5, max: filterAreaMax(dem.Qd) }, src: `NWSDB D3 §5.9.2.3 – practical maximum ≈ ${filterAreaMax(dem.Qd)} m² (${dem.Qd > 37854 ? '> 10 mgd' : '< 10 mgd'}); §5.9.1 up to 140 m²` });
+  // control mode recommended by D3 §5.9.9.1
+  const ctrl = N <= 4 ? 'Variable-level influent flow splitting (inlet weir box on each filter, effluent weir above the media) – no rate controllers' : 'Variable-level declining rate (common inlet header below low water level, fixed orifice on each outlet)';
+  calc.text(`Filter control (NWSDB D3 §5.9.9.1): ${N <= 4 ? 'four or fewer filters operated manually' : 'larger plant without full automation'} → ${ctrl}. With full automation use proportional-level control. Butterfly valves with electric actuators, opened in not less than one minute; provide filter-to-waste for the 5–30 min ripening period (D3 §5.9.9, §5.9.13).`);
   calc.flag('Number of filters', N >= minFilters(dem.Qd), `${N}`, `≥ ${minFilters(dem.Qd)}`, 'Design for maximum flow with one filter out for maintenance and another backwashing', 'fail', 'NWSDB D3 §5.9.2');
   const LBo = Math.max(Lb, beds * B + (d.layout === 'twin' ? d.gulletW : 0)) / Math.min(Lb, beds * B + (d.layout === 'twin' ? d.gulletW : 0));
   calc.flag('Filter length / breadth', LBo >= 1.0 && LBo <= 2.0, LBo.toFixed(2), '1.25–1.33 (D3 list)', 'Advisory – governs the economy of common walls', LBo >= RSF.LB[0] - 0.05 && LBo <= RSF.LB[1] + 0.05 ? 'warn' : 'info', 'NWSDB D3 §5.9.1');
@@ -431,7 +434,7 @@ export function compute(inp, ctx) {
   const gw = d.layout === 'twin' ? d.gulletW : 0;
   const boxW = beds * B + gw + (beds === 1 ? 0.9 : 0);
   Object.assign(out, {
-    rate: rateAct, rateOne, A, N, Nrule, Af: AfAct, beds, B, Lb, g, anth, sandL, Ltot, h0, h0sand, h0anth, h0gravel, hUnderFilt,
+    control: ctrl, rate: rateAct, rateOne, A, N, Nrule, Af: AfAct, beds, B, Lb, g, anth, sandL, Ltot, h0, h0sand, h0anth, h0gravel, hUnderFilt,
     infAvg, infPeak, runAvg, runPeak, UFRV, Vmf, vb, Le: LeTot, expPct, hFluid, Qbw, hUnderBw, washVol, washesPerDay, bwDailyM3, bwPct,
     tdhBw, bwPumpKw, tankVol, airQ, airP, blowerKw, nTr, hTr, trDepth, lipAbove, pipes, boxDepth, gravelD, hlCurve, expCurve,
     nO, nLat, latLen, oPerLat, latDia, manDia,

@@ -315,35 +315,50 @@ export const sed = {
   id: 'sed', title: 'Sedimentation', sub: 'Clarifier sizing, hydraulic stability, weirs & launders, settling performance', icon: 'layers', group: 'Treatment units', mod: 'sed',
   enabled: (r) => r.process.has.sed,
   fields: [
-    { k: 'type', l: 'Clarifier type', t: 'sel', o: (r) => [['auto', `From process selection (${r.sed.type})`], ['rect', 'Rectangular horizontal-flow'], ['circ', 'Circular radial-flow'], ['tube', 'Rectangular with tube settlers']] },
+    { k: 'type', l: 'Clarifier type', t: 'sel', o: (r) => [['auto', `From process selection (${r.sed.type})`], ['rect', 'Rectangular horizontal-flow'], ['circ', 'Circular radial-flow'], ['tube', 'Rectangular with tube settlers'], ['daf', 'Dissolved air flotation (DAF)']], show: (i, r) => r.sed.type !== 'hrf' },
     { k: 'nTanks', l: 'Number of tanks', step: 1, auto: true, autoVal: (r) => r.sed.N },
-    { sec: 'Loading & geometry' },
-    { k: 'sor', l: 'Surface overflow rate', u: 'm³/m²·d', crit: 'sed.sor', show: (i, r) => r.sed.type !== 'tube' },
+    { sec: 'Dissolved air flotation (D3 §5.7.8)', show: (i, r) => r.sed.type === 'daf' },
+    { k: 'dafRise', l: 'Hydraulic loading incl. recycle', u: 'm/h', step: 0.1, note: 'D3: 5–15, nominal ≤ 9', show: (i, r) => r.sed.type === 'daf' },
+    { k: 'dafRecycle', l: 'Recycle rate', u: '%', note: 'D3: 5–15 %', show: (i, r) => r.sed.type === 'daf' },
+    { k: 'dafPressure', l: 'Saturator pressure', u: 'kPa', note: 'D3: 450–620 kPa', show: (i, r) => r.sed.type === 'daf' },
+    { k: 'dafContactT', l: 'Contact-zone time', u: 's', note: 'D3: 60–240 s', show: (i, r) => r.sed.type === 'daf' },
+    { k: 'dafDepth', l: 'Tank depth', u: 'm', step: 0.1, note: 'D3: 2.5–3 m', show: (i, r) => r.sed.type === 'daf' },
+    { sec: 'Roughing filters (D3 §5.13)', show: (i, r) => r.sed.type === 'hrf' },
+    { k: 'hrfRate', l: 'Filtration rate (vertical cross-section)', u: 'm/h', step: 0.05, auto: true, autoVal: (r) => r.sed?.rate, note: 'D3 Table 5-41 by suspended solids', show: (i, r) => r.sed.type === 'hrf' },
+    { k: 'hrfHeight', l: 'Media height', u: 'm', step: 0.1, note: 'D3: 1–1.5 m', show: (i, r) => r.sed.type === 'hrf' },
+    { k: 'hrfMedia', l: 'Media grading (Table 5-40)', t: 'sel', o: [['coarse', 'Coarse 24–16 / 18–12 / 12–8 mm'], ['normal', 'Normal 18–12 / 12–8 / 8–4 mm'], ['fine', 'Fine 12–8 / 8–4 / 4–2 mm']], show: (i, r) => r.sed.type === 'hrf' },
+    { k: 'hrfRemoval', l: 'Turbidity removal', u: '%', note: 'D3: ≥ 90 %', show: (i, r) => r.sed.type === 'hrf' },
+    { sec: 'Loading & geometry', show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
+    { k: 'sor', l: 'Surface overflow rate', u: 'm³/m²·d', crit: 'sed.sor', show: (i, r) => !['tube', 'daf', 'hrf'].includes(r.sed.type) },
     { k: 'tubeLoad', l: 'Loading on tube area', u: 'm/h', crit: 'tube.loading', step: 0.25, show: (i, r) => r.sed.type === 'tube' },
-    { k: 'depth', l: 'Side water depth', u: 'm', crit: 'sed.depth', step: 0.1 },
+    { k: 'depth', l: 'Side water depth', u: 'm', crit: 'sed.depth', step: 0.1, show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
     { k: 'LW', l: 'Length : width', crit: 'sed.LW', step: 0.5, show: (i, r) => r.sed.type === 'rect' },
-    { k: 'sludgeDepth', l: 'Sludge zone depth', u: 'm', step: 0.1 },
+    { k: 'sludgeDepth', l: 'Sludge zone depth', u: 'm', step: 0.1, show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
     { sec: 'Tube settlers', show: (i, r) => r.sed.type === 'tube' },
     { k: 'tubeD', l: 'Tube size', u: 'm', step: 0.005, show: (i, r) => r.sed.type === 'tube' },
     { k: 'tubeL', l: 'Tube length', u: 'm', step: 0.1, show: (i, r) => r.sed.type === 'tube' },
     { k: 'tubeAngle', l: 'Inclination', u: '°', show: (i, r) => r.sed.type === 'tube' },
     { k: 'coverFrac', l: 'Fraction of area covered', step: 0.05, show: (i, r) => r.sed.type === 'tube' },
-    { sec: 'Inlet & outlet' },
-    { k: 'portV', l: 'Diffuser-wall port velocity', u: 'm/s', crit: 'sed.portV', step: 0.01 },
-    { k: 'portDia', l: 'Port diameter', u: 'm', step: 0.01 },
-    { k: 'weirLoad', l: 'Design weir loading', u: 'm³/m·d', crit: 'sed.weir' },
-    { k: 'launderLenFrac', l: 'Launder length / tank length', step: 0.05, show: (i, r) => r.sed.type !== 'circ' },
-    { k: 'launderWidth', l: 'Launder width', u: 'm', step: 0.05 },
-    { sec: 'Settling model' },
-    { k: 'v50', l: 'Median floc settling velocity', u: 'm/h', step: 0.1, note: 'LN: medium alum floc 3–5 m/h' },
-    { k: 'sigmaG', l: 'Geometric std. deviation', step: 0.1 },
-    { k: 'perfFactor', l: 'Non-ideal flow factor', step: 0.05, note: 'short-circuiting & turbulence' },
-    { k: 'sp', l: 'Settled-floc specific gravity (scour)', step: 0.01 },
-    { k: 'dp', l: 'Settled-floc particle size (scour)', u: 'm', step: 0.0001 },
+    { sec: 'Inlet & outlet', show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
+    { k: 'portV', l: 'Diffuser-wall port velocity', u: 'm/s', crit: 'sed.portV', step: 0.01, show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
+    { k: 'portDia', l: 'Port diameter', u: 'm', step: 0.01, show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
+    { k: 'weirLoad', l: 'Design weir loading', u: 'm³/m·d', crit: 'sed.weir', show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
+    { k: 'launderLenFrac', l: 'Launder length / tank length', step: 0.05, show: (i, r) => !['circ', 'daf', 'hrf'].includes(r.sed.type) },
+    { k: 'launderWidth', l: 'Launder width', u: 'm', step: 0.05, show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
+    { sec: 'Settling model', show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
+    { k: 'v50', l: 'Median floc settling velocity', u: 'm/h', step: 0.1, note: 'LN: medium alum floc 3–5 m/h', show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
+    { k: 'sigmaG', l: 'Geometric std. deviation', step: 0.1, show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
+    { k: 'perfFactor', l: 'Non-ideal flow factor', step: 0.05, note: 'short-circuiting & turbulence', show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
+    { k: 'sp', l: 'Settled-floc specific gravity (scour)', step: 0.01, show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
+    { k: 'dp', l: 'Settled-floc particle size (scour)', u: 'm', step: 0.0001, show: (i, r) => !['daf', 'hrf'].includes(r.sed.type) },
   ],
   render(r) {
     const s = r.sed;
-    const k = s.type === 'circ'
+    const k = s.type === 'daf'
+      ? [{ label: 'DAF units', value: `${s.N} × ${f1(s.L)} × ${f1(s.W)}`, unit: 'm', sub: `depth ${f2(s.H)} m · contact zone ${f1(s.Lc)} m`, accent: true, icon: 'layers' }, { label: 'Hydraulic loading', value: f1(s.riseAct), unit: 'm/h', sub: 'incl. recycle' }, { label: 'Detention', value: f1(s.hrtMin), unit: 'min' }, { label: 'Recycle', value: f0(s.Qr), unit: 'm³/h', sub: `${s.inputs.dafRecycle} % at ${s.inputs.dafPressure} kPa · ${f1(s.pumpKw)} kW` }, { label: 'Air dose', value: f1(s.air), unit: 'g/m³' }, { label: 'Floated-water turbidity', value: `${f1(s.settledAvg)} / ${f1(s.settledPeak)}`, unit: 'NTU', sub: 'avg / peak' }]
+      : s.type === 'hrf'
+      ? [{ label: 'Roughing filters', value: `${s.N} × ${f1(s.L)} × ${f1(s.W)}`, unit: 'm', sub: `media height ${f2(s.H)} m · filter length ${f1(s.Lf)} m`, accent: true, icon: 'layers' }, { label: 'Filtration rate', value: f2(s.rate), unit: 'm/h', sub: `one unit out ${f2(s.rateOne)} m/h` }, { label: 'Compartments', value: s.comps.map((c) => f1(c)).join(' / '), unit: 'm', sub: `media ${s.media.join(' / ')} mm` }, { label: 'Gravel', value: f0(s.Vg), unit: 'm³' }, { label: 'Effluent turbidity', value: `${f1(s.settledAvg)} / ${f1(s.settledPeak)}`, unit: 'NTU', sub: 'avg / peak · to slow sand filters' }]
+      : s.type === 'circ'
       ? [{ label: 'Clarifiers', value: `${s.N} × Ø${f1(s.D)}`, unit: 'm', accent: true, icon: 'layers' }, { label: 'SOR', value: f1(s.sorAct), unit: 'm³/m²·d' }, { label: 'Detention', value: f2(s.hrt), unit: 'h' }, { label: 'Weir loading', value: f0(s.weirLoadAct), unit: 'm³/m·d' }]
       : [
         { label: 'Tanks', value: `${s.N} × ${f1(s.L)} × ${f1(s.W)}`, unit: 'm', sub: `SWD ${f2(s.H)} m · total depth ${f2(s.totalDepth)} m`, accent: true, icon: 'layers' },
@@ -355,7 +370,7 @@ export const sed = {
       ];
     return {
       overview: [kpis(k), notes(s.notes), structureCard(r, 'sed', { height: 400 })],
-      visuals: [chartCard('Ideal-basin removal & floc settling-velocity distribution', { type: 'line', data: s.curve.map((c) => ({ v: c.v, F: c.F * 100, eta: c.eta * 100 })), x: { key: 'v', label: 'Settling velocity (m/h)', type: 'log', domain: [0.05, 50] }, y: { label: '%', min: 0, max: 100 }, series: [{ key: 'F', label: 'Cumulative fraction with velocity ≤ v' }, { key: 'eta', label: 'Removal η = v / vc', dash: true }], refs: [{ axis: 'x', value: s.vcEff, label: `vc = ${f2(s.vcEff)} m/h`, kind: 'info' }], unit: '%', height: 280 }, { sub: 'lecture: particles with v ≥ vc fully removed; others in ratio v/vc' })],
+      visuals: !s.curve.length ? [] : [chartCard('Ideal-basin removal & floc settling-velocity distribution', { type: 'line', data: s.curve.map((c) => ({ v: c.v, F: c.F * 100, eta: c.eta * 100 })), x: { key: 'v', label: 'Settling velocity (m/h)', type: 'log', domain: [0.05, 50] }, y: { label: '%', min: 0, max: 100 }, series: [{ key: 'F', label: 'Cumulative fraction with velocity ≤ v' }, { key: 'eta', label: 'Removal η = v / vc', dash: true }], refs: [{ axis: 'x', value: s.vcEff, label: `vc = ${f2(s.vcEff)} m/h`, kind: 'info' }], unit: '%', height: 280 }, { sub: 'lecture: particles with v ≥ vc fully removed; others in ratio v/vc' })],
     };
   },
 };

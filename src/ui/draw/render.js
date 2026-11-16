@@ -42,6 +42,7 @@ export const STYLE = {
   isoGround: { fill: '#e7efe0', stroke: '#9db38c', sw: 0.8 }, isoRoad: { fill: '#d9dce1', stroke: 'none' },
   isoPipe: { fill: 'none', stroke: '#2a78d6', sw: 2.4 },
   cut: { fill: 'none', stroke: 'var(--dw-dimc)', sw: 1.4, dash: '18 4 3 4' },
+  dimline: { fill: 'none', stroke: 'var(--dw-dimc)', sw: 0.7 },
 };
 const STATIC_VARS = {
   '--dw-bg': '#ffffff', '--dw-line': '#22324a', '--dw-concrete': '#c9d2de', '--dw-water': 'rgba(42,120,214,.18)', '--dw-water-line': '#2a78d6',
@@ -131,7 +132,7 @@ export function drawingSVG(dw, { statik = false, width = null, idPrefix = 'd' } 
         }
         out.push(`<${it.closed === false ? 'polyline' : 'polygon'} points="${pts}" ${style(it.cls)}/>`); break;
       }
-      case 'line': out.push(`<line x1="${X(it.x1)}" y1="${Y(it.y1)}" x2="${X(it.x2)}" y2="${Y(it.y2)}" ${style(it.cls)}${it.arrow ? ` marker-end="url(#${id(it.cls === 'dash' ? 'arrd' : 'arr')})"` : ''}/>`); break;
+      case 'line': out.push(`<line x1="${X(it.x1)}" y1="${Y(it.y1)}" x2="${X(it.x2)}" y2="${Y(it.y2)}" ${style(it.cls)}${it.arrow ? ` marker-end="url(#${id(it.cls === 'dash' || it.cls === 'dimline' ? 'arrd' : 'arr')})"` : ''}/>`); break;
       case 'circle': out.push(`<circle cx="${X(it.cx)}" cy="${Y(it.cy)}" r="${L(it.r)}" ${style(it.cls)}/>`); break;
       case 'text': {
         const rot = it.rot ? ` transform="rotate(${-it.rot} ${X(it.x)} ${Y(it.y)})"` : '';
@@ -222,7 +223,7 @@ export function mountDrawing(container, dw, { height = 380, idPrefix } = {}) {
 }
 
 // ------------------------------------------------------------------ DXF (AutoCAD R12 ASCII)
-const LAYER_OF = { concrete: 'CONCRETE', concreteSolid: 'CONCRETE', water: 'WATER', waterline: 'WATER', sand: 'MEDIA', gravel: 'MEDIA', anth: 'MEDIA', soil: 'GROUND', ground: 'GROUND', outline: 'OUTLINE', thick: 'OUTLINE', thin: 'OUTLINE', dash: 'HIDDEN', center: 'CENTER', equip: 'EQUIPMENT', equipFill: 'EQUIPMENT', pipe: 'PIPES', pipeFill: 'PIPES', baffle: 'CONCRETE', building: 'BUILDINGS', process: 'PROCESS', residual: 'RESIDUALS', site: 'BOUNDARY', road: 'ROADS', hgl: 'HGL', sludge: 'RESIDUALS', grid: 'GRID', isoTop: 'ISO', isoL: 'ISO', isoR: 'ISO', isoIn: 'ISO', isoIn2: 'ISO', isoWater: 'WATER', isoWaterBrown: 'WATER', isoWaterMid: 'WATER', isoSand: 'MEDIA', isoSludge: 'RESIDUALS', isoBTop: 'BUILDINGS', isoBL: 'BUILDINGS', isoBR: 'BUILDINGS', isoEq: 'EQUIPMENT', isoEqD: 'EQUIPMENT', isoGround: 'GROUND', isoRoad: 'ROADS', isoPipe: 'PIPES', cut: 'CENTER' };
+const LAYER_OF = { concrete: 'CONCRETE', concreteSolid: 'CONCRETE', water: 'WATER', waterline: 'WATER', sand: 'MEDIA', gravel: 'MEDIA', anth: 'MEDIA', soil: 'GROUND', ground: 'GROUND', outline: 'OUTLINE', thick: 'OUTLINE', thin: 'OUTLINE', dash: 'HIDDEN', center: 'CENTER', equip: 'EQUIPMENT', equipFill: 'EQUIPMENT', pipe: 'PIPES', pipeFill: 'PIPES', baffle: 'CONCRETE', building: 'BUILDINGS', process: 'PROCESS', residual: 'RESIDUALS', site: 'BOUNDARY', road: 'ROADS', hgl: 'HGL', sludge: 'RESIDUALS', grid: 'GRID', isoTop: 'ISO', isoL: 'ISO', isoR: 'ISO', isoIn: 'ISO', isoIn2: 'ISO', isoWater: 'WATER', isoWaterBrown: 'WATER', isoWaterMid: 'WATER', isoSand: 'MEDIA', isoSludge: 'RESIDUALS', isoBTop: 'BUILDINGS', isoBL: 'BUILDINGS', isoBR: 'BUILDINGS', isoEq: 'EQUIPMENT', isoEqD: 'EQUIPMENT', isoGround: 'GROUND', isoRoad: 'ROADS', isoPipe: 'PIPES', cut: 'CENTER', dimline: 'DIMENSIONS' };
 const LAYER_COLOR = { SHEET: 8, FRAME: 7, TITLEBLOCK: 7, CONCRETE: 1, WATER: 5, MEDIA: 42, GROUND: 32, OUTLINE: 7, HIDDEN: 9, CENTER: 1, EQUIPMENT: 30, PIPES: 4, BUILDINGS: 150, PROCESS: 140, RESIDUALS: 34, BOUNDARY: 3, ROADS: 252, HGL: 1, ISO: 8, DIMENSIONS: 2, TEXT: 7, LEVELS: 5, GRID: 253 };
 export function drawingDXF(dw, { extra } = {}) {
   const o = [];

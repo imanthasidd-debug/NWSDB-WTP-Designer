@@ -16,7 +16,8 @@ export const DEFAULTS = {
   // rate overrides – 0 = NWSDB RB 2025 rate
   rExcavation: 0, rEWS: 0, rConcrete: 0, rBlinding: 0, rFormwork: 0, rSteel: 0, rWaterbar: 0, rSand: 0, rGravel: 0, rAnthracite: 0,
   rFence: 0, rRoad: 0, rPipeFactor: 1.0,
-  steelPerM3: 110, wallT: 0.35, slabT: 0.4, roofT: 0.25, blindingT: 0.075, roadPct: 12,
+  steelPerM3: 0,          // kg/m³ reinforcement; 0 = average of the structural pre-design (Structures page), else 110
+  wallT: 0.35, slabT: 0.4, roofT: 0.25, blindingT: 0.075, roadPct: 12,
   // pipes & M&E (RB 2025 Section A tables / graphs)
   origin: 'asian',        // DI / HDPE pipes: asian | nonasian | local (HDPE)
   ewsPct: 25, dewPct: 25, // allowance of the earthwork-support and dewatering basic costs (pipe tables, note 4)
@@ -63,6 +64,8 @@ function rcTank(L, W, H, o, extraWalls = 0, covered = false) {
 
 export function compute(inp, ctx) {
   const d = { ...DEFAULTS, ...inp, salaries: { ...DEFAULTS.salaries, ...(inp?.salaries || {}) } };
+  const steelAuto = !(d.steelPerM3 > 0);
+  if (steelAuto) d.steelPerM3 = Math.round(ctx.res.structure?.kgM3 > 40 ? ctx.res.structure.kgM3 : 110);
   const calc = new Calc(ctx.crit);
   const r = ctx.res;
   const setup = ctx.inp.setup || {};
@@ -163,7 +166,9 @@ export function compute(inp, ctx) {
       addME('Clarifier scraper bridges – not in RB 2025, indicative', sed.N, 'nr', d.scraperCirc, 'Process', 'indicative');
     } else {
       struct('Sedimentation tanks', rcTank(sed.L, sed.N * sed.W, sed.totalDepth, d, (sed.N - 1) * sed.L));
-      addME('Sludge scrapers (chain & flight) – not in RB 2025, indicative', sed.N, 'nr', d.scraperRect, 'Process', 'indicative');
+      if (sed.type === 'daf') { addME('DAF saturators, recycle pumps, compressors & nozzles – not in RB 2025, indicative', 1, 'lot', 6e6 + 9000 * Q / 10, 'Process', 'indicative'); addME('DAF float skimmers – not in RB 2025, indicative', sed.N, 'nr', d.scraperRect * 0.6, 'Process', 'indicative'); }
+      else if (sed.type === 'hrf') addCivil('Roughing-filter graded gravel (B-FM/01)', sed.Vg, 'm³', R.gravel, 'Sedimentation tanks', rref('gravel', d.rGravel));
+      else addME('Sludge scrapers (chain & flight) – not in RB 2025, indicative', sed.N, 'nr', d.scraperRect, 'Process', 'indicative');
       addCivil('Launders & V-notch weir plates – indicative', sed.N * sed.nL * sed.Llaund, 'm', d.launderPerM, 'Sedimentation tanks', 'indicative');
       if (sed.type === 'tube') addME('Tube-settler modules – not in RB 2025, indicative', sed.N * sed.Ac, 'm²', d.tubePerM2, 'Process', 'indicative');
     }
@@ -286,7 +291,7 @@ export function compute(inp, ctx) {
     fitter: Q > 30000 ? 3 : 2, labourer: 4 + Math.round(Q / 10000) + (r.filt?.type === 'ssf' ? 2 : 0), security: 3,
   };
   const staffCost = Object.entries(staff).reduce((a, [k, nn]) => a + nn * d.salaries[k] * 13, 0);
-  const chemBase = (co ? co.costs.coag + co.costs.lime + co.costs.soda + co.costs.poly + (co.costs.pac || 0) : 0) + (r.stab?.cost || 0) + (dis?.annualCost || 0);
+  const chemBase = (co ? co.costs.coag + co.costs.lime + co.costs.soda + co.costs.poly + (co.costs.pac || 0) : 0) + (r.stab?.cost || 0) + (dis?.annualCost || 0) + (r.special?.annualCost || 0);
   const chem = chemBase * (1 + d.chemTransportPct / 100);
   const power = en ? en.annualBill + (en.fuelCost || 0) : 0;
   const maint = ((meTot * d.maintMEPct) / 100 + (civilTot * d.maintCivilPct) / 100) * (works / Math.max(boqWorks, 1));

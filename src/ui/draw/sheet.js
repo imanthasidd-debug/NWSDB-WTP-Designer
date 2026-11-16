@@ -34,7 +34,8 @@ export function sheetMeta(project, extra = {}) {
   return {
     project: s.name || 'Water Treatment Plant', code: s.code || 'WTP', client: s.client || 'National Water Supply & Drainage Board', rsc: s.rsc || '',
     location: [s.town, s.district ? s.district + ' District' : ''].filter(Boolean).join(', '), designer: s.designer || '', checker: s.checker || '', approver: s.approver || '',
-    date: s.date || new Date().toISOString().slice(0, 10), rev: s.revision || 'A', sheet: 1, sheets: 1, ...extra,
+    date: s.date || new Date().toISOString().slice(0, 10), rev: s.revision || 'A', drawn: s.drawnBy || '', status: s.drawingStatus || 'Preliminary design', revDesc: s.revDesc || 'Issued for design review',
+    revisions: (s.revisions || []).filter((x) => x && (x.rev || x.desc)).slice(-1), sheet: 1, sheets: 1, ...extra,
   };
 }
 
@@ -150,8 +151,10 @@ export function sheetSVG(dw, meta, { scale: forceScale, nts = false, inner } = {
   for (const [k, v, w] of cols) { out.push(box(cx, TB.y0 + 45.5, w, 11)); out.push(lab(cx + 1.5, TB.y0 + 48.2, k)); out.push(val(cx + 1.5, TB.y0 + 53.6, v, k === 'DRAWING No.' ? 2.9 : 2.7, true)); cx += w; }
   // revision + credit
   out.push(lab(L + 2, TB.y0 + 59.3, 'REVISION'));
-  out.push(val(L + 17, TB.y0 + 59.6, `${meta.rev} – ${meta.date} – Issued for design review`, 2.1));
-  out.push(`<text x="${R - 2}" y="${TB.y1 - 1.6}" font-size="2" text-anchor="end" fill="#0b4a92" font-weight="700">NWSDB WTP Designer v1.5</text>`);
+  out.push(val(L + 17, TB.y0 + 59.6, `${meta.rev} – ${meta.date} – ${meta.revDesc || ''}`.slice(0, 70), 2.1));
+  (meta.revisions || []).forEach((rv, i) => out.push(val(L + 17, TB.y0 + 62.4 + i * 2.5, `${rv.rev || ''} – ${rv.date || ''} – ${rv.desc || ''}`.slice(0, 70), 1.8)));
+  out.push(`<rect x="${R - 52}" y="${TB.y0 + 57.3}" width="50" height="4.6" fill="none" stroke="#b3001b" stroke-width="0.4"/><text x="${R - 27}" y="${TB.y0 + 60.6}" font-size="2.6" font-weight="700" text-anchor="middle" fill="#b3001b">${esc(String(meta.status || '').toUpperCase())}</text>`);
+  out.push(`<text x="${R - 2}" y="${TB.y1 - 1.6}" font-size="2" text-anchor="end" fill="#0b4a92" font-weight="700">NWSDB WTP Designer v1.6</text>`);
   out.push('</svg>');
   return { svg: out.join(''), scale: isoNts ? null : scale, code: drawingCode(dw), number: drawingNumber({ code: meta.code }, dw) };
 }
@@ -194,8 +197,9 @@ export function sheetDXFItems(dw, meta) {
   [['DESIGNED', meta.designer], ['DRAWN', meta.drawn || 'WTP Designer'], ['CHECKED', meta.checker], ['APPROVED', meta.approver]].forEach(([kk, v], i) => { tx(L + (i * W) / 4 + 1.5, TB.y0 + 38.6, 1.9, kk); tx(L + (i * W) / 4 + 1.5, TB.y0 + 43, 2.4, (v || '').slice(0, 22)); });
   cx = L;
   for (const [kk, v, w] of [['DRAWING No.', drawingNumber({ code: meta.code }, dw), 64], ['REV', meta.rev, 12], ['SCALE (A3)', dw.nts ? 'NTS' : `1:${scale}`, 24], ['SHEET', `${meta.sheet} of ${meta.sheets}`, 22], ['DATE', meta.date, W - 122]]) { tx(cx + 1.5, TB.y0 + 48.2, 1.9, kk); tx(cx + 1.5, TB.y0 + 53.6, 2.7, v); cx += w; }
-  tx(L + 2, TB.y0 + 59.6, 2.1, `REVISION ${meta.rev} - ${meta.date} - Issued for design review`);
-  tx(TB.x1 - 2, TB.y1 - 1.6, 2, 'NWSDB WTP Designer v1.5', 2);
+  tx(L + 2, TB.y0 + 59.6, 2.1, `REVISION ${meta.rev} - ${meta.date} - ${meta.revDesc || ''}`.slice(0, 80));
+  tx(TB.x1 - 27, TB.y0 + 60.6, 2.6, String(meta.status || '').toUpperCase(), 1);
+  tx(TB.x1 - 2, TB.y1 - 1.6, 2, 'NWSDB WTP Designer v1.6', 2);
   tx(NB.x0 + 3, NB.y0 + 5, 3, 'NOTES');
   NOTES.forEach((n, i) => tx(NB.x0 + 3, NB.y0 + 10 + i * 7.5, 2.2, `${i + 1}. ${n.slice(0, 95)}`));
   tx((DA.x0 + DA.x1) / 2, DA.y1 - 9, 4.4, `DRAWING ${drawingCode(dw)}: ${(dw.title || '').toUpperCase()}`, 1);

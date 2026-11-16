@@ -131,6 +131,45 @@ ok(rd.d2.total >= 40 && rd.d2.fail === 0, `D2 register for default project (${rd
     ok(g.every((x) => x.views.every((v) => Number.isFinite(v.dw.bounds.x0) && v.dw.code)), `drawings for ${JSON.stringify(proc)}: ${g.flatMap((x) => x.views).length} views`);
   }
 }
+// ---- v1.6: new units, buildings, structures, hydraulics and drawings
+{
+  const { drawingGroups } = await import('../src/ui/draw/views.js');
+  const run = (cap, proc = {}, extra = () => {}) => { const p = newProject(); if (cap) Object.assign(p.inputs.demand, { basis: 'capacity', capacity: cap }); Object.assign(p.inputs.process, proc); extra(p); return computeAll(p); };
+  const fin = (g) => g.flatMap((x) => x.views).every((v) => [v.dw.bounds.x0, v.dw.bounds.x1, v.dw.bounds.y0, v.dw.bounds.y1].every(Number.isFinite));
+  // DAF
+  { const r = run(20000, { clarifier: 'daf' }, (p) => { p.inputs.setup.sourceType = 'reservoir'; p.inputs.quality.values.turb = [8, 40]; });
+    ok(!Object.keys(r.errors).length && r.sed.type === 'daf' && r.sed.riseAct <= 9.01 && r.sed.N >= 2, `DAF: ${r.sed.N} units at ${r.sed.riseAct?.toFixed(1)} m/h (D3 §5.7.8 nominal ≤ 9)`);
+    ok(r.sed.checks.every((c) => c.status !== 'fail') && fin(drawingGroups(r)), 'DAF: no failing checks, drawings finite'); }
+  // roughing filters ahead of slow sand filters
+  { const r = run(2500, { route: 'ssf', presed: 'yes', presedType: 'roughing' });
+    ok(!Object.keys(r.errors).length && r.sed.type === 'hrf' && r.sed.rate >= 0.3 && r.sed.rate <= 1.5 && r.sed.N >= 2, `roughing filters: ${r.sed.N} units at ${r.sed.rate?.toFixed(2)} m/h (D3 §5.13: 0.3–1.5)`);
+    ok(fin(drawingGroups(r)), 'roughing filters: drawings finite'); }
+  // Parshall flume and flow split
+  { const r = run(42000, {}, (p) => { p.inputs.hyd.measure = 'parshall'; });
+    ok(r.hyd.meas.type === 'parshall' && r.hyd.meas.pf.Qmax >= 42000 && r.hyd.meas.hMax > 0.2 && r.hyd.meas.hMax < 1.2, `Parshall flume W ${r.hyd.meas.pf.W} mm, Ha ${r.hyd.meas.hMax.toFixed(2)} m (D3 Annex C.1)`);
+    ok(r.hyd.split && r.hyd.split.n === 2 && r.hyd.split.err <= 6, `flow split weirs: ${r.hyd.split.err.toFixed(1)} % error for 5 mm (D3 §9.5)`); }
+  // buildings
+  { const b = rd.buildings;
+    ok(b.chem && b.chem.rooms.length >= 4 && b.chem.bundV >= 1.1 * b.chem.tankV - 1e-9, 'chemical house: rooms and 110 % bund (D3 §6.1.4)');
+    ok(b.chlor && b.chlorGas && b.chlorGas.onLine >= Math.ceil(rd.dis.kgD / 180) && Math.abs(b.chlorGas.naoh - 1.13 * 900 * 1.1) < 1e-6, 'chlorination building: ≤ 180 kg/d per drum, 1.13 kg NaOH per kg Cl₂ (D3 §6.5)'); }
+  // special treatment
+  { const r = run(0, {}, (p) => { p.inputs.quality.values.fe = [0.1, 0.2]; p.inputs.quality.values.mn = [0.01, 0.02]; });
+    ok(r.special.enabled === false && r.special.annualCost === 0, 'special treatment not triggered when Fe / Mn / F are within SLS 614');
+    const r2 = run(0, {}, (p) => { p.inputs.quality.values.f = [1.8, 2.4]; p.inputs.quality.values.mn = [0.2, 0.5]; });
+    ok(r2.special.fluoride && r2.special.fluoride.x > 0 && r2.special.fluoride.x <= 1 && r2.special.feMn && ['cl2', 'kmno4'].includes(r2.special.feMn.ox), `fluoride ${r2.special.fluoride.method} on ${(r2.special.fluoride.x * 100).toFixed(0)} % of the flow; Mn by ${r2.special.feMn.ox} (D3 §7.1–7.2)`); }
+  // structure
+  { const s = rd.structure;
+    ok(s.list.length >= 5 && s.list.every((x) => x.wall.t >= 0.25 && x.wall.bars && x.wall.bars.a >= x.wall.As - 1e-6), 'structural pre-design: every wall has bars ≥ required steel');
+    ok(s.kgM3 > 60 && s.kgM3 < 220 && rd.cost.inputs.steelPerM3 === Math.round(s.kgM3), `average steel ${s.kgM3.toFixed(0)} kg/m³ feeds the BOQ`);
+    const tall = s.list.find((x) => x.key === 'sed'), low = s.list.find((x) => x.key === 'floc'); ok(tall.wall.t >= low.wall.t, 'taller wall is not thinner'); }
+  // staging and new drawings
+  ok(rd.layout.phasing.length >= 5 && rd.layout.phasing.every((x) => x.s1 >= 1 && x.s1 <= x.ult), 'staged construction table (D3 §9.1)');
+  { const g = drawingGroups(rd); const keys = g.map((x) => x.key);
+    ok(['chem', 'chlor', 'rebar'].every((k) => keys.includes(k)) && g.find((x) => x.key === 'site').views.length === 3, 'drawings: chemical house, chlorination building, reinforcement, site levels');
+    const iso = g.flatMap((x) => x.views).filter((v) => v.dw.scene3d);
+    ok(iso.length >= 6 && iso.every((v) => v.dw.scene3d.faces.length > 4 && v.dw.scene3d.dims.length >= 2), `3D scenes carry meshes and dimensions (${iso.length} scenes)`); }
+  for (const cap of [1000, 5000, 20000, 60000, 150000]) for (const proc of [{}, { clarifier: 'daf' }, { clarifier: 'circ' }]) { const r = run(cap, proc); ok(!Object.keys(r.errors).length && fin(drawingGroups(r)), `v1.6 modules at ${cap} m³/d ${JSON.stringify(proc)}: no errors`); }
+}
 // ---- NWSDB Rate Book 2025 (default estimate)
 {
   const c = rd.cost, e = c.est;

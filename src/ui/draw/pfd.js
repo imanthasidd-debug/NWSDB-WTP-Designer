@@ -327,7 +327,7 @@ export function pfdSVG(r, { width = 1100, interactive = true, statik = false } =
     out.push(`<g class="pf-u" ${interactive ? `data-page="${PAGE_OF[u.key] || ''}"` : ''} transform="translate(${u.x},${u.y})"><title>${tip}</title>`);
     out.push(`<rect class="pf-hl" x="-6" y="-6" width="${CW + 12}" height="${CH + 40}" rx="9" fill="none" stroke="${P.prim}" stroke-width="1.5"/>`);
     out.push(u.flip ? `<g transform="translate(${CW},0) scale(-1,1)">${draw}</g>` : draw);
-    out.push(`<text x="${CW / 2}" y="${CH + 15}" text-anchor="middle" font-size="11" font-weight="700" fill="${P.text}">${u.key === 'presed' && pr.ssf ? 'Plain sedimentation' : u.key === 'filt' && pr.ssf ? 'Slow sand filters' : NAME[u.key]}</text>`);
+    out.push(`<text x="${CW / 2}" y="${CH + 15}" text-anchor="middle" font-size="11" font-weight="700" fill="${P.text}">${u.key === 'presed' && pr.ssf ? (r.sed?.type === 'hrf' ? 'Roughing filters' : 'Plain sedimentation') : u.key === 'sed' && r.sed?.type === 'daf' ? 'Flotation (DAF)' : u.key === 'filt' && pr.ssf ? 'Slow sand filters' : NAME[u.key]}</text>`);
     out.push(`<text x="${CW / 2}" y="${CH + 27}" text-anchor="middle" font-size="9.2" fill="${P.muted}">${subText(u.key, r)}</text>`);
     if (mod && u.key !== 'supply') {
       const c = stt === 'fail' ? P.fail : stt === 'warn' ? P.warn : P.ok;

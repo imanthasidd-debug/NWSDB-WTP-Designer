@@ -39,7 +39,7 @@ export function compute(inp, ctx) {
   const sed = r.sed;
   if (sed?.enabled) {
     if (sed.type === 'circ') add('sed', 'Circular clarifiers', sed.D + 2, sed.N * (sed.D + 3), 'process', { circ: true, n: sed.N, D: sed.D });
-    else add('sed', sed.type === 'tube' ? 'Tube-settler clarifiers' : 'Sedimentation tanks', sed.L + 3, sed.N * (sed.W + 0.3) + 0.3, 'process', { n: sed.N });
+    else add('sed', sed.type === 'tube' ? 'Tube-settler clarifiers' : sed.type === 'daf' ? 'DAF units' : sed.type === 'hrf' ? 'Roughing filters' : 'Sedimentation tanks', sed.L + 3, sed.N * (sed.W + 0.3) + 0.3, 'process', { n: sed.N });
   }
   const fi = r.filt;
   if (fi?.type === 'ssf') add('filt', 'Slow sand filters', fi.Lb + 2, fi.N * (fi.B + 0.4) + 1, 'process', { n: fi.N });
@@ -55,8 +55,11 @@ export function compute(inp, ctx) {
   // ---- buildings
   const co = r.coag;
   const chemArea = co ? Math.max(120, co.storeAreaTotal + co.inputs.nTanks * co.tankSide * co.tankSide * 2 + 60) : 60;
-  add('chem', 'Chemical house (store, dosing, lime)', Math.sqrt(chemArea * 1.6), Math.sqrt(chemArea / 1.6), 'building');
-  add('chlor', 'Chlorination building', Math.sqrt(dis?.buildingArea || 60) * 1.3, Math.sqrt(dis?.buildingArea || 60) / 1.3, 'building');
+  const bl = r.buildings;
+  if (bl?.chem) add('chem', 'Chemical house (store, dosing, lime)', bl.chem.L, bl.chem.W, 'building');
+  else add('chem', 'Chemical house (store, dosing, lime)', Math.sqrt(chemArea * 1.6), Math.sqrt(chemArea / 1.6), 'building');
+  if (bl?.chlor) add('chlor', 'Chlorination building', bl.chlor.L, bl.chlor.W, 'building');
+  else add('chlor', 'Chlorination building', Math.sqrt(dis?.buildingArea || 60) * 1.3, Math.sqrt(dis?.buildingArea || 60) / 1.3, 'building');
   add('admin', 'Administration & laboratory', 20, 14, 'building');
   add('sub', 'Substation & standby generator', 14, 9, 'building');
   add('work', 'Workshop & stores', 15, 10, 'building');
@@ -140,7 +143,26 @@ export function compute(inp, ctx) {
   calc.flag('Laboratory facilities', true, `${LAB_EQUIPMENT.length} equipment items (Table 9-3)`, 'central, vibration-free, separate HVAC', 'Process laboratory plus full laboratory for large plants', 'info', 'NWSDB D3 §9.7.2');
   const checklist = SITE_CHECKLIST;
   const d3checklist = LAYOUT_CHECKLIST;
+  // ---- staged construction (D3 §9.1: 5–10 year stages; §9.6 provisions for expansion)
+  calc.section('Staged construction and provision for expansion (NWSDB D3 §9.1, §9.6)');
+  const dm = r.demand;
+  const ratio = Math.min(1, Math.max(0.1, (dm.stageCap || dm.Qd) / dm.Qd));
+  const stg = (nUlt, min = 2) => Math.min(nUlt, Math.max(Math.min(min, nUlt), Math.ceil(nUlt * ratio - 1e-9)));
+  const phasing = [];
+  const ph = (unit, ult, s1, note = '') => phasing.push({ unit, ult, s1, later: ult - s1, note });
+  ph('Treatment streams (mixing, flocculation)', dm.nTrains, stg(dm.nTrains));
+  if (sed?.enabled) ph(sed.type === 'circ' ? 'Clarifiers' : sed.type === 'daf' ? 'Flotation tanks' : sed.type === 'hrf' ? 'Roughing filters' : 'Sedimentation tanks', sed.N, stg(sed.N));
+  if (fi) ph(fi.type === 'ssf' ? 'Slow sand filter beds' : 'Rapid gravity filters', fi.N, stg(fi.N, fi.type === 'ssf' ? 2 : 4), 'same size as Stage I; space left at the end of the row (D3 §5.9.2)');
+  if (st) ph('Clear-water reservoir compartments', st.inputs.cwrCompartments, stg(st.inputs.cwrCompartments, 1));
+  if (st?.pumps) ph('Treated-water pump sets (duty + standby)', st.pumps.nDuty + st.pumps.nStandby, Math.max(2, Math.ceil(st.pumps.nDuty * ratio) + st.pumps.nStandby), 'pump house and pipework built for the ultimate number');
+  if (sl?.thick) ph('Sludge thickeners', sl.thick.n, stg(sl.thick.n, 1));
+  if (sl?.nBeds) ph('Sludge drying beds', sl.nBeds, stg(sl.nBeds, 2));
+  calc.step('Stage I capacity / ultimate capacity', 'Q_I / Q_{ult}', `${Math.round(dm.stageCap || dm.Qd)}/${Math.round(dm.Qd)}`, ratio * 100, '%', 'NWSDB D3 §9.1 – staged construction in 5–10 year stages; D2 §2.4 two 10-year stages');
+  calc.text(ratio < 0.999 ? `Stage I builds ${phasing.map((x) => `${x.s1} of ${x.ult} ${x.unit.toLowerCase()}`).join('; ')}. Structures that cannot be extended economically (intake well, inlet works, pump house, chemical house, pipe gallery, channels and the hydraulic profile) are built for the ultimate flow.` : 'Stage I and ultimate capacity are the same – the whole plant is built in one stage; the land reserve below still allows a future extension.');
+  calc.flag('Space reserved for the next stage', d.expansion >= 20, `${d.expansion} % of the site`, '≥ 20 %', '', 'info', 'NWSDB D3 §9.6.1; D2 §2.3');
+  calc.text('Provisions for expansion (NWSDB D3 §9.6.1–9.6.2): blind flanges and valved tees on headers; knock-out panels and reinforcement starter bars in end walls; stop-log grooves in channels; channels, galleries and cable ducts sized for the ultimate flow; rock excavation for later units done in Stage I; utility corridors kept clear.');
   return {
+    phasing, stageRatio: ratio,
     inputs: d, items, checklist, d3checklist, siteMinHa: aMin, lab: LAB_EQUIPMENT, Cw, Qdr, drainB: ceilTo(bd, 0.05), siteW: ceilTo(siteW, 1), siteH: ceilTo(siteH, 1), builtArea, siteArea, landArea,
     ha: landArea / 1e4, acres: landArea / ACRE_M2, perches: landArea / PERCH_M2,
     ...calc.result(),

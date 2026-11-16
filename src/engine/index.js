@@ -24,6 +24,9 @@ import * as layout from './layout.js';
 import * as energy from './energy.js';
 import * as cost from './cost.js';
 import * as compliance from './compliance.js';
+import * as buildings from './buildings.js';
+import * as special from './special.js';
+import * as structure from './structure.js';
 import { designChain } from './chain.js';
 
 export const SETUP_DEFAULTS = {
@@ -43,13 +46,17 @@ export const SETUP_DEFAULTS = {
   approver: '',
   date: new Date().toISOString().slice(0, 10),
   revision: 'A',
+  drawnBy: '',
+  drawingStatus: 'Preliminary design',   // shown in the drawing title block
+  revDesc: 'Issued for design review',
+  revisions: [],                             // earlier revisions [{rev, date, desc}] listed in the title block
   notes: '',
 };
 
 export const MODULES = [
   ['demand', demand], ['quality', quality], ['source', source], ['process', process], ['coag', coag], ['aeration', aeration],
   ['rapidmix', rapidmix], ['floc', floc], ['sed', sed], ['filt', filt], ['stab', stab], ['dis', dis],
-  ['sludge', sludge], ['hyd', hyd], ['storage', storage], ['intake', intake], ['layout', layout],
+  ['special', special], ['buildings', buildings], ['sludge', sludge], ['hyd', hyd], ['storage', storage], ['intake', intake], ['layout', layout], ['structure', structure],
   ['energy', energy], ['cost', cost], ['compliance', compliance],
 ];
 

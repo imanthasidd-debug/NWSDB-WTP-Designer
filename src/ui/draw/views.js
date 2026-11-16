@@ -3,6 +3,7 @@
 import { fmt } from '../../core/util.js';
 import { Scene } from './iso.js';
 import * as U from './units.js';
+import { chemHousePlan, chlorPlan, rebarDetail, siteLevelsPlan } from './extra.js';
 import { Dm, Ln, Lv, R, T, auto } from './units.js';
 
 const f2 = (v) => fmt(v, 2), f1 = (v) => fmt(v, 1), f0 = (v) => fmt(v, 0);
@@ -85,9 +86,8 @@ function intake3D(ik) {
   if (!ik || !ik.Dw) return null;
   const d = ik.inputs, r = ik.Dw / 2 + 0.5, s = new Scene();
   const gl = ik.deck - 1.5, zr = d.NWL - gl, up = ik.deck + 0.35 - gl; // ground = 0
-  const P3 = (x, y, z) => [(x - y) * Math.cos(Math.PI / 6), (x + y) * 0.5 + z];
-  s.under.push({ t: 'poly', pts: [P3(-r - 18, -r - 7, zr), P3(-r, -r - 7, zr), P3(-r, r + 7, zr), P3(-r - 18, r + 7, zr)], cls: 'isoWater' });
-  s.under.push({ t: 'poly', pts: [P3(-r, -r - 7, zr), P3(-r, r + 7, zr), P3(-r, r + 7, 0), P3(-r, -r - 7, 0)], cls: 'isoSludge' });
+  s.plane([[-r - 18, -r - 7, zr], [-r, -r - 7, zr], [-r, r + 7, zr], [-r - 18, r + 7, zr]], 'isoWater', 'river');
+  s.plane([[-r, -r - 7, zr], [-r, r + 7, zr], [-r, r + 7, 0], [-r, -r - 7, 0]], 'isoSludge', 'bank');
   s.ground(-r, -r - 7, 2 * r + 14, 2 * r + 14);
   s.cyl(0, 0, zr - 0.2, r, up - zr + 0.2);
   s.building(-r * 0.8, -r * 0.8, up, r * 1.6, r * 1.6, 4);
@@ -95,6 +95,9 @@ function intake3D(ik) {
   s.leader(0, 0, up + 6.2, 'Intake well & pump house', 1.5, { bold: true, size: 0.7 });
   s.label(-r - 10, 0, zr + 0.2, `River (NWL ${f2(d.NWL)})`, { size: 0.65 });
   s.label(r + 9, -2.5, 0.3, `Rising main DN${ik.pumps.dn}`, { size: 0.6 });
+  s.dim([-r, -r, 0], [r, -r, 0], [0, -3, 0], `Ø ${f2(ik.Dw + 1)} m outside`);
+  s.dim([r, -r, zr - 0.2], [r, -r, up], [2.5, -2.5, 0], `${f2(up - zr + 0.2)} m above river level`);
+  s.dim([-r * 0.8, -r * 0.8, up], [-r * 0.8, -r * 0.8, up + 4], [-1.5, -1.5, 0]);
   return s.render('Intake well – 3D view');
 }
 
@@ -242,6 +245,7 @@ function floc3D(fl) {
       });
       const Wt = fl.stages.length * (W + t) - t;
       s.tank(0, k * (Wt + 2 * t), 0, Lmax + 2 * t, Wt + 2 * t, H + fb + t, { t, wl: H + t, water: 'isoWaterBrown', inner: inner.map((b) => ({ ...b, z: b.z + t })) });
+      if (k === 0) s.dimsBox(0, 0, 0, Lmax + 2 * t, Wt + 2 * t, H + fb + t);
     } else {
       let x = 0;
       fl.stages.forEach((q, i) => {
@@ -251,6 +255,7 @@ function floc3D(fl) {
         if (i < fl.stages.length - 1) { inner.push({ x, y: 0, z: t, w: t, d: W, h: H + fb }); x += t; }
       });
       s.tank(0, k * (W + 2 * t), 0, Lt + 2 * t, W + 2 * t, H + fb + t, { t, wl: H + t, water: 'isoWaterBrown', inner });
+      if (k === 0) s.dimsBox(0, 0, 0, Lt + 2 * t, W + 2 * t, H + fb + t);
     }
   }
   return s.render(`Flocculator – 3D view (${n} train${n > 1 ? 's' : ''}${fl.nT > 4 ? ' of ' + fl.nT : ''})`);
@@ -302,6 +307,7 @@ function sed3D(sd) {
   if (sd.type === 'circ') {
     const n = Math.min(sd.N, 4), r = sd.D / 2 + t;
     for (let k = 0; k < n; k++) { s.cyl(k * (sd.D + 3), 0, 0, r, sd.H + fb, { wl: sd.H, t, water: 'isoWaterMid' }); s.box(k * (sd.D + 3) - r, -0.4, sd.H + fb, 2 * r, 0.8, 0.25, 'equip'); }
+    s.dim([-r, -r, 0], [r, -r, 0], [0, -2, 0], `Ø ${f2(sd.D)} m`); s.dim([r, -r, 0], [r, -r, sd.H + fb], [1.5, -1.5, 0]);
     return s.render(`Circular clarifiers – 3D view (${n}${sd.N > n ? ' of ' + sd.N : ''})`);
   }
   const n = Math.min(sd.N, 4), H = sd.H + sd.inputs.sludgeDepth;
@@ -311,7 +317,105 @@ function sed3D(sd) {
     s.tank(0, k * (sd.W + 2 * t), 0, sd.L + 2 * t, sd.W + 2 * t, H + fb + t, { t, wl: H + t, water: 'isoWaterMid', inner: inner.map((b) => ({ ...b, z: b.z + t })) });
   }
   s.tank(-2.1, 0, H * 0.4, 2.1, n * (sd.W + 2 * t), H * 0.6 + fb + t, { t: 0.3, wl: H * 0.6 + t, water: 'isoWaterBrown' });
+  s.dim([0, 0, 0], [sd.L + 2 * t, 0, 0], [0, -3, 0], `L ${f2(sd.L)} m (internal)`); s.dim([-2.1, 0, 0], [-2.1, sd.W + 2 * t, 0], [-3, 0, 0], `W ${f2(sd.W)} m per tank`); s.dim([sd.L + 2 * t, 0, 0], [sd.L + 2 * t, 0, H + fb + t], [2, -2, 0]);
+  if (n > 1) s.dim([sd.L + 2 * t, 0, 0], [sd.L + 2 * t, n * (sd.W + 2 * t), 0], [3.5, 0, 0], `${n} tanks – ${f2(n * (sd.W + 2 * t))} m`);
   return s.render(`Sedimentation tanks – 3D view (${n}${sd.N > n ? ' of ' + sd.N : ''} tanks)`);
+}
+
+// ================================================================== DAF / ROUGHING FILTERS
+export function dafPlan(sd) {
+  if (!sd || sd.type !== 'daf') return null;
+  const it = [], t = 0.3, N = Math.min(sd.N, 6), W = sd.W, L = sd.L, Lc = sd.Lc;
+  for (let k = 0; k < N; k++) {
+    const y0 = k * (W + t);
+    it.push(R(0, y0, Lc, W, 'process'), R(Lc + 0.2, y0, L - Lc - 0.2, W, 'water'), R(Lc, y0, 0.2, W, 'baffle'));
+    it.push(R(L - 0.5, y0 + 0.2, 0.5, W - 0.4, 'equipFill'), R(Lc + 0.6, y0 + 0.15, 0.25, W - 0.3, 'equip'));
+    it.push(Ln(-2.2, y0 + W / 2, -t, y0 + W / 2, 'pipe', { arrow: true }), Ln(Lc + 1.2, y0 + W / 2, L - 1, y0 + W / 2, 'waterline', { arrow: true }));
+    it.push(T(Lc + (L - Lc) / 2, y0 + W * 0.72, `DAF ${k + 1}`, { anchor: 'middle', bold: true, size: 0.9 }));
+    if (k < N - 1) it.push(R(-t, y0 + W, L + 2 * t, t, 'concrete'));
+  }
+  const Wt = N * W + (N - 1) * t;
+  it.push(R(-t, -t, L + 2 * t, t, 'concrete'), R(-t, Wt, L + 2 * t, t, 'concrete'), R(-t, 0, t, Wt, 'concrete'), R(L, 0, t, Wt, 'concrete'));
+  it.push(R(L + t, 0, 1.2, Wt, 'outline'), T(L + t + 0.6, Wt + 0.6, 'Float (sludge) channel', { anchor: 'middle', size: 0.7 }));
+  it.push(T(Lc / 2, Wt + 0.6, 'Contact zone', { anchor: 'middle', size: 0.7 }), T(Lc + 0.7, -t - 0.7, 'Travelling float skimmer', { size: 0.7 }));
+  it.push(Ln(-2.2, -t - 1.6, Lc / 2, -t - 1.6, 'equip'), Ln(Lc / 2, -t - 1.6, Lc / 2, 0.3, 'equip', { arrow: true }), T(-2.2, -t - 1.3, `Saturated recycle ${f0(sd.Qr)} m³/h at ${sd.inputs.dafPressure} kPa`, { size: 0.7, color: 'var(--dw-equip)' }));
+  it.push(Dm(0, Wt + t, L, Wt + t, 1.6, `${f2(L)} m (contact ${f2(Lc)} + separation ${f2(sd.Ls)})`), Dm(L + t + 1.2, 0, L + t + 1.2, W, -1.0, `W = ${f2(W)} m`));
+  it.push(...cut(-3, W * 0.3, L + t + 2.4, W * 0.3, 'A', L / 30));
+  return auto(`Dissolved air flotation – plan (${sd.N} units${sd.N > N ? ', ' + N + ' shown' : ''})`, it);
+}
+export function dafSection(sd) {
+  if (!sd || sd.type !== 'daf') return null;
+  const it = [], t = 0.3, L = sd.L, Lc = sd.Lc, H = sd.H, fb = 0.5;
+  it.push(R(-t, -t, L + 2 * t + 1.2, t, 'concrete'), R(-t, 0, t, H + fb, 'concrete'), R(L, 0, t, H - 0.05, 'concrete'), R(L + t + 1.2, -t, t, H + fb + t, 'concrete'));
+  it.push(R(0, 0, L, H, 'water'), R(0, H - 0.06, L, 0.06, 'sludge'), Ln(0, H, L, H, 'waterline'));
+  it.push(Pg([[Lc, 0], [Lc + 0.2, 0], [Lc + 0.2 + H * 0.25, H * 0.72], [Lc + H * 0.25, H * 0.72]], 'baffle'));
+  it.push(R(L - 0.7, 0.5, 0.15, H - 0.5 + 0.2, 'baffle'), Ln(L - 0.45, 0.25, L - 0.45, H - 0.25, 'waterline', { arrow: true }), R(L - 0.55, H - 0.3, 0.55, 0.05, 'outline'));
+  for (let i = 0; i < 14; i++) it.push(C(Lc * 0.5 + (i % 3) * 0.12 - 0.1 + (i > 6 ? Lc * 0.6 + i * 0.25 : 0), 0.25 + (i * H * 0.62) / 14, 0.035, 'thin'));
+  it.push(Ln(-2.4, 0.35, Lc * 0.5, 0.35, 'equip', { arrow: true }), T(-2.4, 0.6, 'Saturated recycle (nozzles)', { size: 0.7, color: 'var(--dw-equip)' }));
+  it.push(Ln(-2.4, H * 0.6, -t, H * 0.6, 'pipe', { arrow: true }), T(-2.4, H * 0.6 + 0.25, 'Flocculated water', { size: 0.7 }));
+  it.push(R(Lc + 0.8, H + 0.12, 1.4, 0.25, 'equipFill'), Ln(Lc + 1.0, H + 0.12, Lc + 1.0, H - 0.05, 'equip'), Ln(Lc + 2.0, H + 0.12, Lc + 2.0, H - 0.05, 'equip'), T(Lc + 1.5, H + 0.6, 'Skimmer →', { anchor: 'middle', size: 0.7 }));
+  it.push(T(L + t + 0.6, H * 0.5, 'Float', { anchor: 'middle', size: 0.65, rot: 90 }), T(Lc / 2, H + fb + 0.25, 'Contact zone', { anchor: 'middle', size: 0.7 }), T(Lc + (L - Lc) / 2, H * 0.45, 'Separation zone – clarified water drawn from the bottom', { anchor: 'middle', size: 0.7 }));
+  it.push(Lv(L * 0.55, H, `WL +${f2(H)}`));
+  it.push(Dm(0, -t, Lc, -t, -0.6, f2(Lc)), Dm(Lc, -t, L, -t, -0.6, `${f2(L - Lc)} m`), Dm(-t, 0, -t, H, 0.8, `${f2(H)} m`));
+  return auto('Dissolved air flotation – longitudinal section A–A', it);
+}
+function daf3D(sd) {
+  if (!sd || sd.type !== 'daf') return null;
+  const s = new Scene(), t = 0.3, n = Math.min(sd.N, 6), H = sd.H + 0.5 + t;
+  for (let k = 0; k < n; k++) s.tank(0, k * (sd.W + 2 * t), 0, sd.L + 2 * t, sd.W + 2 * t, H, { t, wl: sd.H + t, water: 'isoSludge', inner: [{ x: sd.Lc, y: 0, z: t, w: 0.2, d: sd.W, h: sd.H + 0.3 }, { x: sd.Lc + 0.8, y: 0, z: sd.H + t + 0.1, w: 1.4, d: sd.W, h: 0.3, kind: 'equip' }] });
+  s.dimsBox(0, 0, 0, sd.L + 2 * t, sd.W + 2 * t, H);
+  if (n > 1) s.dim([sd.L + 2 * t, 0, 0], [sd.L + 2 * t, n * (sd.W + 2 * t), 0], [2.5, 0, 0], `${n} units – ${f2(n * (sd.W + 2 * t))} m`);
+  return s.render(`Dissolved air flotation – 3D view (${n}${sd.N > n ? ' of ' + sd.N : ''} units, float layer on the surface)`);
+}
+export function hrfPlan(sd) {
+  if (!sd || sd.type !== 'hrf') return null;
+  const it = [], t = 0.25, N = Math.min(sd.N, 6), W = sd.W, L = sd.L, cls = ['gravel', 'sand', 'soil'];
+  for (let k = 0; k < N; k++) {
+    const y0 = k * (W + t);
+    let x = 0.8;
+    it.push(R(0, y0, 0.8, W, 'water'), R(L - 0.8, y0, 0.8, W, 'water'));
+    sd.comps.forEach((c, i) => { it.push(R(x, y0, c, W, 'gravel')); x += c; if (i < sd.comps.length - 1) { it.push(R(x, y0, 0.2, W, 'baffle')); x += 0.2; } });
+    it.push(Ln(-1.8, y0 + W / 2, -t, y0 + W / 2, 'pipe', { arrow: true }), Ln(L + t, y0 + W / 2, L + 1.8, y0 + W / 2, 'pipe', { arrow: true }));
+    if (k < N - 1) it.push(R(-t, y0 + W, L + 2 * t, t, 'concrete'));
+  }
+  void cls;
+  const Wt = N * W + (N - 1) * t;
+  it.push(R(-t, -t, L + 2 * t, t, 'concrete'), R(-t, Wt, L + 2 * t, t, 'concrete'), R(-t, 0, t, Wt, 'concrete'), R(L, 0, t, Wt, 'concrete'));
+  it.push(T(0.4, Wt + 0.6, 'Inlet', { anchor: 'middle', size: 0.7 }), T(L - 0.4, Wt + 0.6, 'Outlet weir', { anchor: 'middle', size: 0.7 }));
+  it.push(Dm(0, -t, L, -t, -0.9, `${f2(L)} m (filter ${f2(sd.Lf)} m)`), Dm(L + t, 0, L + t, W, -2.4, `W = ${f2(W)} m`));
+  it.push(...cut(-2.6, W * 0.25, L + 2.4, W * 0.25, 'A', L / 30));
+  return auto(`Horizontal-flow roughing filters – plan (${sd.N} units${sd.N > N ? ', ' + N + ' shown' : ''})`, it);
+}
+export function hrfSection(sd) {
+  if (!sd || sd.type !== 'hrf') return null;
+  const it = [], t = 0.25, L = sd.L, H = sd.H, wl = H - 0.1;
+  it.push(R(-t, -t, L + 2 * t, t, 'concrete'), R(-t, 0, t, H + 0.4, 'concrete'), R(L, 0, t, H + 0.4, 'concrete'));
+  it.push(R(0, 0, 0.8, wl, 'water'), R(L - 0.8, 0, 0.8, H - 0.35, 'water'));
+  let x = 0.8;
+  sd.comps.forEach((c, i) => {
+    it.push(R(x, 0, c, H, 'gravel'), R(x, 0, c, wl, 'water'), C(x + 0.3, 0.12, 0.08, 'pipeFill'));
+    it.push(T(x + c / 2, H + 0.25, `${sd.media[i]} mm · ${f1(c)} m`, { anchor: 'middle', size: 0.7, bold: true }));
+    x += c;
+    if (i < sd.comps.length - 1) { it.push(R(x, 0, 0.2, H + 0.2, 'outline')); for (let z = 0.15; z < H; z += 0.25) it.push(Ln(x, z, x + 0.2, z, 'thin')); x += 0.2; }
+  });
+  it.push(Ln(0, wl, L - 0.8, wl - 0.2, 'waterline'), R(L - 0.8, 0, 0.08, H - 0.35, 'baffle'));
+  it.push(Ln(-1.8, wl - 0.2, 0.2, wl - 0.2, 'pipe', { arrow: true }), Ln(L - 0.3, H - 0.6, L + 1.8, H - 0.6, 'pipe', { arrow: true }));
+  it.push(T(L / 2, -t - 0.45, 'Perforated drain at the inlet of each compartment (60–90 m/h)', { anchor: 'middle', size: 0.65 }), T(L, H + 0.7, 'Outlet weir 0.3–0.4 m below the media top', { anchor: 'end', size: 0.65 }));
+  it.push(T(L / 2, -t - 0.9, 'Water level is kept below the media surface', { anchor: 'middle', size: 0.65 }));
+  it.push(Dm(0, -t, L, -t, -1.6, `${f2(L)} m`), Dm(L + t, 0, L + t, H, -2.2, `${f2(H)} m`));
+  return auto('Horizontal-flow roughing filter – longitudinal section A–A', it);
+}
+function hrf3D(sd) {
+  if (!sd || sd.type !== 'hrf') return null;
+  const s = new Scene(), t = 0.25, n = Math.min(sd.N, 6), H = sd.H + 0.4 + t;
+  for (let k = 0; k < n; k++) {
+    const inner = []; let x = 0.8;
+    sd.comps.forEach((c, i) => { inner.push({ x, y: 0, z: t, w: c, d: sd.W, h: sd.H, kind: i === 0 ? 'sludge' : 'sand' }); x += c; if (i < sd.comps.length - 1) { inner.push({ x, y: 0, z: t, w: 0.2, d: sd.W, h: sd.H + 0.2 }); x += 0.2; } });
+    s.tank(0, k * (sd.W + 2 * t), 0, sd.L + 2 * t, sd.W + 2 * t, H, { t, wl: sd.H * 0.6 + t, inner });
+  }
+  s.dimsBox(0, 0, 0, sd.L + 2 * t, sd.W + 2 * t, H);
+  if (n > 1) s.dim([sd.L + 2 * t, 0, 0], [sd.L + 2 * t, n * (sd.W + 2 * t), 0], [2.5, 0, 0], `${n} units – ${f2(n * (sd.W + 2 * t))} m`);
+  return s.render(`Roughing filters – 3D view (${n}${sd.N > n ? ' of ' + sd.N : ''} units, three gravel compartments)`);
 }
 
 // ================================================================== FILTERS
@@ -390,6 +494,7 @@ function filter3D(fi) {
   if (fi.type === 'ssf') {
     const n = Math.min(fi.N, 6), H = 2.6;
     for (let k = 0; k < n; k++) s.tank(k * (fi.B + 2 * t), 0, 0, fi.B + 2 * t, fi.Lb + 2 * t, H, { t, wl: H - 0.4, water: 'isoWater' });
+    s.dimsBox(0, 0, 0, fi.B + 2 * t, fi.Lb + 2 * t, H); s.dim([0, 0, 0], [n * (fi.B + 2 * t), 0, 0], [0, -4, 0], `${n} beds – ${f2(n * (fi.B + 2 * t))} m`);
     return s.render(`Slow sand filters – 3D view (${n}${fi.N > n ? ' of ' + fi.N : ''} beds)`);
   }
   const rows = fi.footprint?.rows || 1, perRow = Math.ceil(fi.N / rows), bw = fi.footprint?.boxW || fi.B, Lb = fi.Lb, gal = 4.2, H = fi.boxDepth || 3.7, gw = fi.beds === 2 ? fi.inputs.gulletW : 0;
@@ -408,6 +513,7 @@ function filter3D(fi) {
   if (rows > 1) s.box(0, Lb + 2 * t, 0, Wr, gal, H + 0.2, 'concrete');
   else s.box(0, Lb + 2 * t, 0, Wr, gal, H + 0.2, 'concrete');
   s.building(Wr * 0.3, Lb + 2 * t + 0.3, H + 0.2, Wr * 0.4, gal - 0.6, 3);
+  s.dim([0, 0, 0], [bw + 2 * t, 0, 0], [0, -1.5, 0], `Filter ${f2(bw)} m`); s.dim([0, 0, 0], [Wr, 0, 0], [0, -3.5, 0], `${perRow} filters – ${f2(Wr)} m`); s.dim([0, 0, 0], [0, Lb + 2 * t, 0], [-2, 0, 0], `Bed ${f2(Lb)} m`); s.dim([0, Lb + 2 * t, 0], [0, Lb + 2 * t + gal, 0], [-2, 0, 0], `Gallery ${f1(gal)} m`); s.dim([Wr, 0, 0], [Wr, 0, H], [1.5, -1.5, 0], `Box ${f2(H)} m`);
   return s.render(`Rapid gravity filters – 3D view (${fi.N} filters with pipe gallery and control room)`);
 }
 
@@ -447,6 +553,7 @@ function contact3D(dis) {
   const inner = [];
   for (let k = 0; k < n - 1; k++) inner.push({ x: k % 2 === 0 ? 0 : 1.2, y: (k + 1) * w + k * t, z: 0.3, w: L - 1.2, d: t, h: dep + 0.3 });
   s.tank(0, 0, 0, L + 0.6, n * w + (n - 1) * t + 0.6, H, { t: 0.3, wl: dep + 0.3, inner });
+  s.dimsBox(0, 0, 0, L + 0.6, n * w + (n - 1) * t + 0.6, H); s.dim([L + 0.6, 0.3, H], [L + 0.6, 0.3 + w, H], [1.2, 0, 0], `Pass ${f2(w)} m`);
   return s.render(`Chlorine contact tank – 3D view (${n} serpentine passes)`);
 }
 export function cwrSection(st, hyd) {
@@ -494,6 +601,7 @@ function cwr3D(st, hyd) {
   const Lt = n * st.L + (n - 1) * t + 2 * t, W = st.W + 2 * t;
   s.ground(-4, -4, Lt + 8, W + 8);
   s.box(0, 0, 0, Lt, W, above);
+  s.dimsBox(0, 0, 0, Lt, W, above, { labels: { H: `${f2(above)} m above GL` } });
   for (let k = 0; k < n; k++) { const x0 = t + k * (st.L + t); s.box(x0 + st.L * 0.5 - 0.5, W * 0.15, above, 1, 1, 0.3, 'equip'); for (const f of [0.25, 0.75]) s.cyl(x0 + st.L * f, W * 0.6, above, 0.25, 1.0, { kind: 'equip' }); }
   s.leader(Lt / 2, W / 2, above + 1.2, `Covered reservoir ${f0(st.V)} m³ – ${f1(above)} m above ground, ${f1(st.depth + 0.5 - above > 0 ? st.depth + 0.75 - above : 0)} m below`, 6, { size: 0.6 });
   return s.render('Clear water reservoir – 3D view (roof slab with access covers and vents)');
@@ -615,8 +723,10 @@ export function plant3D(r) {
   for (const b of lay.items) {
     const y = H - b.y - b.h, hu = r.hyd?.units.find((u) => u.key === KEY2HYD[b.key]);
     const top = b.kind === 'building' ? 6.5 : hu ? Math.max(1, hu.top - GL) + (b.key === 'filt' ? 5 : 0) : 2.5;
-    s.leader(b.x + b.w / 2, y + b.h / 2, top, b.label.split(' (')[0].replace(' + gallery', ''), 3 + (b.w < 16 ? 2.5 : 0), { size: 0.8, bold: true });
+    const hgt = b.kind === 'building' ? null : hu ? Math.max(0.6, hu.top - GL) : null;
+    s.leader(b.x + b.w / 2, y + b.h / 2, top, `${b.label.split(' (')[0].replace(' + gallery', '')} · ${f1(b.w)} × ${f1(b.h)}${hgt ? ' × ' + f1(hgt) + ' m high' : ' m'}`, 3 + (b.w < 16 ? 2.5 : 0), { size: 0.7, bold: true });
   }
+  s.dim([0, 0, 0], [lay.siteW, 0, 0], [0, -8, 0], `Site ${f0(lay.siteW)} m`); s.dim([0, 0, 0], [0, H, 0], [-8, 0, 0], `${f0(H)} m`);
   // north arrow on the ground plane
   s.pipe([[lay.siteW + 8, 6, 0], [lay.siteW + 8, 18, 0]], 'thick');
   s.label(lay.siteW + 8, 21, 0, 'N', { bold: true });
@@ -642,7 +752,9 @@ export function drawingGroups(r) {
     const p = vb ? flocPlanV(fl) : U.flocDrawing(fl), s = vb ? U.flocDrawing(fl) : flocSection(fl), c = flocCross(fl);
     add('floc', 'Flocculator', 'floc', [V('plan', 'Plan', p), V('secA', 'Section A–A', s), V('secB', 'Section B–B', c), V('ga', 'General arrangement', ga('Flocculator – general arrangement', [{ dw: p, label: 'Plan' }, { dw: s, label: 'Section A–A' }, { dw: c, label: 'Section B–B', at: 'right' }])), V('iso', '3D view', floc3D(fl))]);
   }
-  if (r.sed?.enabled) {
+  if (r.sed?.enabled && r.sed.type === 'daf') { const sd = r.sed, p = dafPlan(sd), a = dafSection(sd); add('sed', 'Dissolved air flotation', 'sed', [V('plan', 'Plan', p), V('secA', 'Section A–A', a), V('ga', 'General arrangement', ga('Dissolved air flotation – general arrangement', [{ dw: p, label: 'Plan' }, { dw: a, label: 'Section A–A' }])), V('iso', '3D view', daf3D(sd))]); }
+  else if (r.sed?.enabled && r.sed.type === 'hrf') { const sd = r.sed, p = hrfPlan(sd), a = hrfSection(sd); add('sed', 'Roughing filters', 'sed', [V('plan', 'Plan', p), V('secA', 'Section A–A', a), V('ga', 'General arrangement', ga('Roughing filters – general arrangement', [{ dw: p, label: 'Plan' }, { dw: a, label: 'Section A–A' }])), V('iso', '3D view', hrf3D(sd))]); }
+  else if (r.sed?.enabled) {
     const sd = r.sed, p = U.sedPlan(sd), s = sd.type === 'circ' ? clarifierSection(sd) : U.sedSection(sd), c = sedCross(sd);
     add('sed', sd.type === 'circ' ? 'Circular clarifiers' : 'Sedimentation tanks', 'sed', [V('plan', 'Plan', p), V('secA', 'Section A–A', s), V('secB', 'Section B–B', c), V('ga', 'General arrangement', ga('Sedimentation tanks – general arrangement', [{ dw: p, label: 'Plan' }, { dw: s, label: 'Section A–A' }, { dw: c, label: 'Section B–B', at: 'below' }])), V('iso', '3D view', sed3D(sd))]);
   }
@@ -659,8 +771,10 @@ export function drawingGroups(r) {
   if (r.sludge) { const sl = r.sludge, tp = thickenerPlan(sl), ts = thickenerSection(sl);
     add('thick', 'Sludge thickener', 'sludge', [V('plan', 'Plan', tp), V('secA', 'Section A–A', ts), V('ga', 'General arrangement', ga('Sludge thickener – general arrangement', [{ dw: tp, label: 'Plan' }, { dw: ts, label: 'Section A–A' }]))]);
     add('beds', 'Sludge drying beds', 'sludge', [V('plan', 'Plan', bedsPlan(sl)), V('secA', 'Section A–A', bedsSection(sl))]); }
+  if (r.buildings) { add('chem', 'Chemical house', 'buildings', [V('plan', 'Plan', chemHousePlan(r.buildings))]); add('chlor', 'Chlorination building', 'buildings', [V('plan', 'Plan', chlorPlan(r.buildings))]); }
+  if (r.structure?.list?.length) add('rebar', 'Typical reinforcement', 'structure', r.structure.list.map((s) => V('rb-' + s.key, s.name, rebarDetail(s, r.structure.inputs))));
   add('hyd', 'Hydraulic profile', 'hyd', [V('profile', 'Profile', U.hydraulicProfile(r.hyd))]);
-  add('site', 'Site', 'layout', [V('plan', 'Site layout plan', U.layoutPlan(r.layout)), V('iso', '3D view of the plant', plant3D(r))]);
+  add('site', 'Site', 'layout', [V('plan', 'Site layout plan', U.layoutPlan(r.layout)), V('levels', 'Levels & drainage', siteLevelsPlan(r)), V('iso', '3D view of the plant', plant3D(r))]);
   g.forEach((grp, i) => { grp.no = String(i + 1).padStart(2, '0'); grp.views.forEach((v, k) => { v.dw.code = `${grp.no}-${k + 1}`; v.dw.group = grp.title; v.dw.view = v.label; }); });
   return g;
 }

@@ -5,6 +5,7 @@ import { renderChart } from './charts.js';
 import { drawingSVG, mountDrawing } from './draw/render.js';
 import { drawingNumber, sheetDXF, sheetMeta, sheetSVG, sheetsHTML } from './draw/sheet.js';
 import { groupTitle, groupViews } from './draw/views.js';
+import { mount3D } from './draw/view3d.js';
 import { saveSettings, store } from './store.js';
 import { h, icon, toast } from './dom.js';
 
@@ -157,10 +158,11 @@ export function drawingCard(views, { height = 380, title, key } = {}) {
       const sh = sheetSVG(cur.dw, meta());
       box.className = 'sheet-view';
       box.innerHTML = sh.svg;
-    } else mountDrawing(box, cur.dw, { height: /3D|arrangement/i.test(cur.label) ? Math.max(height, 460) : height });
+    } else if (cur.dw.scene3d) mount3D(box, cur.dw.scene3d, { height: Math.max(height, 500), title: cur.dw.title });
+    else mountDrawing(box, cur.dw, { height: /arrangement/i.test(cur.label) ? Math.max(height, 460) : height });
   };
   const body = h('div', null, list.length > 1 ? h('div', { class: 'view-bar' }, tabs, ttl) : null, box);
-  const el = card(title || list[0].dw.title, body, { flush: true, sub: list.length > 1 ? `${list.length} views – plan, sections, general arrangement, 3D` : drawingNumber(store.project?.inputs?.setup, list[0].dw), actions: [
+  const el = card(title || list[0].dw.title, body, { flush: true, sub: list.length > 1 ? `${list.length} views${list.some((v) => v.dw.scene3d) ? ' – plan, sections, general arrangement, 3D (rotate, dimensions)' : ''}` : drawingNumber(store.project?.inputs?.setup, list[0].dw), actions: [
     seg,
     h('button', { class: 'btn sm ghost', title: 'Export this view to AutoCAD DXF (with NWSDB title block)', onclick: exportDXF }, icon('pen'), 'DXF'),
     h('button', { class: 'btn sm ghost', title: 'Export this view as an A3 PDF sheet', onclick: exportPDF }, icon('fileDown'), 'PDF'),

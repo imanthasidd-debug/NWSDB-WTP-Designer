@@ -644,3 +644,13 @@ table.dep td.self { background: var(--surface-3); }
 .view-tabs .vt:hover { border-color: var(--primary); }
 .view-tabs .vt.on { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
 .view-title { font-size: 11.5px; color: var(--muted); }
+
+/* ---------- v1.6: interactive 3D viewer ---------- */
+.view3d { position: relative; }
+.view3d canvas { display: block; cursor: grab; touch-action: none; }
+.view3d canvas:active { cursor: grabbing; }
+.v3-bar { position: absolute; top: 10px; left: 10px; display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.v3-bar button { padding: 4px 9px; font-size: 11.5px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); color: var(--text); cursor: pointer; }
+.v3-bar button:hover { border-color: var(--primary); }
+.v3-bar button.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.v3-sep { width: 8px; }

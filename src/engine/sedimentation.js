@@ -1,6 +1,6 @@
 // Sedimentation: rectangular horizontal-flow, circular radial-flow, or tube-settler clarifiers (NWSDB D3 §5.7)
 import { Calc, n } from '../core/calc.js';
-import { SED_RECT, SETTLERS, SOR_TABLE } from '../core/d3.js';
+import { DAF, ROUGHING, SED_RECT, SETTLERS, SOR_TABLE, hrfRate } from '../core/d3.js';
 import { G, ceilTo, rad } from '../core/util.js';
 
 export const DEFAULTS = {
@@ -28,6 +28,18 @@ export const DEFAULTS = {
   // plain pre-sedimentation
   presedSor: 12, presedDepth: 2.8,  // D3 Table 5-20 no pre-treatment 0.5 m/h; detention 4–6 h
   plainV50: 1.0, plainSigma: 3.0, // un-coagulated silt/clay population for plain sedimentation
+  // dissolved air flotation (NWSDB D3 §5.7.8)
+  dafRise: 8.8,         // m/h hydraulic loading on the separation zone incl. recycle (D3: 5–15, nominal ≤ 9)
+  dafRecycle: 10,       // % recycle (D3: 5–15)
+  dafPressure: 500,     // kPa saturator pressure (D3: 450–620)
+  dafContactT: 90,      // s contact-zone detention (D3: 60–240)
+  dafDepth: 2.5,        // m (D3: 2.5–3)
+  dafFloat: 3,          // % float solids, mechanical skimming (D3: 3–6)
+  // horizontal-flow roughing filters ahead of slow sand filters (NWSDB D3 §5.13)
+  hrfRate: 0,           // m/h on the vertical cross-section; 0 = D3 Table 5-41 by suspended solids
+  hrfHeight: 1.2,       // m media height (D3: 1–1.5)
+  hrfMedia: 'normal',   // coarse | normal | fine (D3 Table 5-40)
+  hrfRemoval: 90,       // % turbidity removal (D3 §5.13: ≥ 90 %)
 };
 
 const phi = (x) => 0.5 * (1 + erf(x / Math.SQRT2));
@@ -49,16 +61,112 @@ export function compute(inp, ctx) {
   const { nu } = ctx.water;
   const plain = !proc.conv && proc.presed === 'yes';
   if (plain) { d.sor = d.presedSor; d.depth = d.presedDepth; d.v50 = d.plainV50; d.sigmaG = d.plainSigma; }
-  const type = plain ? 'rect' : d.type === 'auto' ? (proc.clarifier && proc.clarifier !== 'auto' ? proc.clarifier : 'rect') : d.type;
+  const type = plain ? (proc.presedKind === 'roughing' ? 'hrf' : 'rect') : d.type === 'auto' ? (proc.clarifier && proc.clarifier !== 'auto' ? proc.clarifier : 'rect') : d.type;
   const N = d.nTanks > 0 ? d.nTanks : Math.max(2, dem.nTrains);
   const Qd = dem.Qd / N;
   const Qs = Qd / 86400;
   const Qh = Qd / 24;
   const out = { inputs: d, type, plain, N, Qd, Qs, enabled: (proc.has.sed && proc.conv) || plain };
-  if (plain) calc.note('info', 'Plain (un-coagulated) sedimentation ahead of slow sand filters – sized at the pre-sedimentation overflow rate.');
+  if (plain && type !== 'hrf') calc.note('info', 'Plain (un-coagulated) sedimentation ahead of slow sand filters – sized at the pre-sedimentation overflow rate.');
   calc.section('Flow per tank');
   calc.step('Design flow per tank', 'Q_t = Q/N', `${n(dem.Qd, 0)}/${N}`, Qd, 'm³/d');
 
+  // ---------------- horizontal-flow roughing filters (D3 §5.13) ----------------
+  if (type === 'hrf') {
+    calc.section('Horizontal-flow roughing filters (NWSDB D3 §5.13)');
+    const ss = q.turbMax; // suspended solids ≈ turbidity (TSS/NTU ≈ 1, D3 §5.14)
+    const band = hrfRate(ss);
+    const rate = d.hrfRate > 0 ? d.hrfRate : (band[0] + band[1]) / 2;
+    calc.step('Filtration rate on the vertical cross-section', 'v_f', d.hrfRate > 0 ? '\\text{user value}' : `SS_{max}\\approx${n(ss, 0)}\\,mg/L`, rate, 'm/h', 'NWSDB D3 Table 5-41 – 0.5 (> 300 mg/L), 0.75–1.0 (100–300), 1.0–1.5 (< 100)');
+    const Ax = dem.Qh / rate;
+    calc.step('Total vertical cross-section', 'A_x = Q/v_f', `${n(dem.Qh, 1)}/${n(rate)}`, Ax, 'm²');
+    const Hm = d.hrfHeight;
+    const Nh = d.nTanks > 0 ? d.nTanks : Math.max(ROUGHING.minUnits, Math.ceil(Ax / (Hm * ROUGHING.width[1])));
+    const W = Math.max(1, Math.ceil((Ax / (Nh * Hm)) * 10) / 10);
+    calc.step('Number of units (width ≤ 5 m each, minimum 2)', 'N = \\lceil A_x/(5H) \\rceil', `\\lceil ${n(Ax)}/(5\\times${n(Hm)}) \\rceil`, Nh, '', 'NWSDB D3 §5.13.3, §5.13.6');
+    calc.step('Width of each unit', 'W = A_x/(N H)', `${n(Ax)}/(${Nh}\\times${n(Hm)})`, W, 'm');
+    const comps = ss > 300 ? [4, 3, 2] : ss >= 100 ? [3, 2.5, 1.5] : [3, 2, 1];
+    const MEDIA_MM = { coarse: ['24–16', '18–12', '12–8'], normal: ['18–12', '12–8', '8–4'], fine: ['12–8', '8–4', '4–2'] }[d.hrfMedia] || ['18–12', '12–8', '8–4'];
+    const Lf = comps.reduce((a, b) => a + b, 0);
+    const L = Lf + 2 * 0.8 + 2 * 0.2; // inlet & outlet chambers + two separation walls
+    calc.step('Filter length (three compartments, coarse → fine)', 'L_f = \\sum l_i', comps.map((c) => n(c)).join('+'), Lf, 'm', `NWSDB D3 Table 5-41; media ${MEDIA_MM.join(' / ')} mm (Table 5-40)`);
+    calc.step('Box length incl. inlet / outlet chambers', 'L = L_f + 2\\times0.8 + 0.4', '', L, 'm', 'NWSDB D3 §5.13.6 – box 9–12 m (filter length 5–7 m, §5.13.5)');
+    const Vg = Nh * W * Hm * Lf;
+    const hrt = (Vg * 0.35) / dem.Qh;
+    calc.step('Gravel volume', 'V_g = N W H L_f', '', Vg, 'm³');
+    calc.step('Detention in the voids (porosity 0.35)', 't = 0.35V_g/Q', '', hrt * 60, 'min');
+    const vAct = dem.Qh / (Nh * W * Hm);
+    const vOne = dem.Qh / (Math.max(1, Nh - 1) * W * Hm);
+    calc.step('Rate with one unit out for cleaning', "v_f' = Q/((N-1) W H)", '', vOne, 'm/h');
+    const qDrain = (ROUGHING.drainV[0] + ROUGHING.drainV[1]) / 2 * W * comps[0];
+    calc.step('Drainage flow of one compartment (60–90 m/h for 1–2 min)', 'Q_d = v_d\\,W\\,l_1', `75\\times${n(W)}\\times${n(comps[0])}`, qDrain, 'm³/h', 'NWSDB D3 §5.13.5 – perforated drains at the inlet of each compartment');
+    const settledPeak = Math.max(2, q.turbMax * (1 - d.hrfRemoval / 100));
+    const settledAvg = Math.max(1, q.turbAvg * (1 - d.hrfRemoval / 100));
+    calc.step('Roughing-filter effluent turbidity (design peak)', 'T_e = T_0(1-R)', `${n(q.turbMax)}(1-${n(d.hrfRemoval / 100)})`, settledPeak, 'NTU', 'NWSDB D3 §5.13 – removal ≥ 90 %');
+    calc.check('rf.rate', vAct, 'Roughing-filter rate', { crit: { min: ROUGHING.rateH[0], max: ROUGHING.rateH[1], hardMax: 2 }, src: 'NWSDB D3 §5.13.5 – 0.3–1.5 m/h' });
+    calc.check('rf.rate1', vOne, 'Rate with one unit out', { crit: { min: 0, max: ROUGHING.rateH[1], hardMax: 2.5 }, src: 'NWSDB D3 §5.13.3 – minimum two units' });
+    calc.check('rf.height', Hm, 'Media height', { crit: { min: ROUGHING.height[0], max: ROUGHING.height[1], hardMax: 2 }, src: 'NWSDB D3 §5.13.6 – 1–1.5 m' });
+    calc.check('rf.width', W, 'Unit width', { crit: { min: 1, max: ROUGHING.width[1], hardMax: 6 }, src: 'NWSDB D3 §5.13.6 – 2–5 m per unit' });
+    calc.check('rf.length', Lf, 'Filter length', { crit: { min: ROUGHING.length[0], max: ROUGHING.box[1], hardMax: 14 }, src: 'NWSDB D3 §5.13.5–5.13.6 – 5–7 m (box 9–12 m)' });
+    calc.flag('Raw turbidity within the range of roughing filters (10–150 NTU, short peaks to 500–1,000)', q.turbMax <= ROUGHING.hrfPeak[1], `${q.turbMax} NTU peak`, '≤ 150 NTU (peaks ≤ 1,000)', 'Add plain sedimentation ahead for higher turbidity', q.turbMax <= ROUGHING.inTurb[1] ? 'info' : 'warn', 'NWSDB D3 §5.13');
+    calc.flag('Effluent suitable for slow sand filters', settledPeak <= ROUGHING.outTurb + 1e-9, `${settledPeak.toFixed(1)} NTU`, '≤ 10 NTU', 'Slow sand filter influent should preferably be < 10 NTU', 'warn', 'NWSDB D3 §5.13, §5.12.3');
+    calc.flag('Number of roughing-filter units', Nh >= ROUGHING.minUnits, `${Nh}`, '≥ 2', '', 'fail', 'NWSDB D3 §5.13.3');
+    calc.text('Water level is kept below the media surface; separation walls have 10–20 % evenly distributed openings; outlet weir 30–40 cm below the top of the media; head loss ≤ 20 cm; provide a gravel-washing area (NWSDB D3 §5.13.5–5.13.6).');
+    const rem = { R: d.hrfRemoval / 100, F: 0, partial: 0 };
+    Object.assign(out, { N: Nh, Qd: dem.Qd / Nh, Qs: dem.Qs / Nh, A: Nh * L * W, W, L, H: Hm, Lf, comps, media: MEDIA_MM, rate: vAct, rateOne: vOne, Vg, hrt, sorAct: dem.Qd / (Nh * L * W), qDrain,
+      hNotch: 0.03, h0: 0.1, portHl: 0.02, nL: 0, Llaund: 0, launderDepth: 0.2, totalDepth: Hm + 0.4, footprint: { L: L + 1.5, W }, headloss: 0.2 });
+    d.sludgeDepth = 0.1;
+    return { ...out, rem, settledPeak, settledAvg, vcEff: 0, curve: [], ...calc.result() };
+  }
+  // ---------------- dissolved air flotation (D3 §5.7.8) ----------------
+  if (type === 'daf') {
+    calc.section('Dissolved air flotation (NWSDB D3 §5.7.8, Annex E.4)');
+    const Rr = d.dafRecycle / 100;
+    let Nd = d.nTanks > 0 ? d.nTanks : Math.max(DAF.minUnits, dem.nTrains);
+    let Asep, Wd, Ls, Qt;
+    const sizeIt = () => { Qt = dem.Qh / Nd; Asep = (Qt * (1 + Rr)) / d.dafRise; Wd = Math.round(Math.sqrt(Asep / 1.2) * 10) / 10; Ls = Math.ceil((Asep / Wd) * 10) / 10; };
+    sizeIt();
+    if (!(d.nTanks > 0)) while (Ls > DAF.Lmax && Nd < 40) { Nd += 1; sizeIt(); }
+    calc.step('Flow per flotation unit', 'Q_t = Q/N', `${n(dem.Qh, 1)}/${Nd}`, Qt, 'm³/h');
+    calc.step('Separation-zone area (incl. recycle)', 'A = \\frac{Q_t(1+R)}{v}', `\\frac{${n(Qt, 1)}(1+${n(Rr)})}{${n(d.dafRise)}}`, Asep, 'm²', 'NWSDB D3 §5.7.8 – 5–15 m³/m²·h (nominal ≤ 9, maximum 12)');
+    calc.step('Unit width × separation length (L:W ≈ 1.2, L < 11 m)', 'W \\times L_s', `${n(Wd)}\\times${n(Ls)}`, Wd * Ls, 'm²');
+    const Hd = d.dafDepth;
+    const Vc = (Qt * (1 + Rr) * d.dafContactT) / 3600;
+    const Lc = Math.max(0.6, Math.ceil((Vc / (Wd * Hd)) * 10) / 10);
+    const cLoad = (Qt * (1 + Rr)) / (Wd * Lc);
+    calc.step('Contact-zone length', 'L_c = \\frac{Q_t(1+R)\\,t_c}{W H}', `\\frac{${n(Qt, 1)}(1+${n(Rr)})${n(d.dafContactT)}/3600}{${n(Wd)}\\times${n(Hd)}}`, Lc, 'm', 'NWSDB D3 – contact time 60–240 s');
+    calc.step('Contact-zone hydraulic loading', 'v_c = Q_t(1+R)/(W L_c)', '', cLoad, 'm/h', 'NWSDB D3 – 35–100 m/h');
+    const L = Ls + Lc + 0.2;
+    const hrtMin = ((Wd * (Ls + Lc) * Hd) / Qt) * 60;
+    calc.step('Flotation tank detention', 't = W(L_s+L_c)H/Q_t', '', hrtMin, 'min', 'NWSDB D3 – 10–20 min');
+    const riseAct = (Qt * (1 + Rr)) / (Wd * Ls);
+    const Qr = Rr * dem.Qh;
+    // air: Henry solubility of air ≈ 18.7 mg/L per atm at 28 °C (D3 Annex E.4 method), saturator efficiency 0.85
+    const air = 18.7 * (d.dafPressure / 101.3) * 0.85 * Rr;
+    calc.step('Recycle flow', 'Q_r = R\\,Q', `${n(Rr)}\\times${n(dem.Qh, 1)}`, Qr, 'm³/h');
+    calc.step('Air released per m³ of water treated', 'a = s_a\\,\\frac{P}{101.3}\\,f\\,R', `18.7\\times\\frac{${n(d.dafPressure)}}{101.3}\\times0.85\\times${n(Rr)}`, air, 'g/m³', 'typically 6–10 g/m³; eductor saturator efficiency 80–85 % (D3 §5.7.8)');
+    const pumpKw = ((d.dafPressure + 50) * (Qr / 3600)) / 0.7;
+    calc.step('Recycle pump power', 'P = \\frac{\\Delta p\\,Q_r}{\\eta}', `\\frac{${n(d.dafPressure + 50)}\\times${n(Qr / 3600, 4)}}{0.7}`, pumpKw, 'kW');
+    const satV = (Qr / 60) * 1.5; // 90 s retention
+    calc.step('Saturator volume (≈ 90 s retention, 2 vessels)', 'V_s = 1.5\\,Q_r/60', '', satV, 'm³');
+    calc.check('daf.rise', riseAct, 'Flotation hydraulic loading (incl. recycle)', { crit: { min: DAF.rise[0], max: DAF.riseNominal, hardMax: DAF.rise[1] }, src: 'NWSDB D3 §5.7.8 – 5–15 m/h, nominal ≤ 9 m/h' });
+    calc.check('daf.hrt', hrtMin, 'Flotation detention time', { crit: { min: DAF.hrt[0], max: DAF.hrt[1], hardMin: 5, hardMax: 40 }, src: 'NWSDB D3 §5.7.8 – 10–20 min' });
+    calc.check('daf.recycle', d.dafRecycle, 'Recycle rate', { crit: { min: DAF.recycle[0], max: DAF.recycle[1], hardMax: 25 }, src: 'NWSDB D3 §5.7.8 – 5–15 %' });
+    calc.check('daf.pressure', d.dafPressure, 'Saturator pressure', { crit: { min: DAF.pressure[0], max: DAF.pressure[1], hardMin: 350, hardMax: 700 }, src: 'NWSDB D3 §5.7.8 – 450–620 kPa' });
+    calc.check('daf.contact', d.dafContactT, 'Contact-zone time', { crit: { min: DAF.contactT[0], max: DAF.contactT[1] }, src: 'NWSDB D3 §5.7.8 – 60–240 s' });
+    calc.check('daf.depth', Hd, 'Tank depth', { crit: { min: DAF.depth[0], max: DAF.depth[1], hardMin: 2, hardMax: 3.5 }, src: 'NWSDB D3 §5.7.8 – 2.5–3 m' });
+    calc.flag('Separation length', Ls <= DAF.Lmax + 1e-9, `${Ls.toFixed(1)} m`, '< 11 m', 'Add units', 'warn', 'NWSDB D3 §5.7.8');
+    calc.flag('Number of flotation units', Nd >= DAF.minUnits, `${Nd}`, '≥ 2', '', 'fail', 'NWSDB D3 §5.7.8');
+    calc.flag('Raw-water turbidity suitable for flotation', q.turbMax <= DAF.turbMax, `${q.turbMax} NTU peak`, '≤ 100 NTU', 'DAF is not suited to turbidity > 100 NTU or dense solids – use sedimentation, or DAF for the algae season only', 'warn', 'NWSDB D3 §5.7.8 (p 5-84)');
+    calc.text('DAF followed by separate granular filtration is preferred in Sri Lanka for algae-laden reservoirs; flocculation ahead of DAF 15–30 min; float removed by mechanical skimmers at 3–6 % solids (NWSDB D3 §5.7.8).');
+    const rem = { R: 0.97, F: 0, partial: 0 };
+    const settledPeak = Math.max(1.0, q.turbMax * 0.03), settledAvg = Math.max(0.5, q.turbAvg * 0.03);
+    calc.step('Predicted floated-water turbidity (design peak)', 'T_s \\approx 0.03\\,T_0', '', settledPeak, 'NTU', 'D3 §5.7.8 – effluent typically < 0.5–1 NTU');
+    Object.assign(out, { N: Nd, Qd: dem.Qd / Nd, Qs: dem.Qs / Nd, A: Wd * Ls, W: Wd, L, Ls, Lc, H: Hd, sorAct: riseAct * 24, riseAct, hrt: hrtMin / 60, hrtMin, cLoad, Qr, air, pumpKw, satV,
+      hNotch: 0.03, h0: 0.15, portHl: 0.02, nL: 0, Llaund: 0, launderDepth: 0.3, totalDepth: Hd + 0.5, footprint: { L: L + 2, W: Wd }, headloss: 0.25, kw: 2 * Math.ceil(pumpKw) });
+    d.sludgeDepth = 0;
+    return { ...out, rem, settledPeak, settledAvg, vcEff: 0, curve: [], ...calc.result() };
+  }
   if (type === 'rect' || type === 'tube') {
     let A, W, L;
     let H = d.depth;

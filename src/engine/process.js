@@ -5,12 +5,13 @@ import { BLEACH, DIRECT, PROC, SSF, table45, TRAINS_MIN, typicalTrain } from '..
 export const DEFAULTS = {
   route: 'auto',        // auto | conventional | direct | ssf
   presed: 'auto',       // auto | yes | no
+  presedType: 'auto',   // auto | plain | roughing – pre-treatment ahead of slow sand filters (D3 §5.13, Fig 4-4)
   aeration: 'auto',     // auto | none | cascade | tray
   prechlor: 'auto',     // auto | yes | no
   pac: 'auto',          // auto | yes | no  (powdered activated carbon, NWSDB D3 §5.2.3)
   rapidMix: 'auto',     // auto | mechanical | jump
   floc: 'auto',         // auto | hbaffle | vbaffle | paddle
-  clarifier: 'auto',    // auto | rect | circ | tube
+  clarifier: 'auto',    // auto | rect | circ | tube | daf
   filter: 'auto',       // auto | rsf | dual
   disinfectant: 'auto', // auto | gas | naocl | hth | bleach
   postLime: 'auto',     // auto | yes | no
@@ -23,7 +24,7 @@ export const LABELS = {
   aeration: { none: 'None', cascade: 'Cascade aerator', tray: 'Multiple-tray aerator' },
   rapidMix: { mechanical: 'Mechanical flash mixer', jump: 'Hydraulic jump (weir / flume)' },
   floc: { hbaffle: 'Horizontal baffled (around-the-end)', vbaffle: 'Vertical baffled (over-and-under)', paddle: 'Mechanical paddle (horizontal shaft)' },
-  clarifier: { rect: 'Rectangular horizontal-flow', circ: 'Circular radial-flow', tube: 'Rectangular with tube settlers' },
+  clarifier: { rect: 'Rectangular horizontal-flow', circ: 'Circular radial-flow', tube: 'Rectangular with tube settlers', daf: 'Dissolved air flotation (DAF)' },
   filter: { rsf: 'Rapid gravity sand filter', dual: 'Rapid gravity dual-media (anthracite–sand)' },
   disinfectant: { gas: 'Chlorine gas (vacuum chlorinators)', naocl: 'Sodium hypochlorite (liquid)', hth: 'Calcium hypochlorite (HTH, 65–70 %)', bleach: 'Bleaching powder (30–35 %)' },
   sludge: { beds: 'Sludge drying beds', thickener: 'Gravity thickener + drying beds', mechanical: 'Thickener + mechanical dewatering (belt press / centrifuge)' },
@@ -61,6 +62,8 @@ export function compute(inp, ctx) {
   }
   const conv = route === 'conventional';
   const ssf = route === 'ssf';
+  // pre-treatment ahead of slow sand filters: roughing filters for 10–150 NTU (D3 §5.13, Fig 4-4), plain sedimentation otherwise
+  const presedKindOf = (ps) => (ssf && ps === 'yes' ? (d.presedType === 'auto' ? (tmax > 10 && tmax <= 150 ? 'roughing' : 'plain') : d.presedType) : 'plain');
 
   // ---- Pre-sedimentation
   let presed = d.presed === 'auto' ? (tmax > 750 || (ssf && tmax > 10) ? 'yes' : 'no') : d.presed;
@@ -105,8 +108,9 @@ export function compute(inp, ctx) {
   // ---- Clarifier
   let clarifier = d.clarifier;
   if (clarifier === 'auto' && conv) {
-    clarifier = setup.landConstrained ? 'tube' : 'rect';
-    why('Sedimentation', clarifier === 'tube' ? 'Land is constrained – tube settlers raise the allowable surface loading 3–4 times.' : 'Rectangular horizontal-flow tanks: robust to monsoon turbidity shocks, easy common-wall construction with the flocculators.');
+    // D3 §4.3.5 / Table 4-5: flotation is preferred for algae-laden, low-turbidity (≤ 100 NTU) reservoir water
+    clarifier = algae > 20000 && tmax <= 100 && src !== 'river' ? 'daf' : setup.landConstrained ? 'tube' : 'rect';
+    why(clarifier === 'daf' ? 'Flotation' : 'Sedimentation', clarifier === 'daf' ? `Algae ${algae} cells/mL with turbidity ≤ 100 NTU – dissolved air flotation followed by separate filtration is preferred for algae (NWSDB D3 §4.3.5, §5.7.8).` : clarifier === 'tube' ? 'Land is constrained – tube settlers raise the allowable surface loading 3–4 times.' : 'Rectangular horizontal-flow tanks: robust to monsoon turbidity shocks, easy common-wall construction with the flocculators.');
   }
   // ---- Filter
   let filter = d.filter;
@@ -171,7 +175,7 @@ export function compute(inp, ctx) {
   add('rwp', 'Raw water pumping', '');
   if (aeration !== 'none') add('aeration', LABELS.aeration[aeration], '');
   if (pac === 'yes') add('pac', 'PAC dosing', 'Powdered activated carbon, ≥ 15 min before coagulant');
-  if (presed === 'yes') add('presed', ssf ? 'Plain sedimentation' : 'Pre-sedimentation', '');
+  if (presed === 'yes') add('presed', ssf ? (presedKindOf(presed) === 'roughing' ? 'Roughing filters' : 'Plain sedimentation') : 'Pre-sedimentation', ssf && presedKindOf(presed) === 'roughing' ? 'Horizontal-flow gravel filters (D3 §5.13)' : '');
   if (!ssf) {
     add('coag', 'Coagulant dosing', 'Alum / PACl');
     add('rapidmix', 'Rapid mixing', LABELS.rapidMix[rapidMix]);
@@ -186,7 +190,7 @@ export function compute(inp, ctx) {
   add('sludge', 'Residuals handling', LABELS.sludge[sludge]);
 
   return {
-    inputs: d, route, presed, aeration, prechlor, pac, t45, typical, d3has: has, rapidMix, floc, clarifier, filter, disinfectant, postLime, sludge,
+    inputs: d, route, presed, presedKind: presedKindOf(presed), aeration, prechlor, pac, t45, typical, d3has: has, rapidMix, floc, clarifier, filter, disinfectant, postLime, sludge,
     recovery: d.recovery, conv, ssf, direct: route === 'direct', train, reasons,
     has: { aeration: aeration !== 'none', coag: !ssf, rapidmix: !ssf, floc: !ssf, sed: conv || presed === 'yes', filt: true, dis: true },
     ...calc.result(),

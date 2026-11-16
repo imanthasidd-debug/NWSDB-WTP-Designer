@@ -7,6 +7,28 @@ storage & pumping → residuals → hydraulic profile → site layout → power 
 
 *For the National Water Supply & Drainage Board, Sri Lanka.*
 
+**Version 1.6 – more of the plant designed, and drawings you can turn around**
+* **Interactive 3D**: the 3D view of every structure and of the whole plant can be rotated (drag), zoomed (scroll)
+  and panned (shift-drag), with preset Top / Front / Side / Back views, and shows **dimensions** and labels that can be
+  switched on and off. The fixed isometric view is still used for A3 sheets, PDF and DXF.
+* **New treatment units from NWSDB D3**: dissolved air flotation for algae-laden reservoir water (§5.7.8),
+  horizontal-flow roughing filters ahead of slow sand filters (§5.13, Tables 5-40 / 5-41), iron and manganese removal
+  (§7.1, Tables 6-8, 7-1) and fluoride removal (§7.2, Tables 7-3, 7-4) – triggered when the raw water exceeds
+  SLS 614:2013 (Fe 0.3, Mn 0.1, F 1.0 mg/L).
+* **Chemical house and chlorination building** (D3 §6.1, §6.4–6.5, §9): stores, solution tanks, dosing pumps, carrier
+  water, 110 % bund, lime slurry or saturators, chlorine drum store, connected containers, chlorinators, ventilation at
+  one air change per minute, caustic neutralisation – with room schedules and plans.
+* **Hydraulics**: Parshall flume from the D3 Annex C.1 table, equal-split distribution weirs between treatment streams
+  (D3 §9.5) with the flow error for a 5 mm crest tolerance, and the filter control mode recommended by D3 §5.9.9.1.
+* **Structural pre-design** (new page): wall and base thickness, bars for strength and 0.2 mm crack width, concrete
+  and steel quantities, flotation of empty tanks, and a typical reinforcement section for each structure. The NWSDB
+  manuals give only general structural rules, so this follows usual water-retaining practice (BS 8110 / BS 8007) and
+  is preliminary. The bill of quantities now takes its steel content from it.
+* **Staged construction** (D3 §9.1, §9.6): which units are built in Stage I and which are added later.
+* **Drawings**: chemical house plan, chlorination building plan, DAF and roughing-filter plan / section / 3D, typical
+  reinforcement sections, site levels and drainage plan; the title block now has editable *drawn by*, drawing status
+  (preliminary … as built) and revision description / history.
+
 **Version 1.5 – every structure in every view, and designs that size themselves**
 * **Multi-view drawings**: each structure now has a view switcher – **Plan**, **Section A–A** (longitudinal),
   **Section B–B** (cross), a **General arrangement** sheet with the views laid out in projection, and a **3D isometric
@@ -101,7 +123,7 @@ is listed in **Library → NWSDB Design Manual D2** and in a dedicated report ch
 
 ## Install on Windows 10 / 11
 
-1. Extract `NWSDB-WTP-Designer-1.5.0-win-x64.zip` (right-click → *Extract all*).
+1. Extract `NWSDB-WTP-Designer-1.6.0-win-x64.zip` (right-click → *Extract all*).
 2. Double-click **Install.cmd**. The app is installed for the current user (no administrator rights), with Start-menu and
    desktop shortcuts and the `.wtpd` project-file association. Uninstall from *Settings → Apps*.
 3. Or run it without installing: open the `NWSDB WTP Designer` folder and double-click `NWSDB WTP Designer.exe`.

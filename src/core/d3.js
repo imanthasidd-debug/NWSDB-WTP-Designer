@@ -262,6 +262,18 @@ export const SSF_LIMITS = [['turb', 'Turbidity', '5–10 NTU', 10], ['algae', 'A
 export const ssfUnits = (Qm3d) => ({ formula: 15 * Math.sqrt(Qm3d / 86400), table: Qm3d < 3000 ? 2 : Qm3d < 6000 ? 3 : Qm3d < 9000 ? 4 : Qm3d < 13500 ? 5 : null });
 // §5.13 roughing filters
 export const ROUGHING = { inTurb: [10, 150], vrfTurb: [50, 150], hrfPeak: [500, 1000], outTurb: 10, outSS: [2, 5], rateH: [0.3, 1.5], rateV: [0.3, 1.0], length: [5, 7], box: [9, 12], height: [1, 1.5], width: [2, 5], openings: [10, 20], drainV: [60, 90], weirDrop: [0.3, 0.4], minUnits: 2 };
+// Annex C.1 Table A 3 – Parshall flume: throat W, dimensions A…G (mm) and capacity range (m³/d)
+export const PARSHALL = [
+  { W: 150, A: 620, B: 600, C: 390, D: 400, E: 600, F: 300, G: 600, Qmin: 122, Qmax: 9550 },
+  { W: 300, A: 1370, B: 1340, C: 600, D: 850, E: 900, F: 600, G: 900, Qmin: 274, Qmax: 39500 },
+  { W: 460, A: 1450, B: 1420, C: 750, D: 1030, E: 900, F: 600, G: 900, Qmin: 367, Qmax: 60200 },
+  { W: 610, A: 1530, B: 1500, C: 900, D: 1210, E: 900, F: 600, G: 900, Qmin: 1030, Qmax: 81100 },
+  { W: 910, A: 1680, B: 1650, C: 1200, D: 1570, E: 900, F: 600, G: 900, Qmin: 1500, Qmax: 123000 },
+  { W: 1220, A: 1830, B: 1790, C: 1520, D: 1940, E: 900, F: 600, G: 910, Qmin: 3190, Qmax: 166000 },
+  { W: 1520, A: 1860, B: 1940, C: 1830, D: 2150, E: 900, F: 600, G: 910, Qmin: 3920, Qmax: 210000 },
+];
+/** Annex C.1 free-flow equation Q = 2.273 W Ha^(1.4757 W^0.026) (Q m³/s, W and Ha in m) → Ha */
+export const parshallHa = (Q, Wm) => (Q / (2.273 * Wm)) ** (1 / (1.4757 * Wm ** 0.026));
 export const ROUGHING_MEDIA = [['Coarse', '24–16', '18–12', '12–8'], ['Normal', '18–12', '12–8', '8–4'], ['Fine', '12–8', '8–4', '4–2']];
 // Table 5-41 tentative HRF guidelines by max SS of pre-settled water
 export const hrfRate = (ssMax) => (ssMax > 300 ? [0.5, 0.5] : ssMax >= 100 ? [0.75, 1.0] : [1.0, 1.5]);

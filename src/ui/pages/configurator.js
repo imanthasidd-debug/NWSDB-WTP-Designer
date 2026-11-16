@@ -32,7 +32,7 @@ const SHORT = {
   aeration: { none: 'No aeration', cascade: 'Cascade', tray: 'Multiple-tray' },
   rapidMix: { jump: 'Hydraulic jump', mechanical: 'Mechanical flash mixer' },
   floc: { hbaffle: 'Around-the-end baffles', vbaffle: 'Over-and-under baffles', paddle: 'Mechanical paddles' },
-  clarifier: { rect: 'Rectangular', circ: 'Circular', tube: 'Tube settlers' },
+  clarifier: { rect: 'Rectangular', circ: 'Circular', tube: 'Tube settlers', daf: 'Flotation (DAF)' },
   filter: { rsf: 'Rapid sand', dual: 'Dual media' },
   disinfectant: { gas: 'Chlorine gas', naocl: 'Sodium hypochlorite', hth: 'HTH (Ca hypochlorite)', bleach: 'Bleaching powder' },
   sludge: { beds: 'Drying beds', thickener: 'Thickener + beds', mechanical: 'Thickener + mechanical dewatering' },
@@ -68,6 +68,11 @@ function stageRows(r, rec) {
     ] },
     { sec: 'Pre-treatment', n: 2, sub: 'conditioning the raw water before coagulation' },
     { k: 'presed', l: pr.ssf ? 'Plain sedimentation / roughing' : 'Pre-sedimentation', d: 'Removes silt & sand during monsoon peaks (> 750 NTU, D3 Table 4-5)', opts: ynCards('presed', ART.presedYes, rec?.presed, tmax > 750 ? `Peaks ${tmax} NTU > 750 – essential` : pr.ssf && tmax > 10 ? 'SSF influent must be < 10 NTU' : null, null, 'Plain settling basin ahead of the plant', 'Raw water goes straight to treatment') },
+    ...(pr.ssf && pr.presed === 'yes' ? [{ k: 'presedType', l: 'Pre-treatment type', d: 'Slow sand filter influent should be < 10 NTU (D3 §5.12.3, §5.13)', opts: [
+      autoCard('presedType', rec?.presedKind || pr.presedKind, { plain: 'Plain sedimentation', roughing: 'Roughing filters' }),
+      { key: 'roughing', label: 'Roughing filters', art: ART.roughing, desc: 'Horizontal-flow gravel filters, 0.3–1.5 m/h, raw water 10–150 NTU (D3 §5.13)', rec: (rec?.presedKind || pr.presedKind) === 'roughing', bad: tmax > 150 ? `Peaks ${tmax} NTU > 150 NTU` : null },
+      { key: 'plain', label: 'Plain sedimentation', art: ART.presedYes, desc: 'Settling basin, 4–6 h detention (D3 Table 5-20)', rec: (rec?.presedKind || pr.presedKind) === 'plain' },
+    ] }] : []),
     { k: 'aeration', l: 'Aeration', d: 'Fe / Mn oxidation, CO₂ & H₂S stripping, DO (D3 §5.3)', opts: [
       autoCard('aeration', rec?.aeration, SHORT.aeration),
       { key: 'none', label: 'None', art: ART.none, desc: 'Surface water with adequate DO', rec: rec?.aeration === 'none', bad: gw && (fe > 0.3 || mn > 0.1) ? `Groundwater with Fe ${fe} / Mn ${mn} mg/L` : null },
@@ -98,6 +103,7 @@ function stageRows(r, rec) {
       { key: 'rect', label: 'Rectangular horizontal-flow', art: ART.rect, desc: 'Robust to monsoon shocks; common walls with flocculator', rec: (rec?.clarifier || 'rect') === 'rect' },
       { key: 'circ', label: 'Circular radial-flow', art: ART.circ, desc: 'Rotating scraper; good sludge removal', rec: rec?.clarifier === 'circ' },
       { key: 'tube', label: 'Tube settlers', art: ART.tube, desc: '2.5–7.5 m/h – for constrained sites (D3 §5.7.6)', rec: rec?.clarifier === 'tube' },
+      { key: 'daf', label: 'Dissolved air flotation', art: ART.daf, desc: 'Algae-laden reservoir water ≤ 100 NTU; 5–15 m/h (D3 §5.7.8)', rec: rec?.clarifier === 'daf', bad: tmax > 100 ? `Peaks ${tmax} NTU > 100 NTU (D3 §5.7.8)` : null },
     ] });
   }
   if (!pr.ssf) {

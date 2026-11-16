@@ -40,7 +40,8 @@ export function compute(inp, ctx) {
   const fl = r.floc;
   if (fl?.enabled && fl.type === 'paddle') add('Process', 'Paddle flocculator drives', fl.kw / Math.max(1, fl.stages.length * fl.nT), fl.stages.length * fl.nT, 24);
   const sed = r.sed;
-  if (sed?.enabled) add('Process', sed.type === 'circ' ? 'Clarifier scraper drives' : 'Chain-and-flight sludge scrapers', sed.type === 'circ' ? 1.5 : 0.75, sed.N, 24);
+  if (sed?.enabled && sed.type === 'daf') { add('Process', 'DAF recycle (saturator) pumps', Math.max(1.1, Math.ceil(sed.pumpKw)), 1, 24); add('Process', 'DAF air compressors & float skimmers', Math.max(0.75, +(sed.pumpKw * 0.25).toFixed(1)), 1, 24); }
+  else if (sed?.enabled && sed.type !== 'hrf') add('Process', sed.type === 'circ' ? 'Clarifier scraper drives' : 'Chain-and-flight sludge scrapers', sed.type === 'circ' ? 1.5 : 0.75, sed.N, 24);
   const co = r.coag;
   if (co) {
     add('Chemicals', 'Coagulant dosing pumps', 0.37, co.nDosingPumps - 1, 24, co.nDosingPumps);
