@@ -27,6 +27,7 @@ import * as compliance from './compliance.js';
 import * as buildings from './buildings.js';
 import * as special from './special.js';
 import * as structure from './structure.js';
+import * as assess from './assess.js';
 import { designChain } from './chain.js';
 
 export const SETUP_DEFAULTS = {
@@ -57,7 +58,7 @@ export const MODULES = [
   ['demand', demand], ['quality', quality], ['source', source], ['process', process], ['coag', coag], ['aeration', aeration],
   ['rapidmix', rapidmix], ['floc', floc], ['sed', sed], ['filt', filt], ['stab', stab], ['dis', dis],
   ['special', special], ['buildings', buildings], ['sludge', sludge], ['hyd', hyd], ['storage', storage], ['intake', intake], ['layout', layout], ['structure', structure],
-  ['energy', energy], ['cost', cost], ['compliance', compliance],
+  ['energy', energy], ['cost', cost], ['assess', assess], ['compliance', compliance],
 ];
 
 export const DEFAULT_INPUTS = () => ({

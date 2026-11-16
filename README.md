@@ -7,6 +7,21 @@ storage & pumping → residuals → hydraulic profile → site layout → power 
 
 *For the National Water Supply & Drainage Board, Sri Lanka.*
 
+**Version 1.7 – existing plant assessment, and a trial edition for sharing**
+* **Existing plant assessment** (Outputs → *Existing plant assessment*): enter the sizes of a plant that is already
+  built (flocculators, sedimentation tanks, filters, contact tank, clear-water reservoir, chemical feeders, raw- and
+  treated-water pumps) and its present average, peak and target flows. Each unit is rated against the NWSDB D3 / D2
+  criteria of the project (flocculation ≥ 20 min, surface overflow rate ≤ 24 m³/m²·d, detention ≥ 2 h, weir loading,
+  tube-settler loading, filter rate with units out of service, contact time T₁₀, feeder and duty-pump capacity).
+  The page gives the capacity of every unit, the **bottleneck**, the head-room at the present peak, the shortfall
+  against the target, and an ordered **upgrade path** with the size of each extension. *Fill from the current design*
+  copies the design of the project as a starting point. The assessment is added to the design report when switched on.
+  It uses loading and hydraulic criteria only – confirm with plant records and the condition of the works.
+* **Trial edition**: `TRIAL_DAYS=30 bash scripts/package-win.sh` builds a separate ZIP for sharing. It has every feature
+  for 30 days from the first start on each computer, shows the days left in the title bar, and marks reports and
+  drawings "Trial version – not for issue". After the period design work and exports are switched off; the project can
+  still be saved and opens in the full edition. The full edition has no time limit.
+
 **Version 1.6 – more of the plant designed, and drawings you can turn around**
 * **Interactive 3D**: the 3D view of every structure and of the whole plant can be rotated (drag), zoomed (scroll)
   and panned (shift-drag), with preset Top / Front / Side / Back views, and shows **dimensions** and labels that can be
@@ -123,7 +138,7 @@ is listed in **Library → NWSDB Design Manual D2** and in a dedicated report ch
 
 ## Install on Windows 10 / 11
 
-1. Extract `NWSDB-WTP-Designer-1.6.0-win-x64.zip` (right-click → *Extract all*).
+1. Extract `NWSDB-WTP-Designer-1.7.0-win-x64.zip` (right-click → *Extract all*).
 2. Double-click **Install.cmd**. The app is installed for the current user (no administrator rights), with Start-menu and
    desktop shortcuts and the `.wtpd` project-file association. Uninstall from *Settings → Apps*.
 3. Or run it without installing: open the `NWSDB WTP Designer` folder and double-click `NWSDB WTP Designer.exe`.
@@ -173,11 +188,11 @@ with jar tests and pilot data. The tool supports, and does not replace, the judg
 src/core      water chemistry & properties, criteria library, SLS 614, Sri Lanka data, NWSDB D2 (d2.js) and D3 (d3.js) tables, calc logger
 src/engine    one pure module per design step + index.js (dependency-ordered computeAll)
 src/ui        shell, schema-driven forms, d3 charts, drawing engine (SVG + DXF), report & Excel writers, pages
-electron      main process (file dialogs, PDF export, single instance, file association) and secure preload bridge
+electron      main process (file dialogs, PDF export, single instance, file association), secure preload bridge, trial.js (trial edition only)
 test          engine.test.mjs (hand-calculation checks), functional and screenshot tests
 ```
 
 * Run from source: `npm install` then `npm start` (Node 20+).
-* Engine tests: `npm test` (170 checks incl. specified capacity, design chain and impact ripple, D2 tables & formulae, D3 tables and annex design examples, CT tables, carbonate chemistry, continuity, every unit combination).
+* Engine tests: `npm test` (280 checks incl. specified capacity, design chain and impact ripple, D2 tables & formulae, D3 tables and annex design examples, CT tables, carbonate chemistry, continuity, every unit combination).
 * **Building a signed installer:** `npm run dist` produces an NSIS installer and a portable EXE in `release/` with the
   application icon and `.wtpd` association embedded. Sign them with the NWSDB code-signing certificate if available.

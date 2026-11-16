@@ -323,5 +323,49 @@ for (const route of ['conventional', 'direct', 'ssf']) for (const floc of ['hbaf
   ok(by('Filter run (peak)') && by('Filter run (peak)').to < by('Filter run (peak)').from, 'impact ripples to filtration: shorter filter runs');
   ok(d.items.some((x) => x.stage === 'cost'), 'impact ripples to the cost estimate');
 }
+// ---- v1.7: existing plant assessment + trial bookkeeping
+{
+  const { fromDesign } = await import('../src/engine/assess.js');
+  const p = newProject();
+  let r = computeAll(p);
+  ok(r.assess && r.assess.enabled === false && r.assess.checks.length === 0, 'assessment is off by default and adds no checks');
+  p.inputs.assess = { enabled: true, ...fromDesign(r) };
+  r = computeAll(p);
+  const a = r.assess;
+  ok(!r.errors.assess && a.units.length >= 8, 'assessment rates every unit of the copied design');
+  ok(a.units.every((u) => u.status === 'ok') && a.path.length === 0 && a.shortfall === 0, 'a design copied as "existing" carries its own design flow');
+  const sed = a.units.find((u) => u.key === 'sed');
+  near(sed.cap, p.inputs.assess.sdN * p.inputs.assess.sdL * p.inputs.assess.sdW * 24, 1, 'sedimentation capacity = area × 24 m³/m²·d (D3)');
+  const fl = a.units.find((u) => u.key === 'floc');
+  near(fl.cap, (p.inputs.assess.flN * p.inputs.assess.flL * p.inputs.assess.flW * p.inputs.assess.flH / 20) * 1440, 1, 'flocculator capacity = volume / 20 min');
+  near(a.plantCap, Math.min(...a.units.filter((u) => u.hard).map((u) => u.cap)), 1e-6, 'plant capacity = smallest unit capacity');
+  p.inputs.assess.qTarget = a.qTarget * 1.4;
+  const b = computeAll(p).assess;
+  ok(b.path.length >= 4 && b.shortfall > 0 && b.bottleneck, 'raising the target 40 % gives a bottleneck and an upgrade path');
+  ok(b.path.every((x, i) => i === 0 || x.capNow >= b.path[i - 1].capNow), 'upgrade path is ordered from the tightest unit');
+  ok(b.checks.some((c) => c.status !== 'ok'), 'units short of the target are flagged');
+  p.inputs.assess.qNow = a.qTarget * 1.3; p.inputs.assess.qPeak = 0;
+  ok(computeAll(p).assess.units.some((u) => u.status === 'fail'), 'units overloaded at the present peak are marked red');
+  p.inputs.assess = { enabled: true, flN: 0, sdN: 0, ftN: 0 };
+  const e = computeAll(p);
+  ok(!e.errors.assess && e.assess.units.length === 0 && e.assess.plantCap === 0, 'assessment with nothing entered does not fail');
+
+  const { createRequire } = await import('node:module');
+  const fs = await import('node:fs'); const os = await import('node:os'); const path = await import('node:path');
+  process.env.WTP_TRIAL_NOREG = '1';
+  const T = createRequire(import.meta.url)('../electron/trial.js');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wtp-trial-'));
+  const now = Date.UTC(2026, 10, 16), D = T.DAY;
+  let s = T.trialStatus(dir, 30, now);
+  ok(s.trial && !s.expired && s.daysLeft === 30 && s.ends === '2026-12-16', 'trial: first run starts 30 days');
+  ok(T.trialStatus(dir, 30, now + 10 * D).daysLeft === 20, 'trial: 20 days left after 10 days');
+  ok(T.trialStatus(dir, 30, now - 100 * D).daysLeft === 20, 'trial: setting the clock back gains nothing');
+  ok(T.trialStatus(dir, 30, now + 29.5 * D).daysLeft === 1, 'trial: last day');
+  ok(T.trialStatus(dir, 30, now + 30 * D).expired, 'trial: ends after 30 days');
+  ok(T.trialStatus(dir, 30, now + 5 * D).expired, 'trial: stays ended when the clock is set back');
+  fs.writeFileSync(T.fileOf(dir), `${now + 300 * D}.${now + 300 * D}.00000000000000000000`);
+  ok(T.trialStatus(dir, 30, now).expired, 'trial: an edited record is rejected');
+  fs.rmSync(dir, { recursive: true, force: true });
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

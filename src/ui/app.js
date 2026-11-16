@@ -11,6 +11,7 @@ import { SAMPLES } from './samples.js';
 import { loadAutosave, markSaved, navigate, normalise, on, redo, resetModule, saveSettings, setProject, store, undo } from './store.js';
 import { buildWorkbook } from './xlsx.js';
 import { defaultHint, fieldFor, locate } from './locate.js';
+import { edition, fmtDate } from './edition.js';
 import { connectionStrip, mountImpactDock, updateImpactDock } from './chain.js';
 
 const isElectron = !!window.wtp;
@@ -97,6 +98,25 @@ function fileMenu(anchor) {
 }
 
 // ------------------------------------------------------------------ shell
+// ---- trial edition
+function trialInfo() {
+  modal('Trial version', `<p>This is a trial copy of NWSDB WTP Designer. Every feature works for <b>${edition.days} days</b> from the first start on this computer${edition.ends ? ` – until <b>${fmtDate(edition.ends)}</b>` : ''}.</p><ul style="margin:8px 0 0 18px;padding:0"><li>${edition.expired ? 'The trial period has ended.' : `${edition.daysLeft} day${edition.daysLeft === 1 ? '' : 's'} left.`}</li><li>Reports and drawings carry a “Trial version – not for issue” mark.</li><li>Project files (.wtpd) made with this copy open in the full version without any change.</li></ul>`);
+}
+let locked = false;
+function trialLock() {
+  if (locked) return;
+  locked = true;
+  const save = h('button', { class: 'btn', onclick: () => saveProject(true) }, icon('save'), 'Save my project');
+  const exit = h('button', { class: 'btn primary', onclick: () => (isElectron ? window.wtp.quit() : null) }, 'Close');
+  document.body.append(h('div', { class: 'trial-lock' }, h('div', { class: 'tl-card' },
+    h('div', { class: 'tl-logo', html: bannerImg(64) }),
+    h('h2', null, 'The trial period has ended'),
+    h('p', null, `This trial copy of NWSDB WTP Designer ran for ${edition.days} days${edition.started ? ` from ${fmtDate(edition.started)}` : ''}. Design work and exports are now switched off.`),
+    h('p', null, 'Your project is not lost: save it as a .wtpd file and open it in the full version. To keep using the software, ask the person who gave you this copy for the full version.'),
+    h('div', { class: 'tl-btns' }, save, exit))));
+  document.removeEventListener('keydown', onKey);
+}
+
 function buildShell(root) {
   els.logo = h('span', { class: 'logo-slot' });
   els.undo = h('button', { class: 'tb-btn', title: 'Undo (Ctrl+Z)', onclick: undo }, icon('undo'));
@@ -112,6 +132,7 @@ function buildShell(root) {
     els.undo, els.redo, h('span', { class: 'sep' }),
     h('div', { class: 'proj' }, icon('droplets'), els.pname, els.dirty),
     h('div', { class: 'spacer' }),
+    edition.trial ? h('button', { class: 'trial-chip' + (edition.daysLeft <= 5 ? ' low' : ''), title: 'About this trial copy', onclick: trialInfo }, icon('timer'), edition.expired ? 'Trial ended' : `Trial · ${edition.daysLeft} day${edition.daysLeft === 1 ? '' : 's'} left`) : null,
     h('button', { class: 'tb-btn', title: 'Design report', onclick: () => navigate('report') }, icon('file'), 'Report'),
     themeBtn);
   els.sidebar = h('nav', { class: 'sidebar' });
@@ -304,6 +325,9 @@ export async function boot(root) {
   renderSidebar(); renderStatus(); renderMain();
   document.addEventListener('keydown', onKey);
   window.wtp?.onOpenFile?.((f) => loadText(f.content, f.path));
+  window.wtp?.onTrialExpired?.((t) => { Object.assign(edition, t || {}, { expired: true }); trialLock(); });
+  if (edition.trial && edition.expired) trialLock();
+  else if (edition.trial && !sessionStorage.getItem('wtp-trial-seen')) { try { sessionStorage.setItem('wtp-trial-seen', '1'); } catch { /* private mode */ } setTimeout(() => toast(`Trial version – ${edition.daysLeft} day${edition.daysLeft === 1 ? '' : 's'} left`, 'info'), 1600); }
   window.wtp?.onCloseRequest?.(async () => { const ok = await confirmDiscard(); window.wtp.closeResponse(ok); });
   setTimeout(() => { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 450); }, 900);
 }

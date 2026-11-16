@@ -6,7 +6,7 @@ import { storage, sludge, hyd, layout, energy, cost } from './plant.js';
 import { dashboard, compliance, checks } from './outputs.js';
 import { chainPage } from '../chain.js';
 import { ratebook } from './ratebook.js';
-import { buildings, special, structure } from './extra.js';
+import { assess, buildings, special, structure } from './extra.js';
 import { report, criteria, d2manual, d3manual, toolbox, help, settings } from './library.js';
 
 export const PAGES = [
@@ -14,7 +14,7 @@ export const PAGES = [
   demand, quality, source, process,
   intake, aeration, coag, rapidmix, floc, sed, filt, special, dis, stab,
   storage, buildings, sludge, hyd, structure, layout, energy, cost,
-  compliance, checks, report,
+  compliance, checks, assess, report,
   criteria, d2manual, d3manual, ratebook, toolbox, help, settings,
 ];
 export const GROUPS = ['Project', 'Design basis', 'Treatment units', 'Plant-wide', 'Outputs', 'Library'];

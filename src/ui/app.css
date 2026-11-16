@@ -654,3 +654,15 @@ table.dep td.self { background: var(--surface-3); }
 .v3-bar button:hover { border-color: var(--primary); }
 .v3-bar button.on { background: var(--primary); border-color: var(--primary); color: #fff; }
 .v3-sep { width: 8px; }
+
+/* ---------- v1.7: trial edition ---------- */
+.trial-chip { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 11px; margin-right: 6px; border-radius: 13px; border: 1px solid rgba(255,255,255,.45); background: rgba(255,255,255,.14); color: #fff; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; -webkit-app-region: no-drag; }
+.trial-chip:hover { background: rgba(255,255,255,.24); }
+.trial-chip.low { background: #f4b740; border-color: #f4b740; color: #3a2500; }
+.trial-chip svg { width: 14px; height: 14px; }
+.trial-lock { position: fixed; inset: 0; z-index: 1400; display: grid; place-items: center; background: radial-gradient(120% 120% at 0% 0%, #1b74cf 0%, var(--navy) 60%, #061f40 100%); }
+.trial-lock .tl-card { width: min(560px, 92vw); background: var(--surface); color: var(--text); border-radius: 14px; box-shadow: 0 24px 70px rgba(0,0,0,.4); padding: 30px 34px 26px; text-align: center; }
+.trial-lock .tl-logo { display: inline-block; background: #fff; border-radius: 10px; padding: 8px 12px; border: 1px solid var(--border); }
+.trial-lock h2 { margin: 18px 0 8px; font-size: 22px; }
+.trial-lock p { margin: 8px 0; color: var(--text-2); line-height: 1.5; }
+.trial-lock .tl-btns { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }

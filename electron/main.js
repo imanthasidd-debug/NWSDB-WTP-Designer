@@ -6,6 +6,21 @@ const fs = require('node:fs');
 const os = require('node:os');
 
 const APP_ID = 'lk.gov.nwsdb.wtpdesigner';
+const TRIAL_DAYS = 0; // 0 = full edition; scripts/package-win.sh sets the number of days for the trial edition
+let trial = null;     // trial status of this run (trial edition only)
+const trialNow = () => {
+  if (!TRIAL_DAYS) return null;
+  try { trial = require('./trial.js').trialStatus(app.getPath('userData'), TRIAL_DAYS); }
+  catch { trial = { trial: true, days: TRIAL_DAYS, expired: true, daysLeft: 0, ends: '', started: '' }; }
+  return trial;
+};
+/** exports stop when the trial has ended (checked again at every export, the app may stay open for days) */
+const trialBlocked = () => {
+  if (!TRIAL_DAYS) return false;
+  if (!trialNow().expired) return false;
+  if (win) { win.webContents.send('trial-expired', trial); dialog.showMessageBox(win, { type: 'info', title: 'Trial period ended', message: 'The trial period of NWSDB WTP Designer has ended.', detail: 'Exports are switched off. Your project files (.wtpd) are kept and open in the full version.' }); }
+  return true;
+};
 const DIST = path.join(__dirname, '..', 'dist');
 let win = null;
 let forceClose = false;
@@ -35,7 +50,7 @@ function createWindow() {
     minWidth: 1100,
     minHeight: 680,
     show: false,
-    title: 'NWSDB WTP Designer',
+    title: TRIAL_DAYS ? 'NWSDB WTP Designer – Trial' : 'NWSDB WTP Designer',
     backgroundColor: '#0a3d7a',
     icon: path.join(DIST, process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
     titleBarStyle: 'hidden',
@@ -71,6 +86,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
 
 app.whenReady().then(() => {
   if (process.platform === 'win32') app.setAppUserModelId(APP_ID);
+  trialNow();
   createWindow();
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
@@ -91,6 +107,7 @@ const FILTERS = {
 const docsDir = () => { try { return app.getPath('documents'); } catch { return os.homedir(); } };
 const toBuffer = (data) => (typeof data === 'string' ? Buffer.from(data, 'utf8') : Buffer.from(data instanceof ArrayBuffer ? new Uint8Array(data) : data));
 
+ipcMain.on('trial-status', (e) => { e.returnValue = TRIAL_DAYS ? (trial || trialNow()) : null; });
 ipcMain.handle('initial-file', () => (pendingFile ? readProject(pendingFile) : null));
 ipcMain.handle('open-project', async () => {
   const r = await dialog.showOpenDialog(win, { title: 'Open project', defaultPath: docsDir(), properties: ['openFile'], filters: [...FILTERS.wtpd, ...FILTERS.json] });
@@ -110,6 +127,7 @@ ipcMain.handle('save-project', async (_e, content, filePath, defaultName) => {
   return p;
 });
 ipcMain.handle('save-file', async (_e, defaultName, data) => {
+  if (trialBlocked()) return null;
   const ext = path.extname(defaultName).slice(1).toLowerCase();
   const r = await dialog.showSaveDialog(win, { title: 'Export', defaultPath: path.join(docsDir(), defaultName), filters: FILTERS[ext] || [] });
   if (r.canceled || !r.filePath) return null;
@@ -117,6 +135,7 @@ ipcMain.handle('save-file', async (_e, defaultName, data) => {
   return r.filePath;
 });
 ipcMain.handle('export-pdf', async (_e, html, defaultName, headerText, opts = {}) => {
+  if (trialBlocked()) return null;
   const r = await dialog.showSaveDialog(win, { title: opts.title || 'Export design report', defaultPath: path.join(docsDir(), defaultName || 'design-report.pdf'), filters: FILTERS.pdf });
   if (r.canceled || !r.filePath) return null;
   const tmp = path.join(os.tmpdir(), `wtp-report-${Date.now()}.html`);

@@ -2,7 +2,10 @@
 // structural pre-design
 import { fmt } from '../../core/util.js';
 import { DEFLUOR, OXIDANTS, SLS } from '../../engine/special.js';
-import { card, kpis, kvTable, notes, structureCard, table } from '../results.js';
+import { fromDesign } from '../../engine/assess.js';
+import { h, icon, toast } from '../dom.js';
+import { card, chartCard, kpis, kvTable, notes, statusBadge, structureCard, table } from '../results.js';
+import { setInput, store } from '../store.js';
 
 const f0 = (v) => fmt(v, 0), f1 = (v) => fmt(v, 1), f2 = (v) => fmt(v, 2);
 
@@ -118,6 +121,70 @@ export const structure = {
         card('Walls, bases and quantities', table([{ k: 'name', l: 'Structure' }, { k: 'n', l: 'Units', num: true }, { k: 'h', l: 'Wall height (m)', num: true, fmt: f2 }, { k: 't', l: 'Wall (mm)', num: true, fmt: f0 }, { k: 'bars', l: 'Vertical bars, water face' }, { k: 'min', l: 'Other bars' }, { k: 'tb', l: 'Base (mm)', num: true, fmt: f0 }, { k: 'vol', l: 'Concrete (m³)', num: true, fmt: f0 }, { k: 'kg', l: 'Steel (t)', num: true, fmt: f1 }, { k: 'fos', l: 'Flotation FoS (empty)', num: true }], rows, { totals: { vol: s.conc, kg: s.steel / 1000 } }), { flush: true, sub: 'The bill of quantities uses this average steel content unless a value is entered on the Cost estimate page' }),
         structureCard(r, 'rebar', { height: 460, title: 'Typical wall and base reinforcement (preliminary)' }),
       ],
+    };
+  },
+};
+
+// ------------------------------------------------------------------ Existing-plant assessment
+const on = (i) => !!i.assess?.enabled;
+const copyDesign = () => { const cur = store.project.inputs.assess || {}; setInput(['assess'], { ...cur, enabled: true, ...fromDesign(store.results) }, { immediate: true }); toast('Existing-plant data filled from the current design – now edit it to the real plant'); };
+export const assess = {
+  id: 'assess', title: 'Existing plant assessment', sub: 'Enter the sizes of an existing plant and its flows: capacity of every unit against NWSDB D3, the bottleneck, and what to upgrade for a target flow', icon: 'target', group: 'Outputs', mod: 'assess',
+  fields: [
+    { k: 'enabled', l: 'Assess an existing plant', t: 'bool' },
+    { t: 'help', html: 'Enter what is built, not what this project designs. Raw-water quality, doses and criteria are taken from the other pages. Leave a size at 0 to leave that unit out of the rating.' },
+    { t: 'custom', render: () => h('button', { class: 'btn', onclick: copyDesign }, icon('copy'), 'Fill from the current design') },
+    { sec: 'Flows', show: on },
+    { k: 'qNow', l: 'Present average production', u: 'm³/d', auto: true, autoVal: (r) => r.assess?.qNow, note: '0 = 80 % of the target' },
+    { k: 'qPeak', l: 'Present peak-day throughput', u: 'm³/d', auto: true, autoVal: (r) => r.assess?.qPeak, note: '0 = 1.15 × average' },
+    { k: 'qTarget', l: 'Target flow', u: 'm³/d', auto: true, autoVal: (r) => r.assess?.qTarget, note: '0 = design capacity from the Demand page' },
+    { sec: 'Flocculators', show: on },
+    { k: 'flN', l: 'Number of basins', step: 1 }, { k: 'flL', l: 'Length', u: 'm' }, { k: 'flW', l: 'Width', u: 'm' }, { k: 'flH', l: 'Water depth', u: 'm', step: 0.1 },
+    { sec: 'Sedimentation', show: on },
+    { k: 'sdType', l: 'Type', t: 'sel', o: [['rect', 'Rectangular'], ['circ', 'Circular']] },
+    { k: 'sdN', l: 'Number of tanks', step: 1 },
+    { k: 'sdL', l: 'Length', u: 'm', show: (i) => i.assess.sdType !== 'circ' }, { k: 'sdW', l: 'Width', u: 'm', show: (i) => i.assess.sdType !== 'circ' }, { k: 'sdD', l: 'Diameter', u: 'm', show: (i) => i.assess.sdType === 'circ' },
+    { k: 'sdH', l: 'Side water depth', u: 'm', step: 0.1 },
+    { k: 'sdWeir', l: 'Total outlet weir length', u: 'm', note: '0 = not rated (circular: periphery)' },
+    { k: 'sdTubes', l: 'Tube settlers fitted', t: 'bool', show: (i) => i.assess.sdType !== 'circ' },
+    { k: 'sdTubeCover', l: 'Area covered by tubes', u: '%', show: (i) => i.assess.sdType !== 'circ' && i.assess.sdTubes },
+    { sec: 'Filters', show: on },
+    { k: 'ftType', l: 'Type', t: 'sel', o: [['rsf', 'Rapid gravity – sand'], ['dual', 'Rapid gravity – dual media'], ['ssf', 'Slow sand']] },
+    { k: 'ftN', l: 'Number of filters', step: 1 }, { k: 'ftL', l: 'Bed length', u: 'm' }, { k: 'ftW', l: 'Bed width (total per filter)', u: 'm' },
+    { sec: 'Disinfection and storage', show: on },
+    { k: 'ctV', l: 'Contact tank volume', u: 'm³' }, { k: 'ctBF', l: 'Baffle factor T₁₀/T', step: 0.1, note: 'D3 Table 6-2: 0.1 unbaffled … 0.7 serpentine' },
+    { k: 'cwrV', l: 'Clear-water reservoir volume', u: 'm³' },
+    { sec: 'Chemical feed', show: on },
+    { k: 'coagPumps', l: 'Coagulant dosing pumps on duty', step: 1 }, { k: 'coagLh', l: 'Capacity of each pump', u: 'L/h' }, { k: 'coagPct', l: 'Solution strength', u: '%' },
+    { k: 'coagDose', l: 'Peak coagulant dose', u: 'mg/L', auto: true, autoVal: (r) => r.coag?.Ddes, note: '0 = design dose of this project' },
+    { k: 'clKgH', l: 'Duty chlorinator capacity', u: 'kg/h' },
+    { k: 'clDose', l: 'Chlorine dose', u: 'mg/L', auto: true, autoVal: (r) => r.dis?.totDose, note: '0 = dose of this project' },
+    { sec: 'Pumping (duty pumps only)', show: on },
+    { k: 'rawPumps', l: 'Raw-water duty pumps', step: 1 }, { k: 'rawQ', l: 'Flow of each', u: 'm³/h' },
+    { k: 'twPumps', l: 'Treated-water duty pumps', step: 1 }, { k: 'twQ', l: 'Flow of each', u: 'm³/h' },
+  ],
+  render(r) {
+    const a = r.assess;
+    if (!a?.enabled) return { overview: [notes([{ level: 'info', title: 'Existing plant assessment is off', text: 'Switch on "Assess an existing plant" and enter the sizes of the units that are built. "Fill from the current design" copies this project\'s design as a starting point, which you then change to the real plant. The page then shows the capacity of every unit against the NWSDB D3 criteria, the bottleneck and the upgrades needed for a target flow.' }])] };
+    const data = [...a.units].sort((x, y) => x.cap - y.cap).map((u) => ({ g: u.name, v: u.cap / 1000 }));
+    const st = a.plantCap < a.qPeak ? 'fail' : a.plantCap < a.qTarget ? 'warn' : 'ok';
+    return {
+      overview: [
+        kpis([
+          { label: 'Present plant capacity', value: f0(a.plantCap), unit: 'm³/d', sub: `limited by ${a.bottleneck.toLowerCase()}`, accent: true, icon: 'target', status: st },
+          { label: 'Present peak flow', value: f0(a.qPeak), unit: 'm³/d', sub: a.headroom >= 0 ? `head-room ${f0(a.headroom)} m³/d` : `overloaded by ${f0(-a.headroom)} m³/d`, status: a.headroom >= 0 ? 'ok' : 'fail' },
+          { label: 'Target flow', value: f0(a.qTarget), unit: 'm³/d', sub: a.shortfall > 0 ? `shortfall ${f0(a.shortfall)} m³/d` : 'can be met now', status: a.shortfall > 0 ? 'warn' : 'ok' },
+          { label: 'Units to upgrade', value: a.path.length, sub: `of ${a.units.filter((u) => u.hard).length} rated` },
+        ]),
+        notes(a.notes),
+        card('Capacity of each unit', table([
+          { k: 'status', l: '', v: (u) => statusBadge(u.status, true) }, { k: 'name', l: 'Unit' }, { k: 'param', l: 'Governing criterion' },
+          { k: 'atPeak', l: 'At present peak', num: true, fmt: (v, u) => `${f2(v)} ${u.unit}` }, { k: 'atTarget', l: 'At target', num: true, fmt: (v, u) => `${f2(v)} ${u.unit}` }, { k: 'limit', l: 'D3 limit' },
+          { k: 'cap', l: 'Capacity (m³/d)', num: true, fmt: f0 }, { k: 'util', l: 'Used at peak', num: true, fmt: (v) => f0(v) + ' %' }, { k: 'action', l: 'To reach the target', v: (u) => h('span', { class: 'small' }, u.action) },
+        ], a.units), { flush: true, sub: 'red = overloaded at the present peak · amber = adequate now but not for the target · the clear-water reservoir is advisory' }),
+        a.path.length ? card('Upgrade path to the target flow', table([{ k: 'step', l: 'Step' }, { k: 'unit', l: 'Unit limiting the plant' }, { k: 'capNow', l: 'Its capacity (m³/d)', num: true, fmt: f0 }, { k: 'action', l: 'Upgrade' }, { k: 'after', l: 'Plant capacity after this step (m³/d)', num: true, fmt: f0 }], a.path), { flush: true, sub: 'units are relieved in the order in which they limit the plant' }) : null,
+      ],
+      visuals: [chartCard('Unit capacities (thousand m³/d)', { type: 'hbar', data, x: { key: 'g' }, y: { label: '1,000 m³/d' }, series: [{ key: 'v', label: 'Capacity' }], valueFormat: (v) => f1(v), unit: '× 1,000 m³/d', height: 40 + data.length * 34, marginLeft: 190 }, { sub: `present peak ${f1(a.qPeak / 1000)} · target ${f1(a.qTarget / 1000)} thousand m³/d` })],
     };
   },
 };
