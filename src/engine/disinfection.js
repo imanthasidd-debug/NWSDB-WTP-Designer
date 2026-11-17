@@ -52,7 +52,7 @@ export function compute(inp, ctx) {
   const T = q.T;
   const key = d.agent === 'auto' ? proc.disinfectant : d.agent;
   const A = AGENTS[key] || AGENTS.gas;
-  // NWSDB RB 2025 A-CH/02: 900 kg drums (225 LKR/kg) for large plants, 68 kg cylinders (544 LKR/kg) for small ones
+  // NWSDB Rates 2026 A-CH/02: 900 kg drums (227.7 LKR/kg) for large plants, 68 kg cylinders (551.5 LKR/kg) for small ones
   const price = d.price > 0 ? d.price : key === 'gas' && ((+d.demand || 1.2) + (+d.residual || 0.8)) * ctx.res.demand.Qd / 1000 < 15 ? RBCHEM.cl2small.v : A.price;
   const cd = chlorineDose(ctx);
   const Qd = dem.Qd, Qh = dem.Qh;

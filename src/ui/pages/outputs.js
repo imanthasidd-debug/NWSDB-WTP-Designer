@@ -66,7 +66,7 @@ export const dashboard = {
     const d = r.demand;
     const sum = r.summary;
     const hero = h('div', { class: 'dash-hero' },
-      h('div', { class: 'dh-brand' }, h('div', { class: 'dh-logo', html: bannerImg(46) }), h('div', { class: 'dh-credit' }, 'WTP Designer v1.8 · ', h('b', null, 'NWSDB Design Manuals D2 & D3 · Rate Book 2025'))),
+      h('div', { class: 'dh-brand' }, h('div', { class: 'dh-logo', html: bannerImg(46) }), h('div', { class: 'dh-credit' }, 'WTP Designer v1.8 · ', h('b', null, 'NWSDB Design Manuals D2 & D3 · Rates 2026'))),
       h('div', { class: 'dh-main' },
         h('div', { class: 'dh-name' }, s.name || 'Untitled project'),
         h('div', { class: 'dh-meta' }, [s.code, s.district ? s.district + ' District' : '', s.source || s.sourceType, s.client].filter(Boolean).join(' · ')),

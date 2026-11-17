@@ -1,5 +1,5 @@
-// Capital cost (quantity-based BOQ priced from the NWSDB Rate Book 2025) and annual O&M cost → unit cost of water.
-// Default estimate format: NWSDB RB 2025 "Total Cost Estimate" (How to use, Table 1, Tables 2 & 4); the NWSDB Design
+// Capital cost (quantity-based BOQ priced from NWSDB Rates 2026 – RB 2025 Rev. 01-2026) and annual O&M cost → unit cost of water.
+// Default estimate format: NWSDB "Total Cost Estimate" (How to use; Table 1 as revised by Annex 13 of the 2026 circular; Tables 2 & 4); the NWSDB Design
 // Manual D2 §10.2 format remains available.  O&M allowances and comparative analysis follow D2 §10.1–10.3.
 import { Calc, n } from '../core/calc.js';
 import { fmt } from '../core/util.js';
@@ -10,15 +10,15 @@ import {
 } from '../core/ratebook.js';
 
 export const DEFAULTS = {
-  format: 'rb2025',       // rb2025 (NWSDB Rate Book 2025 TCE) | d2 (Design Manual D2 §10.2, 1989)
+  format: 'rb2025',       // rb2025 (NWSDB Rate Book TCE – Rates 2026) | d2 (Design Manual D2 §10.2, 1989)
   method: 'composite',    // composite = RB Section A composite rates & unit-cost graphs (TCE, How to use item 1) | boq = quantity-based BOQ with Section B unit rates (Engineer's estimate)
   markup: RB.markup,      // contractor's markup added to RB rates that exclude it (How to use, item 2)
-  // rate overrides – 0 = NWSDB RB 2025 rate
+  // rate overrides – 0 = NWSDB Rates 2026 rate
   rExcavation: 0, rEWS: 0, rConcrete: 0, rBlinding: 0, rFormwork: 0, rSteel: 0, rWaterbar: 0, rSand: 0, rGravel: 0, rAnthracite: 0,
   rFence: 0, rRoad: 0, rPipeFactor: 1.0,
   steelPerM3: 0,          // kg/m³ reinforcement; 0 = average of the structural pre-design (Structures page), else 110
   wallT: 0.35, slabT: 0.4, roofT: 0.25, blindingT: 0.075, roadPct: 12,
-  // pipes & M&E (RB 2025 Section A tables / graphs)
+  // pipes & M&E (Section A tables / graphs – Rates 2026)
   origin: 'asian',        // DI / HDPE pipes: asian | nonasian | local (HDPE)
   ewsPct: 25, dewPct: 25, // allowance of the earthwork-support and dewatering basic costs (pipe tables, note 4)
   sparesPct: 10,          // spare parts on pumps & generators (RB: up to 20–25 % for TCE)
@@ -27,7 +27,7 @@ export const DEFAULTS = {
   scraperRect: 12e6, scraperCirc: 18e6, filterEquip: 8e6, chemSystem: 15e6, chlorAccessories: 6e6, hypoSystem: 6e6, screens: 3.5e6,
   driveBase: 2.5e6, drivePerKw: 300000, thickMech: 9e6, dewaterUnit: 28e6, tubePerM2: 85000, launderPerM: 60000, rBeds: 18000,
   icaPct: 6, cablePct: 15, yardPipingPct: 12,
-  // RB 2025 total cost estimate (How to use)
+  // total cost estimate (How to use; Annex 13 format)
   procurement: 'ncb',     // ncb | icb (Table 2 LC / FC factors)
   fundSource: 'gosl',     // Table 4 row
   prelimPct: 0,           // 0 = RB: 4 % (> LKR 500 M) / 5 %
@@ -36,8 +36,9 @@ export const DEFAULTS = {
   powerSupply: true, supplyKv: 11, roadReinst: 0, eia: 0, vehicles: 14e6, training: 0, duties: 0,
   contPct: 0,             // 0 = RB maximum 10 % of Sub Total 1 (+ duties)
   vatPct: RB.vat,
-  escalate: true, implStart: 2027, implYears: 2, // escalation beyond 31.12.2025: LC 5 % p.a., FC 3 % p.a.
-  landPerPerch: 0, usd: 300,
+  escalate: true, implStart: 2027, implYears: 2, // escalation beyond 31.12.2026 (base year 2026): LC 5 % p.a., FC 3 % p.a.
+  sscl: true,             // Annex 13: allow for SSCL = Sub Total 3 / 97.5 × 2.5 before VAT
+  landPerPerch: 0, usd: RB.usd, // Annex 14: CBSL rate 31.08.2026
   // D2 §10.2 format (when format = d2)
   stage: 'feasibility', include2yrOM: true, escalationPct: 0, escalationYears: 2, d2EngPct: 8, d2PrelimPct: 0, d2ContPct: 0,
   facilities: true,
@@ -131,7 +132,7 @@ export function compute(inp, ctx) {
     const ewsA = Math.PI * (ik.Dw + 3) * Math.max(2, h * 0.6);
     addCivil('Intake well – earthwork support', ewsA, 'm²', R.ews, 'Intake well', rref('ews', d.rEWS), 'Intake');
     bldg('Intake pump house superstructure', 80, 'pumpIsolated', 'Intake well', 'Intake');
-    addME('Coarse & fine screens (incl. lifting gear) – not in RB 2025, indicative', 2, 'set', d.screens, 'Intake', 'indicative', 'Intake');
+    addME('Coarse & fine screens (incl. lifting gear) – not in the Rate Book, indicative', 2, 'set', d.screens, 'Intake', 'indicative', 'Intake');
     pumpSets('Raw-water pumping', ik.pumps, ik.inputs.pumpKind, 'Intake');
     mainCost('Raw-water rising main', { ...ik.pumps, Qp: ik.Q }, ik.inputs.mainLength, 'Mains');
     const fm = flowMeterCost(Math.min(ik.pumps.dn, 1200));
@@ -142,7 +143,7 @@ export function compute(inp, ctx) {
   struct('Inlet chamber', rcTank(5, 4, 3, d));
   const rm = r.rapidmix;
   if (rm?.enabled) {
-    if (rm.type === 'mechanical') { struct('Flash mixers', rcTank(rm.B * rm.nBasins + 0.3, rm.B, rm.H + 0.5, d)); addME('Flash mixer drives – not in RB 2025, indicative', rm.nBasins, 'nr', d.driveBase + d.drivePerKw * rm.motor, 'Process', 'indicative'); }
+    if (rm.type === 'mechanical') { struct('Flash mixers', rcTank(rm.B * rm.nBasins + 0.3, rm.B, rm.H + 0.5, d)); addME('Flash mixer drives – not in the Rate Book, indicative', rm.nBasins, 'nr', d.driveBase + d.drivePerKw * rm.motor, 'Process', 'indicative'); }
     else struct('Hydraulic-jump channel', rcTank(rm.Lj + 3, rm.b, rm.y2 + 1.2, d));
   }
   const fl = r.floc;
@@ -156,21 +157,21 @@ export function compute(inp, ctx) {
       // 150 mm RC baffle walls built up from the WRS rates (concrete + 2 faces of formwork + steel)
       const baffle = 0.15 * R.conc + 2 * R.form + 0.15 * d.steelPerM3 * R.steel;
       addCivil('Flocculator baffle walls (150 mm RC)', area, 'm²', baffle, 'Flocculators', rbRef('B-WRS/01 A–D (built-up: 0.15 m³ concrete + 2 m² formwork + steel per m²)'));
-    } else { const nDr = fl.stages.reduce((a, s) => a + (s.nSh || 1), 0) * nT; addME('Paddle flocculator drives – not in RB 2025, indicative', nDr, 'nr', d.driveBase + d.drivePerKw * (fl.kw / Math.max(1, nDr)), 'Process', 'indicative'); }
+    } else { const nDr = fl.stages.reduce((a, s) => a + (s.nSh || 1), 0) * nT; addME('Paddle flocculator drives – not in the Rate Book, indicative', nDr, 'nr', d.driveBase + d.drivePerKw * (fl.kw / Math.max(1, nDr)), 'Process', 'indicative'); }
   }
   const sed = r.sed;
   if (sed?.enabled) {
     if (sed.type === 'circ') {
       const conc = sed.N * (Math.PI * sed.D * sed.totalDepth * d.wallT + Math.PI * (sed.D / 2) ** 2 * d.slabT);
       struct('Circular clarifiers', { conc, form: sed.N * 2 * Math.PI * sed.D * sed.totalDepth, exc: sed.N * Math.PI * (sed.D / 2 + 1) ** 2 * 2, blind: sed.N * Math.PI * (sed.D / 2 + 0.5) ** 2 * d.blindingT, wb: sed.N * Math.PI * sed.D });
-      addME('Clarifier scraper bridges – not in RB 2025, indicative', sed.N, 'nr', d.scraperCirc, 'Process', 'indicative');
+      addME('Clarifier scraper bridges – not in the Rate Book, indicative', sed.N, 'nr', d.scraperCirc, 'Process', 'indicative');
     } else {
       struct('Sedimentation tanks', rcTank(sed.L, sed.N * sed.W, sed.totalDepth, d, (sed.N - 1) * sed.L));
-      if (sed.type === 'daf') { addME('DAF saturators, recycle pumps, compressors & nozzles – not in RB 2025, indicative', 1, 'lot', 6e6 + 9000 * Q / 10, 'Process', 'indicative'); addME('DAF float skimmers – not in RB 2025, indicative', sed.N, 'nr', d.scraperRect * 0.6, 'Process', 'indicative'); }
+      if (sed.type === 'daf') { addME('DAF saturators, recycle pumps, compressors & nozzles – not in the Rate Book, indicative', 1, 'lot', 6e6 + 9000 * Q / 10, 'Process', 'indicative'); addME('DAF float skimmers – not in the Rate Book, indicative', sed.N, 'nr', d.scraperRect * 0.6, 'Process', 'indicative'); }
       else if (sed.type === 'hrf') addCivil('Roughing-filter graded gravel (B-FM/01)', sed.Vg, 'm³', R.gravel, 'Sedimentation tanks', rref('gravel', d.rGravel));
-      else addME('Sludge scrapers (chain & flight) – not in RB 2025, indicative', sed.N, 'nr', d.scraperRect, 'Process', 'indicative');
+      else addME('Sludge scrapers (chain & flight) – not in the Rate Book, indicative', sed.N, 'nr', d.scraperRect, 'Process', 'indicative');
       addCivil('Launders & V-notch weir plates – indicative', sed.N * sed.nL * sed.Llaund, 'm', d.launderPerM, 'Sedimentation tanks', 'indicative');
-      if (sed.type === 'tube') addME('Tube-settler modules – not in RB 2025, indicative', sed.N * sed.Ac, 'm²', d.tubePerM2, 'Process', 'indicative');
+      if (sed.type === 'tube') addME('Tube-settler modules – not in the Rate Book, indicative', sed.N * sed.Ac, 'm²', d.tubePerM2, 'Process', 'indicative');
     }
   }
   const fi = r.filt;
@@ -185,7 +186,7 @@ export function compute(inp, ctx) {
       addCivil('Filter sand', fi.N * fi.Af * fi.sandL, 'm³', R.sand, 'Filter media', rref('sand', d.rSand));
       if (fi.type === 'dual') addCivil('Anthracite', fi.N * fi.Af * fi.inputs.anthDepth, 'm³', R.anth, 'Filter media', rref('anthracite', d.rAnthracite));
       addCivil('Graded gravel', fi.N * fi.Af * fi.gravelD, 'm³', R.gravel, 'Filter media', rref('gravel', d.rGravel));
-      addME('Filter valves, actuators, rate controllers, underdrains – not in RB 2025, indicative', fi.N, 'nr', d.filterEquip, 'Filtration', 'indicative', 'Treatment plant');
+      addME('Filter valves, actuators, rate controllers, underdrains – not in the Rate Book, indicative', fi.N, 'nr', d.filterEquip, 'Filtration', 'indicative', 'Treatment plant');
       const bw = pumpSetCost(fi.bwPumpKw, 'horizontal', d.sparesPct);
       addME(`Backwash pump sets ${fi.bwPumpKw} kW (1+1)`, 2, 'nr', bw.value, 'Filtration', bw.ref, 'Treatment plant');
       if (fi.blowerKw) { const bl = blowerCost(fi.blowerKw); addME(`Air-scour blowers ${fi.blowerKw} kW (1+1)`, 2, 'nr', bl.value * (1 + d.sparesPct / 100), 'Filtration', bl.ref, 'Treatment plant'); }
@@ -206,14 +207,14 @@ export function compute(inp, ctx) {
     addME(`Treated-water EM flow meter DN${st.pumps.dn}`, 1, 'nr', fm.value, 'Instrumentation', fm.ref, 'Bulk meters');
   }
   const co = r.coag;
-  if (co) addME('Chemical dosing systems (coagulant, lime, polymer) – not in RB 2025, indicative', 1, 'lot', d.chemSystem + co.nDosingPumps * 2e6, 'Chemicals', 'indicative', 'Treatment plant');
+  if (co) addME('Chemical dosing systems (coagulant, lime, polymer) – not in the Rate Book, indicative', 1, 'lot', d.chemSystem + co.nDosingPumps * 2e6, 'Chemicals', 'indicative', 'Treatment plant');
   if (co?.pac) addME('Powdered activated carbon dosing (slurry tank, mixer, feeders) – indicative', 1, 'lot', 6e6 + co.pac.kgD * 2000, 'Chemicals', 'indicative', 'Treatment plant');
   if (dis) {
     if (dis.key === 'gas') {
       const unitKgH = Math.max(0.5, dis.chlorinator || dis.kgH || 1);
       const ch = chlorinatorCost(unitKgH);
       addME(`Gas chlorinators ${unitKgH.toFixed(1)} kg/h (1 duty + 1 standby)`, 2, 'nr', ch.value, 'Chemicals', ch.ref, 'Treatment plant');
-      addME('Vacuum regulators, injectors, leak detection, scrubber & drum handling – not in RB 2025, indicative', 1, 'lot', d.chlorAccessories + unitKgH * 0.15e6, 'Chemicals', 'indicative (excluded from Graph A-M/18)', 'Treatment plant');
+      addME('Vacuum regulators, injectors, leak detection, scrubber & drum handling – not in the Rate Book, indicative', 1, 'lot', d.chlorAccessories + unitKgH * 0.15e6, 'Chemicals', 'indicative (excluded from Graph A-M/18)', 'Treatment plant');
     } else addME('Hypochlorite / bleaching-powder dosing system – indicative', 1, 'lot', d.hypoSystem, 'Chemicals', 'indicative', 'Treatment plant');
   }
   const sl = r.sludge;
@@ -221,7 +222,7 @@ export function compute(inp, ctx) {
     if (sl.recTank > 0) struct('Wash-water recovery tank', rcTank(Math.sqrt(sl.recTank / 3) * 1.5, Math.sqrt(sl.recTank / 3) / 1.5, 3.5, d), 'Sludge treatment');
     if (sl.thick) {
       struct('Sludge thickener', { conc: sl.thick.n * (Math.PI * sl.thick.D * 4 * d.wallT + Math.PI * (sl.thick.D / 2) ** 2 * d.slabT), form: sl.thick.n * 2 * Math.PI * sl.thick.D * 4, exc: sl.thick.n * Math.PI * (sl.thick.D / 2 + 1) ** 2 * 2.5, blind: sl.thick.n * Math.PI * (sl.thick.D / 2 + 0.5) ** 2 * d.blindingT }, 'Sludge treatment');
-      addME('Thickener mechanisms – not in RB 2025, indicative', sl.thick.n, 'nr', d.thickMech, 'Residuals', 'indicative', 'Sludge treatment');
+      addME('Thickener mechanisms – not in the Rate Book, indicative', sl.thick.n, 'nr', d.thickMech, 'Residuals', 'indicative', 'Sludge treatment');
     }
     if (sl.mech) addME('Sludge dewatering units (belt press / centrifuge) incl. polymer system – indicative', sl.mech.units + sl.mech.standby, 'nr', d.dewaterUnit, 'Residuals', 'indicative', 'Sludge treatment');
     addCivil('Sludge drying beds (complete) – indicative', sl.bedArea, 'm²', d.rBeds, 'Residuals', 'indicative', 'Sludge treatment');
@@ -321,7 +322,7 @@ export function compute(inp, ctx) {
     capex = sub3 + eng + cont + vat;
     escal = d.escalationPct > 0 ? capex * ((1 + d.escalationPct / 100) ** d.escalationYears - 1) : 0;
     calc.section('Capital cost – NWSDB D2 §10.2 format (base year)');
-    calc.text(`Line-item rates are NWSDB Rate Book 2025 rates incl. the contractor's markup. ${FACILITIES.length} facility items of the D2 §10.2 checklist are ${d.facilities ? 'included' : 'excluded'}.`);
+    calc.text(`Line-item rates are NWSDB Rates 2026 incl. the contractor's markup. ${FACILITIES.length} facility items of the D2 §10.2 checklist are ${d.facilities ? 'included' : 'excluded'}.`);
     calc.step('1. Civil & building works', 'C_{civ}', '', civilTot, 'LKR');
     calc.step('1. Mechanical, electrical & facilities', 'C_{M\\&E}', '', meTot, 'LKR');
     calc.step(`Preliminaries (${prelimPct} % of ECC)`, 'C_{pre}', '', prelim, 'LKR', ref('10.1.1') + ' – ½ to 1 %');
@@ -337,7 +338,7 @@ export function compute(inp, ctx) {
     calc.flag('Engineering & supervision allowance', Math.abs(d.d2EngPct - COST.engineering) < 0.01, `${d.d2EngPct} %`, '8 %', '', 'info', ref('10.2'));
     Object.assign(est, { format: 'd2', rows: [['Civil & building works', civilTot], ['M&E & facilities', meTot], [`Preliminaries (${prelimPct} %)`, prelim], ['O&M for 2 years', om2], ['Land', land], ['Sub total (3)', sub3], [`Engineering (${d.d2EngPct} %)`, eng], [`Contingencies (${contPct} %)`, cont], [`Taxes (${d.vatPct} %)`, vat], ['Total capital cost', capex]] });
   } else {
-    // RB 2025 total cost estimate (How to use, items 1–21; Table 1)
+    // NWSDB Rates 2026 total cost estimate (How to use; Table 1 = Annex 13 of circular CQS/22/2026/98)
     const ici = d.procurement === 'icb' ? 1 : 0;
     const lcOf = (cat) => (LCFC[cat] || LCFC['Treatment plant'])[ici];
     const t = d.escalate ? Math.max(0, d.implStart - (RB.baseYear + 1) + d.implYears / 2) : 0;
@@ -361,18 +362,20 @@ export function compute(inp, ctx) {
     contPct = d.contPct > 0 ? Math.min(d.contPct, RB.contingencyMax) : RB.contingencyMax;
     cont = ((st1 + d.duties) * contPct) / 100;
     sub3 = st2 + cont;
-    vat = (sub3 * d.vatPct) / 100;
-    capex = sub3 + vat;
-    calc.section('Total cost estimate – NWSDB Rate Book 2025 format (Table 1)');
-    calc.text(`Composite rates from the NWSDB Rate Book 2025 (Section A tables & graphs; Section B unit rates where no composite rate exists) with ${d.markup} % contractor's markup added where the book excludes it (How to use, item 2). Pipe laying adjusted by the B-COM/02 location factor for ${setup.district || '—'} (${factor}). Items marked "indicative" are not priced in the Rate Book.`);
+    const sscl = d.sscl ? (sub3 / (100 - RB.sscl)) * RB.sscl : 0;
+    const sub4 = sub3 + sscl;
+    vat = (sub4 * d.vatPct) / 100;
+    capex = sub4 + vat;
+    calc.section('Total cost estimate – NWSDB Rates 2026 format (Table 1, Annex 13)');
+    calc.text(`Composite rates from NWSDB Rates 2026 (RB 2025 Rev. 01-2026, circular ${RB.circular}): pipe-work tables, chemicals and basic prices replaced; other sections are the 2025 rates × the circular's adjustment factors (1.08 civil / installation, 1.092 M&E supply, 1.144 valves). Section A tables & graphs first; Section B unit rates where no composite rate exists) with ${d.markup} % contractor's markup added where the book excludes it (How to use, item 2). Pipe laying adjusted by the B-COM/02 location factor for ${setup.district || '—'} (${factor}). Items marked "indicative" are not priced in the Rate Book.`);
     if (useComp) {
       calc.step(`Contractual composite items – RB Section A (${ucNote}; intake, mains, administration & laboratory from Section A/B rates)`, 'C_{works}', '', compTot, 'LKR', rbRef('How to use, item 1'));
       calc.step('For reference: quantity-based BOQ with Section B unit rates (Engineer\'s estimate)', 'C_{BOQ}', '', boqWorks, 'LKR');
     } else {
-      calc.step('Civil & building works (base 2025, Section B unit rates)', 'C_{civ}', '', civilTot, 'LKR');
-      calc.step('Mechanical, electrical & facilities (base 2025)', 'C_{M\\&E}', '', meTot, 'LKR');
+      calc.step('Civil & building works (base 2026, Section B unit rates)', 'C_{civ}', '', civilTot, 'LKR');
+      calc.step('Mechanical, electrical & facilities (base 2026)', 'C_{M\\&E}', '', meTot, 'LKR');
     }
-    if (t > 0) calc.step(`Price escalation to mid-implementation (${t.toFixed(1)} yr beyond 31.12.2025; LC ${RB.escLC} %, FC ${RB.escFC} % p.a.; Table 2 ${d.procurement.toUpperCase()} factors)`, 'E = \\sum C_i[f_{LC}((1.05)^t-1)+f_{FC}((1.03)^t-1)]', `t=${n(t, 1)}`, escal, 'LKR', rbRef('How to use, item 7; Table 2'));
+    if (t > 0) calc.step(`Price escalation to mid-implementation (${t.toFixed(1)} yr beyond 31.12.${RB.baseYear}; LC ${RB.escLC} %, FC ${RB.escFC} % p.a.; Table 2 ${d.procurement.toUpperCase()} factors)`, 'E = \\sum C_i[f_{LC}((1.05)^t-1)+f_{FC}((1.03)^t-1)]', `t=${n(t, 1)}`, escal, 'LKR', rbRef('How to use, item 7; Table 2'));
     calc.step(`Preliminaries (${prelimPct} % – ${prelimPct === RB.prelimLarge ? 'project > LKR 500 M' : 'project ≤ LKR 500 M'})`, 'C_{pre}', '', prelim, 'LKR', rbRef('Items to be included, 1'));
     if (eiaA) calc.step('EIA / IEE (provisional sum)', '', '', eiaA, 'LKR', rbRef('Items to be included, 3'));
     calc.step('SUB TOTAL 1', 'ST_1', '', st1, 'LKR', rbRef('How to use, item 8'));
@@ -385,16 +388,21 @@ export function compute(inp, ctx) {
     calc.step('SUB TOTAL 2', 'ST_2', '', st2, 'LKR', rbRef('item 16'));
     calc.step(`Physical contingencies (${contPct} % of ST1 + duties)`, '', '', cont, 'LKR', rbRef('item 17 – maximum 10 %'));
     calc.step('SUB TOTAL 3', 'ST_3', '', sub3, 'LKR', rbRef('item 18'));
-    calc.step(`VAT (${d.vatPct} % of ST3)`, '', '', vat, 'LKR', rbRef('item 19; Annex 14'));
+    if (sscl) {
+      calc.step(`Allow for SSCL (Sub Total 3 / 97.5 × ${RB.sscl})`, 'SSCL = \\frac{ST_3}{97.5}\\times2.5', `\\frac{${n(sub3 / 1e6, 1)}\\,M}{97.5}\\times2.5`, sscl, 'LKR', rbRef('Annex 13 (Table 1 – format of TCE)'));
+      calc.step('SUB TOTAL 4', 'ST_4', '', sub4, 'LKR', rbRef('Annex 13'));
+    }
+    calc.step(`VAT (${d.vatPct} % of ${sscl ? 'ST4' : 'ST3'})`, '', '', vat, 'LKR', rbRef('Annex 13; VAT gazette 2363/22'));
     calc.step('TOTAL IMPLEMENTING COST', 'C', '', capex, 'LKR');
     calc.step('Local / foreign currency share of the works', 'f_{LC}', '', (lcWorks / Math.max(works, 1)) * 100, '% LC', rbRef(`Table 2 (${d.procurement.toUpperCase()})`));
     calc.flag('Physical contingency within RB limit (≤ 10 % of Sub Total 1)', contPct <= RB.contingencyMax, `${contPct} %`, '≤ 10 %', '', 'info', rbRef('How to use, item 17'));
-    calc.flag('VAT rate per Annex 14 gazette (18 %)', d.vatPct === RB.vat, `${d.vatPct} %`, '18 %', '', 'info', rbRef('Annex 14'));
+    calc.flag('VAT rate per gazette 2363/22 (18 %)', d.vatPct === RB.vat, `${d.vatPct} %`, '18 %', '', 'info', rbRef('Annex 13'));
+    calc.step('Foreign-currency conversion rate stated in the TCE', '1\\,USD', '', d.usd, 'LKR', rbRef(`Annex 14 – ${RB.fxRef}`));
     Object.assign(est, {
-      format: 'rb2025', t, lcPct: (lcWorks / Math.max(works, 1)) * 100, engPct, st1, st2, rwss, roadPower, ps, prov,
-      rows: [...(useComp ? [[`Contractual composite items (RB Section A – ${ucNote})`, compTot]] : [['Civil & building works (2025 prices)', civilTot], ['M&E & facilities (2025 prices)', meTot]]), [`Price escalation (${n(t, 1)} yr)`, escal], [`Preliminaries (${prelimPct} %)`, prelim], ...(eiaA ? [['EIA / IEE', eiaA]] : []), ['SUB TOTAL 1', st1],
+      format: 'rb2025', t, lcPct: (lcWorks / Math.max(works, 1)) * 100, engPct, st1, st2, rwss, roadPower, ps, prov, sscl, sub4,
+      rows: [...(useComp ? [[`Contractual composite items (RB Section A – ${ucNote})`, compTot]] : [['Civil & building works (2026 prices)', civilTot], ['M&E & facilities (2026 prices)', meTot]]), [`Price escalation (${n(t, 1)} yr)`, escal], [`Preliminaries (${prelimPct} %)`, prelim], ...(eiaA ? [['EIA / IEE', eiaA]] : []), ['SUB TOTAL 1', st1],
         [`(i) Investigation, design & supervision (${engPct} %)`, eng], ['(ii) Road reinstatement & power supply (CEB)', roadPower], ...(land ? [['(iii) Land acquisition', land]] : []), ...(rwss ? [['(iv) RWS&S / water-resource improvement (5 %)', rwss]] : []), ...(prov ? [['Vehicles & training (p.sum)', prov]] : []), ...(d.duties ? [['(v) Duties & fiscal levies', d.duties]] : []),
-        ['SUB TOTAL 2', st2], [`Physical contingencies (${contPct} %)`, cont], ['SUB TOTAL 3', sub3], [`VAT (${d.vatPct} %)`, vat], ['TOTAL IMPLEMENTING COST', capex]],
+        ['SUB TOTAL 2', st2], [`Physical contingencies (${contPct} %)`, cont], ['SUB TOTAL 3', sub3], ...(sscl ? [[`Allow for SSCL (ST3 / 97.5 × ${RB.sscl})`, sscl], ['SUB TOTAL 4', sub4]] : []), [`VAT (${d.vatPct} %)`, vat], ['TOTAL IMPLEMENTING COST', capex]],
     });
   }
   calc.step('Capital cost per m³/d of capacity', 'C/Q', `${n(capex / 1e6, 0)}\\,M/${n(Q, 0)}`, capex / Q, 'LKR per m³/d');
@@ -402,7 +410,7 @@ export function compute(inp, ctx) {
   const uc7 = graph('UC/07', Q);
   const ucBase = uc7.value * Q;
   const boqBase = works;
-  calc.section('Cross-check with RB 2025 unit-cost graphs');
+  calc.section('Cross-check with the Rate Book unit-cost graphs (Rates 2026)');
   calc.step('RB Graph A-UC/07 unit cost of a treatment plant', 'c_{UC07}(Q)', `Q=${n(Q, 0)}`, uc7.value, 'LKR per m³/d', rbRef('Graph A-UC/07') + (uc7.extrap ? ' – extrapolated' : ''));
   calc.step('Parametric base cost (excl. intake, mains, administration buildings, VAT)', 'C_{UC07} = c\\,Q', '', ucBase, 'LKR');
   const plantOnly = [...civil, ...me].filter((x) => !['Mains', 'Intake', 'Intake well'].includes(x.group) && !/Administration|quarters|Guard/i.test(x.item)).reduce((a, x) => a + x.amount, 0);
@@ -413,8 +421,8 @@ export function compute(inp, ctx) {
   if (sed?.enabled) { const V = sed.N * sed.L * (sed.W || 0) * sed.totalDepth; if (V > 0) { const g = graph('UC/03', V); cross.push({ item: `Sedimentation tanks ${fmt(V, 0)} m³ (UC/03, excl. M&E)`, rb: g.value * V, boq: civil.filter((x) => x.group === 'Sedimentation tanks').reduce((a, x) => a + x.amount, 0) }); } }
   if (fi && fi.type !== 'ssf') { const g = graph('UC/04', Q, 0); cross.push({ item: 'Rapid sand filters (UC/04, excl. M&E/MOV/SCADA)', rb: g.value, boq: civil.filter((x) => ['Filter boxes', 'Filter media'].includes(x.group)).reduce((a, x) => a + x.amount, 0) }); }
   // ---- O&M sheet
-  calc.section('Annual operation & maintenance (D2 §10.1.2; prices NWSDB RB 2025)');
-  for (const [k, v] of Object.entries(omDirect)) calc.step(k, '', '', v, 'LKR/yr', k === 'Chemicals' ? `RB 2025 Tables A-CH/01–02 + ${d.chemTransportPct} % transport & handling` : k === 'Electricity' ? `CEB tariff (RB 2025 Annex 8)` : k === 'Repairs & maintenance' ? ref('10.1.2') + ` – ${d.maintMEPct} % of M&E + ${d.maintCivilPct} % of civil` : '');
+  calc.section('Annual operation & maintenance (D2 §10.1.2; prices NWSDB Rates 2026)');
+  for (const [k, v] of Object.entries(omDirect)) calc.step(k, '', '', v, 'LKR/yr', k === 'Chemicals' ? `Rates 2026 Tables A-CH/01–02 (Annex 06) + ${d.chemTransportPct} % transport & handling` : k === 'Electricity' ? `CEB tariff (Rate Book Annex 8)` : k === 'Repairs & maintenance' ? ref('10.1.2') + ` – ${d.maintMEPct} % of M&E + ${d.maintCivilPct} % of civil` : '');
   calc.step(`NWSDB / LA overhead (${d.omOverheadPct} %)`, '', '', omOver, 'LKR/yr', ref('10.2'));
   calc.step(`Contingency (${d.omContPct} %)`, '', '', omCont, 'LKR/yr', ref('10.1.2'));
   calc.step('O&M cost per m³ produced', 'c_{O\\&M} = \\frac{C_{O\\&M}}{365\\,\\bar Q}', `\\frac{${n(omTot / 1e6, 1)}\\,M}{365\\times${n(Qop, 0)}}`, omPerM3, 'LKR/m³');

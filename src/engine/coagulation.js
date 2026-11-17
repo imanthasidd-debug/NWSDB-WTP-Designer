@@ -8,7 +8,7 @@ import { CHEM, COAG_PH, DIRECT, PAC, doseCheck } from '../core/d3.js';
 export const COAGULANTS = {
   alum: { label: 'Aluminium sulphate (alum, Al₂(SO₄)₃·14H₂O)', alkPer: 0.505, sludgePer: 0.44, metal: 'Al', alPer: 0.0909, price: RBCHEM.alum.v, priceRef: RBCHEM.alum.ref, bulkDensity: 980, liquid: { strength: 0.48, density: 1330 } },
   pacl: { label: 'Poly-aluminium chloride (PACl, 10 % Al₂O₃, 70 % basicity)', alkPer: 0.088, sludgePer: 0.26, metal: 'Al', alPer: 0.0529, price: RBCHEM.pacl.v, priceRef: RBCHEM.pacl.ref, bulkDensity: 1200, liquid: { strength: 1, density: 1200 } },
-  fecl3: { label: 'Ferric chloride (FeCl₃, as 100 %)', alkPer: 0.925, sludgePer: 0.66, metal: 'Fe', alPer: 0, price: 260, priceRef: 'not in NWSDB RB 2025 – indicative', bulkDensity: 1420, liquid: { strength: 0.4, density: 1420 } },
+  fecl3: { label: 'Ferric chloride (FeCl₃, as 100 %)', alkPer: 0.925, sludgePer: 0.66, metal: 'Fe', alPer: 0, price: 260, priceRef: 'not in the NWSDB Rate Book – indicative', bulkDensity: 1420, liquid: { strength: 0.4, density: 1420 } },
 };
 
 export const DEFAULTS = {
@@ -38,15 +38,15 @@ export const DEFAULTS = {
   storageDays: 30,
   bagKg: 50,
   stackH: 1.8,
-  priceCoag: 0,               // LKR/kg – 0 = NWSDB RB 2025 Table A-CH/01 price of the selected coagulant
-  priceLime: 0,               // 0 = RB 2025 A-CH/01 hydrated lime (72 LKR/kg)
-  priceSoda: 210,             // soda ash – not in RB 2025 (indicative)
-  pricePoly: 0,               // 0 = RB 2025 A-CH/02 cationic polymer (2,000 LKR/kg)
+  priceCoag: 0,               // LKR/kg – 0 = NWSDB Rates 2026 Table A-CH/01 price of the selected coagulant
+  priceLime: 0,               // 0 = Rates 2026 A-CH/01 hydrated lime (113.7 LKR/kg)
+  priceSoda: 210,             // soda ash – not in the Rate Book (indicative)
+  pricePoly: 0,               // 0 = Rates 2026 A-CH/02 cationic polymer (2,100 LKR/kg)
   // powdered activated carbon (NWSDB D3 §5.2.3, §6.1.10) – used when the process selection calls for it
   pacDose: 10,                // mg/L design (2–20)
   pacContact: 20,             // min contact before coagulant (≥ 15)
   pacSlurry: 5,               // % slurry
-  pricePac: 0,                // 0 = RB 2025 A-CH/02 powdered activated carbon (980 LKR/kg)
+  pricePac: 0,                // 0 = Rates 2026 A-CH/02 powdered activated carbon (1,020 LKR/kg)
 };
 
 export function compute(inp, ctx) {
@@ -55,7 +55,7 @@ export function compute(inp, ctx) {
   const q = ctx.res.quality;
   const dem = ctx.res.demand;
   const C = COAGULANTS[d.coagulant] || COAGULANTS.alum;
-  // chemical prices: 0 = NWSDB Rate Book 2025 (Tables A-CH/01, A-CH/02; supplier's markup incl., VAT excl.)
+  // chemical prices: 0 = NWSDB Rates 2026 (Tables A-CH/01, A-CH/02; supplier's markup incl., VAT excl.)
   if (!(d.priceCoag > 0)) d.priceCoag = C.price;
   if (!(d.priceLime > 0)) d.priceLime = RBCHEM.lime.v;
   if (!(d.pricePoly > 0)) d.pricePoly = RBCHEM.polymer.v;

@@ -14,7 +14,7 @@ export const DEFAULTS = {
   targetPH: 7.5,
   limePurity: 85,
   maxLime: 60,
-  price: 0,             // LKR/kg – 0 = NWSDB RB 2025 A-CH/01 hydrated lime
+  price: 0,             // LKR/kg – 0 = NWSDB Rates 2026 A-CH/01 hydrated lime
   storageDays: 30,
   bagKg: 25,
 };

@@ -193,12 +193,12 @@ export const coag = {
     { k: 'pacDose', l: 'PAC dose', u: 'mg/L', crit: 'pac.dose' },
     { k: 'pacContact', l: 'Contact time before coagulant', u: 'min', crit: 'pac.contact' },
     { k: 'pacSlurry', l: 'Slurry strength', u: '%', step: 0.5 },
-    { k: 'pricePac', l: 'PAC price', u: 'LKR/kg', auto: true, autoVal: (r) => r.coag?.inputs.pricePac, note: 'RB 2025 A-CH/02' },
-    { sec: 'Unit prices (0 = NWSDB Rate Book 2025, supplier markup incl., VAT excl.)' },
-    { k: 'priceCoag', l: 'Coagulant', u: 'LKR/kg', auto: true, autoVal: (r) => r.coag?.inputs.priceCoag, note: (r) => r?.coag?.coag?.priceRef || 'RB 2025 A-CH/01' },
-    { k: 'priceLime', l: 'Hydrated lime', u: 'LKR/kg', auto: true, autoVal: (r) => r.coag?.inputs.priceLime, note: 'RB 2025 A-CH/01' },
+    { k: 'pricePac', l: 'PAC price', u: 'LKR/kg', auto: true, autoVal: (r) => r.coag?.inputs.pricePac, note: 'Rates 2026 A-CH/02' },
+    { sec: 'Unit prices (0 = NWSDB Rates 2026, supplier markup incl., VAT excl.)' },
+    { k: 'priceCoag', l: 'Coagulant', u: 'LKR/kg', auto: true, autoVal: (r) => r.coag?.inputs.priceCoag, note: (r) => r?.coag?.coag?.priceRef || 'Rates 2026 A-CH/01' },
+    { k: 'priceLime', l: 'Hydrated lime', u: 'LKR/kg', auto: true, autoVal: (r) => r.coag?.inputs.priceLime, note: 'Rates 2026 A-CH/01' },
     { k: 'priceSoda', l: 'Soda ash', u: 'LKR/kg', note: 'Not in the Rate Book – indicative' },
-    { k: 'pricePoly', l: 'Polyelectrolyte', u: 'LKR/kg', auto: true, autoVal: (r) => r.coag?.inputs.pricePoly, note: 'RB 2025 A-CH/02 cationic polymer' },
+    { k: 'pricePoly', l: 'Polyelectrolyte', u: 'LKR/kg', auto: true, autoVal: (r) => r.coag?.inputs.pricePoly, note: 'Rates 2026 A-CH/02 cationic polymer' },
   ],
   render(r) {
     const c = r.coag;
@@ -497,7 +497,7 @@ export const dis = {
     { sec: 'Supply & storage' },
     { k: 'cylinder', l: 'Cylinder size (gas)', u: 'kg', t: 'sel', numeric: true, o: [[900, '900 kg tonner'], [70, '70 kg cylinder']] },
     { k: 'storageDays', l: 'Storage period', u: 'days' },
-    { k: 'price', l: 'Unit price', u: 'LKR/kg', auto: true, autoVal: (r) => r.dis?.price, note: 'RB 2025 A-CH/01: Cl₂ 900 kg 225, 68 kg 544, bleaching powder 153.3 LKR/kg; NaOCl & HTH not in RB (indicative)' },
+    { k: 'price', l: 'Unit price', u: 'LKR/kg', auto: true, autoVal: (r) => r.dis?.price, note: 'Rates 2026 A-CH/01–02: Cl₂ 900 kg 227.7, 68 kg 551.5, bleaching powder 155 LKR/kg; NaOCl & HTH not in RB (indicative)' },
   ],
   render(r) {
     const d = r.dis;
@@ -532,7 +532,7 @@ export const stab = {
     { k: 'targetPH', l: 'Target pH', step: 0.1, show: (i) => i.stab.target === 'pH', crit: 'stab.pH' },
     { k: 'limePurity', l: 'Lime purity', u: '%' },
     { k: 'maxLime', l: 'Maximum lime dose', u: 'mg/L' },
-    { k: 'price', l: 'Lime price', u: 'LKR/kg', auto: true, autoVal: (r) => (r.stab?.annualKg ? r.stab.cost / r.stab.annualKg : 72), note: 'RB 2025 A-CH/01: 72 LKR/kg' },
+    { k: 'price', l: 'Lime price', u: 'LKR/kg', auto: true, autoVal: (r) => (r.stab?.annualKg ? r.stab.cost / r.stab.annualKg : 113.7), note: 'Rates 2026 A-CH/01: 113.7 LKR/kg' },
     { k: 'storageDays', l: 'Storage period', u: 'days' },
   ],
   render(r) {

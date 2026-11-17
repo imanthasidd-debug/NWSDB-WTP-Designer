@@ -206,7 +206,7 @@ export function compute(inp, ctx) {
     return row;
   });
   const annualCost = year.reduce((a, b) => a + b.cost, 0);
-  calc.step('Chemical cost for the year at this flow', 'C = \\sum M_i\\,p_i', '', annualCost, 'LKR', 'NWSDB Rate Book 2025 prices (A-CH/01–02) or entered prices');
+  calc.step('Chemical cost for the year at this flow', 'C = \\sum M_i\\,p_i', '', annualCost, 'LKR', 'NWSDB Rates 2026 prices (A-CH/01–02, Annex 06) or entered prices');
   chems.forEach((c) => { delete c.monthly; });
 
   return { inputs: d, asOf: iso(t0), month, qDay, bw, ssf, chems, proj, year, annualCost, ...calc.result() };

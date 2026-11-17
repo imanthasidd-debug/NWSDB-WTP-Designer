@@ -7,13 +7,13 @@ import { DIESEL, RB, TARIFFS, TOU_HOURS, blendedRate, rbRef } from '../core/rate
 export const DEFAULTS = {
   pf: 0.85,
   diversity: 0.9,
-  tariff: 'auto',        // CEB tariff category (NWSDB RB 2025 Annex 8, June 2025): auto | I-2 | I-3 | GP-2 | GP-3 | GV-2 | GV-3
+  tariff: 'auto',        // CEB tariff category (Rate Book Annex 8, effective 12.06.2025 – not revised by the 2026 circular): auto | I-2 | I-3 | GP-2 | GP-3 | GV-2 | GV-3
   energyRate: 0,         // LKR/kWh – 0 = time-of-use blend of the selected tariff (+ 2.5 % SSCL)
   demandRate: 0,         // LKR/kVA/month – 0 = tariff
   fixedCharge: 0,        // LKR/month – 0 = tariff
   genEssentialPumps: 1,  // duty pumps per station on generator
   outageHours: 120,      // h/yr of standby generation (CEB outages, maintenance)
-  dieselPrice: DIESEL.v, // LKR/L (RB 2025 Annex 1, July 2025)
+  dieselPrice: DIESEL.v, // LKR/L (Rates 2026 Annex 08 basic prices: auto diesel)
   extraLoads: [],        // [{name, kw, hours}]
 };
 
@@ -90,7 +90,7 @@ export function compute(inp, ctx) {
   const kwhOp = kwhD * (0.25 + 0.75 * scale);
   const spec = kwhOp / Qop;
   calc.step('Specific energy at operating flow', 'e = E/Q', `${n(kwhOp, 0)}/${n(Qop, 0)}`, spec, 'kWh/m³');
-  calc.section('Electricity tariff (CEB, NWSDB RB 2025 Annex 8 – effective 12.06.2025)');
+  calc.section('Electricity tariff (CEB, Rate Book Annex 8 – effective 12.06.2025; not revised by the 2026 circular)');
   const tcode = d.tariff && d.tariff !== 'auto' ? d.tariff : kva >= 100 ? 'I-3' : 'I-2';
   const bl = blendedRate(tcode);
   const eRate = d.energyRate > 0 ? d.energyRate : bl.rate;

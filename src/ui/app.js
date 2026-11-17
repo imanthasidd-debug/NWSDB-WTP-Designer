@@ -59,7 +59,7 @@ function loadText(text, path) {
     const p = JSON.parse(text);
     if (!p.inputs) throw new Error('Not a WTP Designer project file');
     setProject(normalise(p), path);
-    if (store.project.migratedRB2025) { delete store.project.migratedRB2025; setTimeout(() => toast('Unit rates, chemical prices and the CEB tariff were updated to the NWSDB Rate Book 2025', 'info'), 600); }
+    if (store.project.migratedRB2025 || store.project.migratedRB2026) { delete store.project.migratedRB2025; delete store.project.migratedRB2026; setTimeout(() => toast('Unit rates and chemical prices were updated to NWSDB Rates 2026 (circular CQS/22/2026/98)', 'info'), 600); }
     navigate('dashboard');
     toast('Opened ' + String(path).split(/[\\/]/).pop());
   } catch (e) { modal('Could not open file', String(e.message)); }

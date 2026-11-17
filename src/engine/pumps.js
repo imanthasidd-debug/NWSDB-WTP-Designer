@@ -30,7 +30,7 @@ export function economicDN(o, ctx) {
     const hf = hwLoss(o.Q, D, o.L, C0) + (o.K * v * v) / (2 * G);
     const H = o.Hs + hf;
     const kW = (rhoW(o.T ?? 28) * G * o.Q * H) / (o.etaP * o.etaM) / 1000;
-    // NWSDB Rate Book 2025: pipe supply & laying (Section A tables), pump sets (Graphs A-M/05–M/08), CEB tariff (Annex 8)
+    // NWSDB Rates 2026: pipe supply & laying (Section A tables), pump sets (Graphs A-M/05–M/08), CEB tariff (Annex 8)
     const pipeCap = pipeCost(o.material, dn, { origin: ci.origin, pn: 16, factor: locationFactor(ctx?.inp?.setup?.district), markup: ci.markup ?? 27, ewsPct: ci.ewsPct ?? 25, dewPct: ci.dewPct ?? 25 }).total * (ci.rPipeFactor || 1) * o.L;
     const pumpCap = pumpSetCost((kW / o.nDuty) * 1.1, o.pumpKind === 'submersible' ? 'submersible' : 'horizontal', 0).value * (o.nDuty + o.nStandby);
     const eRate = ei.energyRate > 0 ? ei.energyRate : blendedRate(ei.tariff || 'I-3').rate;

@@ -1,5 +1,5 @@
-// Library → NWSDB Rate Book 2025: how the estimate is built, the rate tables the app uses, and the rates applied in this project
-import { BUILDINGS, CHEM, CIVIL, DIESEL, ENG_PCT, LAB_WTP, RB, RB_DATA, TARIFFS, TOU_HOURS, blendedRate, civilRate, graph, locationFactor, pipeCost } from '../../core/ratebook.js';
+// Library → NWSDB Rates 2026 (Rate Book 2025 Rev. 01-2026): how the estimate is built, the rate tables the app uses, and the rates applied in this project
+import { BUILDINGS, CHEM, CIVIL, DIESEL, ENG_PCT, LAB_WTP, RB, RB_DATA, TARIFFS, TOU_HOURS, blendedRate, civilRate, graph, locationFactor, pipeCost, REV2026 } from '../../core/ratebook.js';
 import { fmt } from '../../core/util.js';
 import { h, icon } from '../dom.js';
 import { card, chartCard, kpis, table } from '../results.js';
@@ -29,7 +29,7 @@ const GRAPH_POINT = (id, r) => {
 };
 
 export const ratebook = {
-  id: 'ratebook', title: 'NWSDB Rate Book 2025', sub: 'Total cost estimate format, Section A/B rates, M&E graphs, chemicals, CEB tariff and location factors used for pricing', icon: 'banknote', group: 'Library', layout: 'full',
+  id: 'ratebook', title: 'NWSDB Rates 2026', sub: 'Rate Book 2025 revised by circular CQS/22/2026/98 – total cost estimate format, Section A/B rates, M&E graphs, chemicals, CEB tariff and location factors used for pricing', icon: 'banknote', group: 'Library', layout: 'full',
   state: { tab: 'project', pipe: 'di', graph: 'UC/07' },
   renderFull(r) {
     const st = ratebook.state;
@@ -66,14 +66,15 @@ export const ratebook = {
       );
     } else if (st.tab === 'estimate') {
       const E = RB_DATA.estimate;
+      body.append(card(`What changed for 2026 – circular ${RB.circular}`, table([{ k: 0, l: 'Tables' }, { k: 1, l: 'Revision' }], REV2026.map((x) => ({ 0: x[0], 1: x[1] }))), { flush: true, sub: 'Table 1 of the circular · rates not listed are the 2025 rates × the factor shown' }));
       const t2 = Object.entries(E.table2_LC_FC_factors || {}).filter(([k]) => k !== 'columns').map(([k, v]) => ({ k, a: v[0], b: v[1], c: v[2], d: v[3] }));
       const t4 = Object.values(ENG_PCT).map((v) => ({ k: v.label, lt: v.lt100, ge: v.ge100 }));
       body.append(
         h('div', { class: 'grid2' },
-          card('How to prepare a total cost estimate (RB 2025 "How to use")', h('ol', { class: 'small', style: { lineHeight: 1.7, margin: 0, paddingLeft: '18px' } }, E.steps.map((s) => h('li', null, s)), h('li', null, E.preliminaries))),
+          card('How to prepare a total cost estimate ("How to use", with Annex 13 of the 2026 circular)', h('ol', { class: 'small', style: { lineHeight: 1.7, margin: 0, paddingLeft: '18px' } }, E.steps.map((s) => h('li', null, s)), h('li', null, E.preliminaries))),
           card(tce ? 'This project – Table 1 total cost estimate' : 'This project uses the D2 §10.2 format', table([{ k: 'k', l: 'Item' }, { k: 'v', l: 'LKR Mn', num: true, fmt: mn }], c.est.rows.filter(([k, v]) => v || /TOTAL/i.test(k)).map(([k, v]) => ({ k, v, _tot: /SUB TOTAL|TOTAL IMPLEMENTING|Total capital/i.test(k) }))), { flush: true, sub: tce ? `${(c.inputs.procurement || 'ncb').toUpperCase()} · ${ENG_PCT[c.inputs.fundSource]?.label || ''}` : 'switch on Cost estimate → Estimate format' })),
         h('div', { class: 'grid2' },
-          card('Table 2 – local / foreign currency factors', table([{ k: 'k', l: 'Item' }, { k: 'a', l: 'NCB LC', num: true }, { k: 'b', l: 'NCB FC', num: true }, { k: 'c', l: 'ICB LC', num: true }, { k: 'd', l: 'ICB FC', num: true }], t2), { flush: true, sub: `escalation beyond 31.12.2025: LC ${RB.escLC} % p.a., FC ${RB.escFC} % p.a.` }),
+          card('Table 2 – local / foreign currency factors', table([{ k: 'k', l: 'Item' }, { k: 'a', l: 'NCB LC', num: true }, { k: 'b', l: 'NCB FC', num: true }, { k: 'c', l: 'ICB LC', num: true }, { k: 'd', l: 'ICB FC', num: true }], t2), { flush: true, sub: `escalation beyond 31.12.${RB.baseYear}: LC ${RB.escLC} % p.a., FC ${RB.escFC} % p.a.` }),
           card('Table 4 – investigation, design, procurement & supervision (% of Sub Total 1)', table([{ k: 'k', l: 'Source of funds' }, { k: 'lt', l: '< LKR 100 M', num: true, fmt: (v) => v + ' %' }, { k: 'ge', l: '≥ LKR 100 M', num: true, fmt: (v) => v + ' %' }], t4), { flush: true, sub: `contingency ≤ ${RB.contingencyMax} % of (ST1 + duties) · VAT ${RB.vat} % of ST3 · RWS&S ${RB.rwss} % of ST1` })),
       );
     } else if (st.tab === 'pipes') {
@@ -132,7 +133,7 @@ export const ratebook = {
         h('div', { class: 'grid2' },
           card('Chemicals – Tables A-CH/01 & A-CH/02 (supply, VAT excl.)', h('div', null, table([{ k: 't', l: 'Table', v: (x) => h('span', { style: { whiteSpace: 'nowrap' } }, x.t) }, { k: 'k', l: 'Chemical' }, { k: 'u', l: 'Unit' }, { k: 'v', l: 'Rate', num: true, fmt: f0 }, { k: 'kg', l: 'LKR/kg', num: true, fmt: f2 }], ch), h('div', { class: 'small muted', style: { padding: '8px 12px' } }, 'Not in the Rate Book (the app uses indicative prices): ', RB_DATA.chemNotIn.join('; '), '.')), { flush: true }),
           card('Annex 2 – labour rates', h('div', null, filterBox(lt, 'Filter trades'), lt), { flush: true })),
-        card('Annex 8 – CEB electricity tariff (effective 12.06.2025)', table([{ k: 'k', l: 'Code' }, { k: 'l', l: 'Category' }, { k: 'day', l: 'Day', num: true }, { k: 'peak', l: 'Peak', num: true }, { k: 'off', l: 'Off-peak', num: true }, { k: 'dem', l: 'Demand LKR/kVA', num: true, fmt: f0 }, { k: 'fix', l: 'Fixed LKR/month', num: true, fmt: f0 }, { k: 'bl', l: '24 h blend incl. SSCL', num: true, fmt: f2 }], tar), { flush: true, sub: `TOU: day ${TOU_HOURS.day} h (05:30–18:30), peak ${TOU_HOURS.peak} h (18:30–22:30), off-peak ${TOU_HOURS.off} h · SSCL ${RB.sscl} % · the Rate Book does not state the NWSDB category – confirm with CEB` }));
+        card('Annex 8 – CEB electricity tariff (effective 12.06.2025; not revised by the 2026 circular)', table([{ k: 'k', l: 'Code' }, { k: 'l', l: 'Category' }, { k: 'day', l: 'Day', num: true }, { k: 'peak', l: 'Peak', num: true }, { k: 'off', l: 'Off-peak', num: true }, { k: 'dem', l: 'Demand LKR/kVA', num: true, fmt: f0 }, { k: 'fix', l: 'Fixed LKR/month', num: true, fmt: f0 }, { k: 'bl', l: '24 h blend incl. SSCL', num: true, fmt: f2 }], tar), { flush: true, sub: `TOU: day ${TOU_HOURS.day} h (05:30–18:30), peak ${TOU_HOURS.peak} h (18:30–22:30), off-peak ${TOU_HOURS.off} h · SSCL ${RB.sscl} % · the Rate Book does not state the NWSDB category – confirm with CEB` }));
     } else if (st.tab === 'location') {
       const rows = RB_DATA.location.map(([d, f]) => ({ d, f, on: String(d).toLowerCase().replace(/[^a-z]/g, '') === String(district || '').toLowerCase().replace(/[^a-z]/g, '') }));
       body.append(h('div', { class: 'grid2' },
@@ -147,7 +148,7 @@ export const ratebook = {
         { label: 'Electricity', value: f2(r.energy?.energyRate), unit: 'LKR/kWh', sub: `CEB ${r.energy?.tariff || ''} · Annex 8` },
         { label: 'Indicative items', value: fmt(c.indicativePct, 0), unit: '% of BOQ', sub: 'not priced in the Rate Book', status: c.indicativePct > 20 ? 'warn' : 'ok' },
       ]),
-      h('div', { class: 'small muted', style: { margin: '-4px 0 10px' } }, RB.title, ' – rates at 31.12.2025, VAT excluded unless stated; Section A composite rates and graphs, Section B unit rates.'),
+      h('div', { class: 'small muted', style: { margin: '-4px 0 10px' } }, RB.title, ' – replaced tables at 2026 prices, other sections = 2025 rates × the circular\'s adjustment factors; VAT excluded unless stated; Section A composite rates and graphs, Section B unit rates.'),
       h('div', { style: { margin: '4px 0 12px' } }, seg),
       body,
     ];

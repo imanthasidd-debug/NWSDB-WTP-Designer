@@ -39,6 +39,13 @@ export function normalise(p) {
     for (const [mod, keys] of Object.entries(RB2025_RESET)) for (const k of keys) if (p.inputs[mod]) delete p.inputs[mod][k];
     p.migratedRB2025 = true;
   }
+  // NWSDB Rates 2026 (circular CQS/22/2026/98): values that v1.4–1.8 stored from the 2025 book are reset to 2026
+  if (p && p.inputs && !p.rb2026) {
+    p = JSON.parse(JSON.stringify(p));
+    if (p.inputs.energy?.dieselPrice === 289) delete p.inputs.energy.dieselPrice;
+    if (p.inputs.cost?.usd === 300) delete p.inputs.cost.usd;
+    if (!p.migratedRB2025) p.migratedRB2026 = true;
+  }
   const base = newProject();
   const out = { ...base, ...p, inputs: deepMerge(DEFAULT_INPUTS(), p.inputs || {}), criteria: p.criteria || {} };
   // projects saved before the NWSDB D2 update (v1.0): keep their diurnal pattern and pump choices
@@ -50,6 +57,7 @@ export function normalise(p) {
   }
   out.d2 = true;
   out.rb2025 = true;
+  out.rb2026 = true;
   return out;
 }
 

@@ -7,6 +7,21 @@ storage & pumping → residuals → hydraulic profile → site layout → power 
 
 *For the National Water Supply & Drainage Board, Sri Lanka.*
 
+**Version 1.8.1 – NWSDB Rates 2026**
+* Pricing follows **NWSDB Rates 2026** – the Rate Book 2025 revised by circular **CQS/22/2026/98 of 14.10.2026**
+  (RB 2025 Rev. 01-2026):
+  * replaced tables read from the circular's annexes: pipe work A-PVC/01-03, A-DI/01-03, A-PE/01-06 (Annexes 01–03),
+    local HDPE B-PE/01B, 03B (Annex 12), chemicals A-CH/01-02 (Annex 06), basic prices – auto diesel 392 LKR/L
+    (Annex 08), labour (Annex 09), exchange rate 1 USD = 332.49 LKR (Annex 14);
+  * other sections = 2025 rates × the circular's adjustment factors: 1.08 for A-MIS/01, Graphs A-UC/01-07 and civil
+    Section B (WRS, BU, RD, MIS, FM, COM …) and for installation; 1.092 for M&E, electrical and laboratory supply;
+    1.144 for valves and DI items supply. Every reference in the BOQ says "2025 × factor";
+  * total cost estimate in the new Table 1 format (Annex 13): Sub Total 3 → **SSCL = Sub Total 3 / 97.5 × 2.5** →
+    Sub Total 4 → VAT 18 % of Sub Total 4; base year 2026 (escalation beyond 31.12.2026);
+  * projects saved with the 2025 diesel price or exchange rate are updated when opened;
+  * the CEB tariff (Annex 8, 12.06.2025) and the CEB bulk-supply construction cost are not revised by the circular
+    and are unchanged. `scripts/ratebook/rb2026.py` regenerates `src/core/ratebook2026.data.js` from the PDF text.
+
 **Version 1.8 – operation & maintenance tools, and a stronger trial edition**
 * New sidebar group **Operation & maintenance**: Existing plant assessment, Jar-test dose calculator, Backwash &
   chemical-stock planner and O&M manual (draft).
@@ -164,7 +179,7 @@ is listed in **Library → NWSDB Design Manual D2** and in a dedicated report ch
 
 ## Install on Windows 10 / 11
 
-1. Extract `NWSDB-WTP-Designer-1.8.0-win-x64.zip` (right-click → *Extract all*).
+1. Extract `NWSDB-WTP-Designer-1.8.1-win-x64.zip` (right-click → *Extract all*).
 2. Double-click **Install.cmd**. The app is installed for the current user (no administrator rights), with Start-menu and
    desktop shortcuts and the `.wtpd` project-file association. Uninstall from *Settings → Apps*.
 3. Or run it without installing: open the `NWSDB WTP Designer` folder and double-click `NWSDB WTP Designer.exe`.
@@ -219,6 +234,6 @@ test          engine.test.mjs (hand-calculation checks), functional and screensh
 ```
 
 * Run from source: `npm install` then `npm start` (Node 20+).
-* Engine tests: `npm test` (305 checks incl. specified capacity, design chain and impact ripple, D2 tables & formulae, D3 tables and annex design examples, CT tables, carbonate chemistry, continuity, every unit combination).
+* Engine tests: `npm test` (311 checks incl. specified capacity, design chain and impact ripple, D2 tables & formulae, D3 tables and annex design examples, CT tables, carbonate chemistry, continuity, every unit combination).
 * **Building a signed installer:** `npm run dist` produces an NSIS installer and a portable EXE in `release/` with the
   application icon and `.wtpd` association embedded. Sign them with the NWSDB code-signing certificate if available.

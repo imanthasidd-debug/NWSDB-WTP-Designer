@@ -174,8 +174,9 @@ ok(rd.d2.total >= 40 && rd.d2.fail === 0, `D2 register for default project (${rd
 {
   const c = rd.cost, e = c.est;
   ok(e.format === 'rb2025' && c.method === 'composite', 'default estimate = RB 2025 TCE with composite rates');
-  near(c.capex, e.st2 + c.cont + c.vat, 1e-6, 'RB TCE: total = ST2 + contingency + VAT');
-  near(c.vat, 0.18 * c.sub3, 1e-6, 'RB TCE: VAT 18 % of Sub Total 3');
+  near(e.sscl, (c.sub3 / 97.5) * 2.5, 1e-6, 'Rates 2026 TCE (Annex 13): SSCL = Sub Total 3 / 97.5 × 2.5');
+  near(c.capex, e.st2 + c.cont + e.sscl + c.vat, 1e-6, 'Rates 2026 TCE: total = ST2 + contingency + SSCL + VAT');
+  near(c.vat, 0.18 * e.sub4, 1e-6, 'Rates 2026 TCE: VAT 18 % of Sub Total 4');
   ok(c.contPct <= 10, 'RB TCE: physical contingency ≤ 10 %');
   ok(c.prelimPct === (e.st1 > 500e6 ? 4 : 5), 'RB TCE: preliminaries 4 % above LKR 500 M');
   ok(e.engPct === 18, 'RB Table 4: GOSL ≥ LKR 100 M → 18 %');
@@ -189,13 +190,18 @@ ok(rd.d2.total >= 40 && rd.d2.fail === 0, `D2 register for default project (${rd
 {
   const RBm = await import('../src/core/ratebook.js');
   const p7 = RBm.pipeCost('di', 700, { factor: 1, markup: 27, ewsPct: 0, dewPct: 0 });
-  near(p7.supply, 111074, 1e-9, 'RB A-DI/1: DN700 supply (transmission) 111,074 LKR/m');
+  near(p7.supply, 132537, 1e-9, 'Rates 2026 A-DI/1 (Annex 02): DN700 supply (transmission) 132,537 LKR/m');
   ok(p7.laying > 0 && p7.ref.includes('A-DI/1'), 'RB A-DI/3 laying with reference');
   ok(RBm.locationFactor('Jaffna') === 0.67 && RBm.locationFactor('Colombo') === 1, 'RB B-COM/02 location factors');
   near(RBm.blendedRate('I-3').raw, (14 * 13 + 27 * 4 + 11 * 7) / 24, 1e-9, 'CEB I-3 TOU blend (Annex 8)');
-  near(RBm.CHEM.alum.v, 93.08, 1e-9, 'RB A-CH/01 alum 93.08 LKR/kg');
-  near(RBm.CHEM.cl2.v, 225, 1e-9, 'RB A-CH/02 chlorine 900 kg cylinder 225 LKR/kg');
-  near(RBm.graph('UC/07', 30000).value, 131700, 1e-6, 'RB Graph A-UC/07 at 30,000 m³/d');
+  near(RBm.CHEM.alum.v, 134.86, 1e-9, 'Rates 2026 A-CH/01 alum 134.86 LKR/kg');
+  near(RBm.CHEM.cl2.v, 204900 / 900, 1e-9, 'Rates 2026 A-CH/02 chlorine 900 kg cylinder 204,900 LKR');
+  near(RBm.graph('UC/07', 30000).value, 131700 * 1.08, 1e-6, 'Rates 2026 Graph A-UC/07 at 30,000 m³/d = 2025 × 1.08');
+  near(RBm.DIESEL.v, 392, 1e-9, 'Rates 2026 Annex 08 auto diesel 392 LKR/L');
+  near(RBm.pipeCost('hdpe', 315, { pn: 10 }).supply, 10690, 1e-9, 'Rates 2026 A-PE/01 HDPE 315 PN10 transmission 10,690 LKR/m');
+  near(RBm.BUILDINGS.chemical.v, Math.round(274432 * 1.08), 1e-9, 'Rates 2026 A-MIS/01 chemical house = 2025 × 1.08');
+  ok(RBm.valveCost('isolating', 400).ref.includes('1.144'), 'Rates 2026 valves: 2025 × 1.144');
+  near(RBm.RB.usd, 332.49, 1e-9, 'Rates 2026 Annex 14: 1 USD = 332.49 LKR');
   ok(rd.coag.inputs.priceCoag === RBm.CHEM[rd.coag.inputs.coagulant === 'pacl' ? 'pacl' : 'alum'].v, 'coagulant price defaults to the Rate Book');
   ok(Math.abs(rd.energy.energyRate - RBm.blendedRate(rd.energy.tariff).rate) < 1e-9, 'energy rate defaults to the CEB tariff');
   const pB = newProject(); pB.inputs.cost = { ...(pB.inputs.cost || {}), method: 'boq' };
