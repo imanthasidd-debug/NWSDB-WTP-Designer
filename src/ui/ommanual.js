@@ -40,7 +40,7 @@ export function buildManual(opts = {}) {
   const d = r.demand, co = r.coag, fl = r.floc, sd = r.sed, fi = r.filt, ds = r.dis, st = r.stab, jt = r.jartest, om = r.omplan, ik = r.intake, cw = r.storage, sl = r.sludge, sp = r.special, bl = r.buildings;
   const word = !!opts.word;
   const base = word ? '' : location.href.replace(/[^/]*$/, '');
-  const logo = store.settings.logo ? `<img src="${store.settings.logo}" alt="logo">` : bannerImg(70, 'cover-banner');
+  const logo = bannerImg(70, 'cover-banner'); // fixed organisation logo
   const train = r.process.train.map((t) => t.label).join(' → ');
   const ssf = fi.type === 'ssf';
   const coagName = co ? co.coag.label.split(' (')[0] : '';

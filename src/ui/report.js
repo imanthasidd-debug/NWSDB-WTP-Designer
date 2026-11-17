@@ -163,7 +163,7 @@ export function buildReport(opts = {}) {
   const s = store.project.inputs.setup;
   const d = r.demand;
   const base = location.href.replace(/[^/]*$/, '');
-  const logo = store.settings.logo ? `<img src="${store.settings.logo}" alt="logo">` : bannerImg(70, 'cover-banner');
+  const logo = bannerImg(70, 'cover-banner'); // fixed organisation logo
   const parts = [];
   parts.push(`<section class="page cover">
     <div class="band banner">${logo}</div>
@@ -239,7 +239,7 @@ export function buildReport(opts = {}) {
       <p>Raw- and treated-water quality, process selection, screens, aeration, coagulation and chemical feeding, rapid mixing, flocculation, clarification, filtration, disinfection, stabilisation, residuals and plant layout have been checked against <b>NWSDB Design Manual D3 – Water Quality &amp; Treatment Manual (Revision 01, November 2020)</b>. Result: <b>${r.d3.ok}</b> clause checks pass, <b>${r.d3.warn}</b> require review, <b>${r.d3.fail}</b> fail and <b>${r.d3.info}</b> are advisory.</p>
       <p><b>Process selection (D3 Table 4-5, ${esc(p.typical.fig)}):</b> source category “${esc(p.typical.cat)}” – typical train ${esc(p.typical.steps.join(' → '))}. Essential processes for the raw-water characteristics: ${esc(p.t45.rows.map((x) => `${x.char} ${x.band}`).join('; '))}.</p>
       ${checksTable(rows, { showModule: true }).outerHTML}
-      <p class="small">Printed inconsistencies in D3 and the interpretation adopted are listed in the application (Library → NWSDB Design Manual D3 → Errata); they should be confirmed with the NWSDB Planning &amp; Design Manual Review Committee.</p></section>`);
+      <p class="small">Printed inconsistencies in D3 and the interpretation adopted are listed in the application (Library → Treatment clauses → Errata); they should be confirmed with the NWSDB Planning &amp; Design Manual Review Committee.</p></section>`);
   }
   if (o.refs) {
     const k = sec('References, assumptions & criteria');

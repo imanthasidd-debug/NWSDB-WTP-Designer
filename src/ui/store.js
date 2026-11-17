@@ -24,7 +24,7 @@ const emit = (what) => listeners.forEach((fn) => fn(what));
 function loadSettings() {
   try { return { theme: 'light', designer: '', showRefs: true, ...(JSON.parse(localStorage.getItem('wtp.settings') || '{}')) }; } catch { return { theme: 'light', designer: '', showRefs: true }; }
 }
-export function saveSettings() { try { localStorage.setItem('wtp.settings', JSON.stringify(store.settings)); } catch { /* storage unavailable */ } }
+export function saveSettings() { delete store.settings.logo; try { localStorage.setItem('wtp.settings', JSON.stringify(store.settings)); } catch { /* storage unavailable */ } }
 
 /** normalise a loaded project so every module has complete inputs */
 // prices / rates that v1.3 and earlier stored as indicative values – reset to the NWSDB Rate Book 2025 on opening

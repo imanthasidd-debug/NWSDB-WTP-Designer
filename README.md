@@ -7,6 +7,15 @@ storage & pumping → residuals → hydraulic profile → site layout → power 
 
 *For the National Water Supply & Drainage Board, Sri Lanka.*
 
+**Version 1.8.2 – neutral presentation, fixed logo**
+* The splash screen, dashboard and page headers no longer display the names of the design manuals and rate book;
+  library pages are renamed *Supply-system clauses*, *Treatment clauses* and *Cost rates*. Clause citations stay in
+  the calculation sheets, design checks, BOQ references and report reference list, where engineers need them, and
+  the full list of references is under Help & methods.
+* The organisation logo is built in and cannot be replaced (the logo option was removed from Settings; any logo saved
+  by an earlier version is ignored).
+* Developer credit is shown in Help & methods and in Settings → About.
+
 **Version 1.8.1 – NWSDB Rates 2026**
 * Pricing follows **NWSDB Rates 2026** – the Rate Book 2025 revised by circular **CQS/22/2026/98 of 14.10.2026**
   (RB 2025 Rev. 01-2026):
@@ -179,7 +188,7 @@ is listed in **Library → NWSDB Design Manual D2** and in a dedicated report ch
 
 ## Install on Windows 10 / 11
 
-1. Extract `NWSDB-WTP-Designer-1.8.1-win-x64.zip` (right-click → *Extract all*).
+1. Extract `NWSDB-WTP-Designer-1.8.2-win-x64.zip` (right-click → *Extract all*).
 2. Double-click **Install.cmd**. The app is installed for the current user (no administrator rights), with Start-menu and
    desktop shortcuts and the `.wtpd` project-file association. Uninstall from *Settings → Apps*.
 3. Or run it without installing: open the `NWSDB WTP Designer` folder and double-click `NWSDB WTP Designer.exe`.

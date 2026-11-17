@@ -19,7 +19,7 @@ function applyCal() {
   toast(`Chemical dosing now uses D = ${c.a.toFixed(2)} · Tu^${c.b.toFixed(3)}`, 'ok');
 }
 export const jartest = {
-  id: 'jartest', title: 'Jar-test dose calculator', sub: 'Jar results → dose curve, optimum and economic dose, dosing-pump stroke setting and dosing table (NWSDB D3 §4.4.3.2, §6.1)', icon: 'flask', group: 'Operation & maintenance', mod: 'jartest',
+  id: 'jartest', title: 'Jar-test dose calculator', sub: 'Jar results → dose curve, optimum and economic dose, dosing-pump stroke setting and dosing table', icon: 'flask', group: 'Operation & maintenance', mod: 'jartest',
   enabled: (r) => !!r.coag,
   fields: [
     { t: 'help', html: 'Run the jar test on today\'s raw water with the coagulant in use (D3 §4.4.3.2: rapid mix 0.5–1 min at full speed, flocculate 5–20 min reducing from about 80 to 20 rpm, settle 30–60 min). Enter the dose and the settled turbidity of each jar; pH is optional.', show: hasCoag },
@@ -87,7 +87,7 @@ export const jartest = {
 // ------------------------------------------------------------------ Backwash & chemical stock
 const isRSF = (i, r) => r?.filt?.type !== 'ssf';
 export const omplan = {
-  id: 'omplan', title: 'Backwash & chemical-stock planner', sub: 'Filter wash timetable, wash-water use, chemical days of stock, reorder dates and monthly consumption (NWSDB D3 §5.9.12–5.9.14, §9.1)', icon: 'calendar', group: 'Operation & maintenance', mod: 'omplan',
+  id: 'omplan', title: 'Backwash & chemical-stock planner', sub: 'Filter wash timetable, wash-water use, chemical days of stock, reorder dates and monthly consumption', icon: 'calendar', group: 'Operation & maintenance', mod: 'omplan',
   fields: [
     { sec: 'Plan' },
     { k: 'asOf', l: 'Plan / stock-count date', t: 'date', note: 'blank = today' },
@@ -147,7 +147,7 @@ export const omplan = {
 
 // ------------------------------------------------------------------ O&M manual
 export const ommanual = {
-  id: 'ommanual', title: 'O&M manual (draft)', sub: 'Draft operation & maintenance manual of the designed plant, in the NWSDB D3 Chapter 10 structure', icon: 'book', group: 'Operation & maintenance', layout: 'full',
+  id: 'ommanual', title: 'O&M manual (draft)', sub: 'Draft operation & maintenance manual of the designed plant, in the standard O&M manual chapters', icon: 'book', group: 'Operation & maintenance', layout: 'full',
   state: { opts: Object.fromEntries(MANUAL_SECTIONS.map(([k]) => [k, true])) },
   renderFull() {
     const st = ommanual.state;

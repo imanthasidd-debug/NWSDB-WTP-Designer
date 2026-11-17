@@ -29,7 +29,7 @@ const GRAPH_POINT = (id, r) => {
 };
 
 export const ratebook = {
-  id: 'ratebook', title: 'NWSDB Rates 2026', sub: 'Rate Book 2025 revised by circular CQS/22/2026/98 – total cost estimate format, Section A/B rates, M&E graphs, chemicals, CEB tariff and location factors used for pricing', icon: 'banknote', group: 'Library', layout: 'full',
+  id: 'ratebook', title: 'Cost rates', sub: 'Cost estimate format, unit rates, M&E graphs, chemical prices, electricity tariff and location factors used for pricing', icon: 'banknote', group: 'Library', layout: 'full',
   state: { tab: 'project', pipe: 'di', graph: 'UC/07' },
   renderFull(r) {
     const st = ratebook.state;

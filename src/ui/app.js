@@ -23,7 +23,7 @@ function applyTheme() {
   const t = store.settings.theme === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : store.settings.theme;
   document.documentElement.dataset.theme = t;
   window.wtp?.setTheme?.(t);
-  if (els.logo) els.logo.innerHTML = store.settings.logo ? `<img src="${store.settings.logo}" style="width:28px;height:28px;object-fit:contain">` : emblemImg(28);
+  if (els.logo) els.logo.innerHTML = emblemImg(28); // the organisation logo is fixed – it cannot be replaced
 }
 window.addEventListener('wtp-theme', applyTheme);
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', applyTheme);
@@ -296,7 +296,7 @@ function onKey(e) {
 export async function boot(root) {
   buildShell(root);
   applyTheme();
-  const splash = h('div', { class: 'splash' }, h('div', { class: 'si', html: `<div class="si-logo">${bannerImg(86)}</div><h2>WTP Designer</h2><p>Conventional Water Treatment Plant Design Suite · NWSDB Design Manuals D2 &amp; D3</p><div class="si-bar"><span></span></div>` }));
+  const splash = h('div', { class: 'splash' }, h('div', { class: 'si', html: `<div class="si-logo">${bannerImg(86)}</div><h2>WTP Designer</h2><p>Conventional Water Treatment Plant Design Suite</p><div class="si-bar"><span></span></div>` }));
   document.body.append(splash);
   // initial project: file passed by OS > autosave > sample
   let started = false;

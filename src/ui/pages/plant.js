@@ -305,7 +305,7 @@ export const energy = {
 
 // ------------------------------------------------------------------ Cost
 export const cost = {
-  id: 'cost', title: 'Cost estimate', sub: 'Total cost estimate & BOQ priced from NWSDB Rates 2026 (Rate Book 2025 Rev. 01-2026), annual O&M and unit cost of water (LKR)', icon: 'wallet', group: 'Plant-wide', mod: 'cost',
+  id: 'cost', title: 'Cost estimate', sub: 'Total cost estimate, bill of quantities, annual O&M and unit cost of water (LKR)', icon: 'wallet', group: 'Plant-wide', mod: 'cost',
   fields: [
     { sec: 'Estimate – NWSDB Rates 2026' },
     { k: 'method', l: 'Pricing method', t: 'sel', o: [['composite', 'Total cost estimate – Section A composite rates & unit-cost graphs (RB "How to use")'], ['boq', 'Engineer\'s estimate – quantity BOQ with Section B unit rates']] },
@@ -394,7 +394,7 @@ export const cost = {
           { label: 'Present value (20 yr)', value: fmtMoney(c.pvTotal), sub: 'capital + discounted O&M' },
         ]),
         notes([
-          { level: 'info', title: 'Pricing basis', text: `${RB.title}${rb ? ` – ${c.method === 'composite' ? 'Section A composite rates & unit-cost graphs first, Section B unit rates where none exist' : 'quantity BOQ priced with Section B unit rates'} (How to use, item 1)` : ''}. Contractor's markup ${c.inputs.markup} % added where the book excludes it; pipe laying × B-COM/02 location factor ${fmt(c.factor, 2)} (${c.district || 'district not set'}). Full rate tables: Library → NWSDB Rates 2026.` },
+          { level: 'info', title: 'Pricing basis', text: `${RB.title}${rb ? ` – ${c.method === 'composite' ? 'Section A composite rates & unit-cost graphs first, Section B unit rates where none exist' : 'quantity BOQ priced with Section B unit rates'} (How to use, item 1)` : ''}. Contractor's markup ${c.inputs.markup} % added where the book excludes it; pipe laying × B-COM/02 location factor ${fmt(c.factor, 2)} (${c.district || 'district not set'}). Full rate tables: Library → Cost rates.` },
           c.indicativePct > 0.5 ? { level: 'warn', title: 'Items not in the Rate Book', text: `${fmt(c.indicativePct, 0)} % of the BOQ (${fmtMoney(c.indicative)}) is priced with indicative allowances for items the Rate Book does not cover (scrapers, filter valve sets, dosing skids, …) – shown in amber in the BOQ; replace with quotations when available.` } : null,
           ...(c.notes || []),
         ].filter(Boolean)),

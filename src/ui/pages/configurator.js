@@ -176,7 +176,7 @@ function decisionsTable(r) {
 }
 
 export const process = {
-  id: 'process', title: 'Plant configurator', sub: 'Choose the components of the treatment plant – one click per decision; NWSDB D3 recommendation shown on every option', icon: 'workflow', group: 'Design basis', mod: 'process', layout: 'full', live: true,
+  id: 'process', title: 'Plant configurator', sub: 'Choose the components of the treatment plant – one click per decision; the recommended option is marked on every row', icon: 'workflow', group: 'Design basis', mod: 'process', layout: 'full', live: true,
   fields: [['route', 'Treatment route'], ['presed', 'Pre-sedimentation'], ['aeration', 'Aeration'], ['prechlor', 'Pre-chlorination'], ['pac', 'Powdered activated carbon'], ['rapidMix', 'Rapid mixing'], ['floc', 'Flocculator'], ['clarifier', 'Clarifier'], ['filter', 'Filter'], ['disinfectant', 'Disinfectant'], ['postLime', 'Post-lime stabilisation'], ['sludge', 'Sludge treatment'], ['recovery', 'Wash-water recovery']].map(([k, l]) => ({ k, l, t: 'sel' })),
   report(r) {
     const pr = r.process;

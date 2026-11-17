@@ -11,7 +11,7 @@ const f0 = (v) => fmt(v, 0), f1 = (v) => fmt(v, 1), f2 = (v) => fmt(v, 2);
 
 // ------------------------------------------------------------------ Special treatment
 export const special = {
-  id: 'special', title: 'Iron, manganese & fluoride', sub: 'Special treatment when the raw water exceeds SLS 614 for iron, manganese or fluoride (NWSDB D3 §7.1–7.2)', icon: 'pipette', group: 'Treatment units', mod: 'special',
+  id: 'special', title: 'Iron, manganese & fluoride', sub: 'Special treatment when the raw water exceeds SLS 614 for iron, manganese or fluoride', icon: 'pipette', group: 'Treatment units', mod: 'special',
   enabled: (r) => !!r.special?.enabled,
   fields: [
     { sec: 'Iron & manganese (D3 §7.1)' },
@@ -49,7 +49,7 @@ export const special = {
 
 // ------------------------------------------------------------------ Chemical & chlorination buildings
 export const buildings = {
-  id: 'buildings', title: 'Chemical & chlorine buildings', sub: 'Chemical house (storage, solution tanks, dosing, bund, lime) and chlorination building (containers, chlorinators, ventilation, neutralisation) – NWSDB D3 §6', icon: 'building', group: 'Plant-wide', mod: 'buildings',
+  id: 'buildings', title: 'Chemical & chlorine buildings', sub: 'Chemical house (storage, solution tanks, dosing, bund, lime) and chlorination building (containers, chlorinators, ventilation, neutralisation)', icon: 'building', group: 'Plant-wide', mod: 'buildings',
   fields: [
     { sec: 'Chemical house (D3 §6.1)' },
     { k: 'stockPct', l: 'Stock solution strength', u: '%', note: 'D3 §6.1.2: 10 % (2–10 %)' },
@@ -129,7 +129,7 @@ export const structure = {
 const on = (i) => !!i.assess?.enabled;
 const copyDesign = () => { const cur = store.project.inputs.assess || {}; setInput(['assess'], { ...cur, enabled: true, ...fromDesign(store.results) }, { immediate: true }); toast('Existing-plant data filled from the current design – now edit it to the real plant'); };
 export const assess = {
-  id: 'assess', title: 'Existing plant assessment', sub: 'Enter the sizes of an existing plant and its flows: capacity of every unit against NWSDB D3, the bottleneck, and what to upgrade for a target flow', icon: 'target', group: 'Operation & maintenance', mod: 'assess',
+  id: 'assess', title: 'Existing plant assessment', sub: 'Enter the sizes of an existing plant and its flows: capacity of every unit against the design criteria, the bottleneck, and what to upgrade for a target flow', icon: 'target', group: 'Operation & maintenance', mod: 'assess',
   fields: [
     { k: 'enabled', l: 'Assess an existing plant', t: 'bool' },
     { t: 'help', html: 'Enter what is built, not what this project designs. Raw-water quality, doses and criteria are taken from the other pages. Leave a size at 0 to leave that unit out of the rating.' },

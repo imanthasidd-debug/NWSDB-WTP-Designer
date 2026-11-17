@@ -66,7 +66,7 @@ export const dashboard = {
     const d = r.demand;
     const sum = r.summary;
     const hero = h('div', { class: 'dash-hero' },
-      h('div', { class: 'dh-brand' }, h('div', { class: 'dh-logo', html: bannerImg(46) }), h('div', { class: 'dh-credit' }, 'WTP Designer v1.8 · ', h('b', null, 'NWSDB Design Manuals D2 & D3 · Rates 2026'))),
+      h('div', { class: 'dh-brand' }, h('div', { class: 'dh-logo', html: bannerImg(46) }), h('div', { class: 'dh-credit' }, h('b', null, 'WTP Designer v1.8'))),
       h('div', { class: 'dh-main' },
         h('div', { class: 'dh-name' }, s.name || 'Untitled project'),
         h('div', { class: 'dh-meta' }, [s.code, s.district ? s.district + ' District' : '', s.source || s.sourceType, s.client].filter(Boolean).join(' · ')),
@@ -82,8 +82,8 @@ export const dashboard = {
       h('div', { class: 'dh-rings' },
         ringGauge('Design checks', sum.ok, sum.ok + sum.warn + sum.fail, { status: sum.fail ? 'fail' : sum.warn ? 'warn' : 'ok', sub: `${sum.warn} review · ${sum.fail} fail`, onClick: () => navigate('checks') }),
         ringGauge('SLS 614:2013', r.compliance.total - r.compliance.fails.length, r.compliance.total, { status: r.compliance.fails.length ? 'fail' : 'ok', sub: 'treated water', onClick: () => navigate('compliance') }),
-        ringGauge('NWSDB D2', r.d2.ok, r.d2.total - r.d2.info, { status: r.d2.fail ? 'fail' : r.d2.warn ? 'warn' : 'ok', sub: `${r.d2.warn} review`, onClick: () => navigate('d2manual') }),
-        ringGauge('NWSDB D3', r.d3.ok, r.d3.total - r.d3.info, { status: r.d3.fail ? 'fail' : r.d3.warn ? 'warn' : 'ok', sub: `${r.d3.info} advisory`, onClick: () => navigate('d3manual') })));
+        ringGauge('Supply-system checks', r.d2.ok, r.d2.total - r.d2.info, { status: r.d2.fail ? 'fail' : r.d2.warn ? 'warn' : 'ok', sub: `${r.d2.warn} to review`, onClick: () => navigate('d2manual') }),
+        ringGauge('Treatment checks', r.d3.ok, r.d3.total - r.d3.info, { status: r.d3.fail ? 'fail' : r.d3.warn ? 'warn' : 'ok', sub: `${r.d3.info} advisory`, onClick: () => navigate('d3manual') })));
     const bad = [...r.checks.filter((c) => c.status === 'fail'), ...r.checks.filter((c) => c.status === 'warn')];
     const fatal = [];
     for (const k of ['process', 'compliance']) for (const n of r[k]?.notes || []) if (n.level === 'fail') fatal.push(n);
@@ -95,7 +95,7 @@ export const dashboard = {
           h('div', { class: 'att-t' }, h('b', null, c.label), h('span', null, `${pt} · ${typeof c.value === 'number' ? fmt(c.value, 2) : c.value ?? ''} ${c.unit && c.unit !== '–' ? c.unit : ''} · criterion ${c.range || ''}`)),
           h('button', { class: 'ib-go' }, icon('crosshair'), 'Locate'));
       }), bad.length > 8 ? h('button', { class: 'btn sm ghost', onclick: () => navigate('checks') }, `+ ${bad.length - 8} more in Design checks`) : null)
-        : h('div', { class: 'att-ok' }, icon('ok'), h('div', null, h('b', null, 'All design checks pass'), h('div', { class: 'small muted' }, `${sum.ok} checks against SLS 614, NWSDB D2 / D3 and the criteria library`))));
+        : h('div', { class: 'att-ok' }, icon('ok'), h('div', null, h('b', null, 'All design checks pass'), h('div', { class: 'small muted' }, `${sum.ok} checks against the water-quality standard and the design criteria`))));
     const im = store.impact?.diff && (store.impact.diff.items.length || store.impact.diff.status.length);
     const tiles = kpis([
       { label: d.basis === 'capacity' ? 'Population equivalent' : 'Population served', value: f0(d.design.served), sub: d.basis === 'capacity' ? `at ${f0(d.lpcd)} L/c/d` : `${d.inputs.designYear} · ${f0(d.design.cov)} % coverage`, icon: 'users' },
@@ -126,7 +126,7 @@ export const dashboard = {
         h('div', null,
           chartCard('Turbidity through the treatment train', turbidityTrainChart(r)),
           chartCard('Multi-barrier pathogen protection', logCreditChart(r), { sub: 'log credits vs USEPA requirement' }))),
-      h('div', { class: 'dash-foot' }, h('div', { html: bannerImg(26) }), h('span', null, 'NWSDB WTP Designer v1.8'), h('span', { class: 'muted' }, 'NWSDB Design Manuals D2 (1989) & D3 (2020) · SLS 614:2013')),
+      h('div', { class: 'dash-foot' }, h('div', { html: bannerImg(26) }), h('span', null, 'NWSDB WTP Designer v1.8'), h('span', { class: 'muted' }, 'Conventional water treatment plant design suite')),
     ];
   },
 };

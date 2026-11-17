@@ -182,7 +182,7 @@ export const demand = {
 // ------------------------------------------------------------------ Source & hydrology (D2 §4)
 const MONTHS3 = MONTHS;
 export const source = {
-  id: 'source', title: 'Source & hydrology', sub: 'River-basin data, dry-weather availability, reservoir yield (Rippl) and flood estimate – NWSDB D2 §4', icon: 'rain', group: 'Design basis', mod: 'source',
+  id: 'source', title: 'Source & hydrology', sub: 'River-basin data, dry-weather availability, reservoir yield (Rippl) and flood estimate', icon: 'rain', group: 'Design basis', mod: 'source',
   fields: [
     { sec: 'River basin (D2 Table 4.1)' },
     { k: 'basin', l: 'River basin', t: 'sel', numeric: true, o: BASINS.map((b) => [b.code, `${b.code} – ${b.name} (${b.area.toLocaleString('en-US')} km²)`]) },
@@ -233,7 +233,7 @@ export const source = {
         card('River basin characteristics (D2 Table 4.1)', table([
           { k: 'code', l: 'Code', num: true }, { k: 'name', l: 'River basin', v: (b) => (b.code === s.basin.code ? h('b', null, '▶ ' + b.name) : b.name) }, { k: 'area', l: 'Area km²', num: true, fmt: (v) => fmt(v, 0) },
           { k: 'rain', l: 'Rainfall mm', num: true, fmt: (v) => fmt(v, 0) }, { k: 'runoff', l: 'Runoff mm', num: true, fmt: (v) => fmt(v, 0) }, { k: 'factor', l: 'Runoff %', num: true }, { k: 'unit', l: 'm³/d/km²', num: true, fmt: (v) => fmt(v, 0) },
-        ], BASINS.filter((b) => Math.abs(b.code - s.basin.code) <= 3)), { flush: true, sub: 'selected basin and neighbours · full table in Library → NWSDB D2' }),
+        ], BASINS.filter((b) => Math.abs(b.code - s.basin.code) <= 3)), { flush: true, sub: 'selected basin and neighbours · full table in Library → Supply-system clauses' }),
       ],
     };
   },

@@ -149,7 +149,7 @@ void pHs;
 // ------------------------------------------------------------------ NWSDB Design Manual D2
 const MOD_PAGE = { demand: 'demand', source: 'source', intake: 'intake', storage: 'storage', hyd: 'hyd', layout: 'layout', energy: 'energy', cost: 'cost' };
 export const d2manual = {
-  id: 'd2manual', title: 'NWSDB Design Manual D2', sub: 'Urban Water Supply and Distribution (March 1989) – clauses, tables and project compliance', icon: 'landmark', group: 'Library', layout: 'full',
+  id: 'd2manual', title: 'Supply-system clauses', sub: 'Reference clauses and tables for demand, source, intake, pumping, mains, storage and cost – and how this project complies', icon: 'landmark', group: 'Library', layout: 'full',
   state: { tab: 'compliance', q: '' },
   renderFull(r) {
     const st = d2manual.state;
@@ -205,7 +205,7 @@ export const d2manual = {
         { label: 'D2 checks', value: d2.total, sub: `${d2.ok} pass · ${d2.warn} review · ${d2.fail} fail · ${d2.info} info`, icon: 'landmark', accent: true, status: d2.fail ? 'fail' : d2.warn ? 'warn' : 'ok' },
         { label: 'Clauses applied', value: new Set(d2.checks.map((c) => c.clause)).size, sub: `${D2M.CLAUSES.length} clause groups indexed` },
         { label: 'Pages applying D2', value: new Set(d2.checks.map((c) => c.module)).size, sub: 'demand, source, intake, pumping, mains, storage, site, cost' },
-        { label: 'Treatment units', value: 'see D3', sub: 'process design → Library · NWSDB Design Manual D3' },
+        { label: 'Treatment units', value: 'see D3', sub: 'process design → Library · Treatment clauses' },
       ]),
       h('div', { style: { margin: '4px 0 12px' } }, seg),
       body,
@@ -217,7 +217,7 @@ export const d2manual = {
 const MOD_PAGE3 = { quality: 'quality', process: 'process', intake: 'intake', aeration: 'aeration', coag: 'coag', rapidmix: 'rapidmix', floc: 'floc', sed: 'sed', filt: 'filt', dis: 'dis', stab: 'stab', sludge: 'sludge', hyd: 'hyd', storage: 'storage', layout: 'layout', compliance: 'compliance', source: 'source' };
 const tt = (cols, rows, sub, title) => card(title, table(cols.map((c, i) => (typeof c === 'string' ? { k: String(i), l: c } : c)), rows.map((r) => (Array.isArray(r) ? Object.fromEntries(r.map((v, i) => [String(i), v])) : r))), { flush: true, sub });
 export const d3manual = {
-  id: 'd3manual', title: 'NWSDB Design Manual D3', sub: 'Water Quality & Treatment Manual (Rev 01, Nov 2020) – clauses, tables, errata and project compliance', icon: 'landmark', group: 'Library', layout: 'full',
+  id: 'd3manual', title: 'Treatment clauses', sub: 'Reference clauses and tables for water quality and treatment, interpretations used, and how this project complies', icon: 'landmark', group: 'Library', layout: 'full',
   state: { tab: 'compliance' },
   renderFull(r) {
     const st = d3manual.state;
@@ -359,22 +359,16 @@ export const help = {
 
 // ------------------------------------------------------------------ Settings
 export const settings = {
-  id: 'settings', title: 'Settings', sub: 'Appearance, organisation logo and defaults', icon: 'settings', group: 'Library', layout: 'full',
+  id: 'settings', title: 'Settings', sub: 'Appearance, defaults and about this program', icon: 'settings', group: 'Library', layout: 'full',
   renderFull() {
     const s = store.settings;
     const theme = h('div', { class: 'seg' }, [['light', 'Light', 'sun'], ['dark', 'Dark', 'moon'], ['system', 'System', 'settings']].map(([k, l, ic]) => h('button', { class: s.theme === k ? 'on' : '', onclick: () => { s.theme = k; saveSettings(); window.dispatchEvent(new Event('wtp-theme')); navigate('settings'); } }, icon(ic), l)));
-    const logoPrev = h('div', { style: { width: '72px', height: '72px', display: 'grid', placeItems: 'center', border: '1px dashed var(--border-strong)', borderRadius: '10px', background: 'var(--surface-2)' }, html: s.logo ? `<img src="${s.logo}" style="max-width:64px;max-height:64px">` : emblemImg(56) });
-    const file = h('input', { type: 'file', accept: 'image/png,image/jpeg,image/svg+xml', style: { display: 'none' } });
-    file.addEventListener('change', () => { const f = file.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { s.logo = rd.result; saveSettings(); window.dispatchEvent(new Event('wtp-theme')); navigate('settings'); toast('Logo updated'); }; rd.readAsDataURL(f); });
     const designer = h('input', { type: 'text', value: s.designer || '', placeholder: 'Name used for new projects' });
     designer.addEventListener('input', () => { s.designer = designer.value; saveSettings(); });
     return [
       card('Appearance', h('div', { class: 'field' }, h('label', null, 'Theme'), theme)),
-      card('Organisation logo', h('div', { class: 'flex', style: { gap: '16px' } }, logoPrev, h('div', null,
-        h('p', { class: 'small muted', style: { margin: '0 0 8px' } }, 'The official NWSDB logo is built in (title bar, dashboard, report cover and drawing title blocks). You may load another organisation logo for the title bar and report cover.'),
-        h('div', { class: 'flex' }, h('button', { class: 'btn', onclick: () => file.click() }, icon('upload'), 'Choose logo…'), s.logo ? h('button', { class: 'btn ghost', onclick: () => { delete s.logo; saveSettings(); window.dispatchEvent(new Event('wtp-theme')); navigate('settings'); } }, 'Use built-in emblem') : null), file))),
       card('Defaults', h('div', { class: 'field' }, h('label', null, 'Designer name for new projects'), h('div', { class: 'inp' }, designer))),
-      card('About', h('div', null, h('div', { class: 'small', html: `<div style="margin-bottom:10px">${bannerImg(56)}</div><b>NWSDB WTP Designer</b> v1.8 – conventional water treatment plant design suite for the National Water Supply &amp; Drainage Board, Sri Lanka, incorporating NWSDB Design Manuals D2 (1989) and D3 (2020) and NWSDB Rates 2026 (Rate Book 2025 Rev. 01-2026).<br>Built with Electron, d3 (ISC), KaTeX (MIT), JSZip (MIT) and Lucide icons (ISC).<br>Calculation engine: ${f2(store.calcMs)} ms per full plant recalculation.${edition.licensed ? `<br><b>Licensed</b>${edition.licensee ? ' to ' + edition.licensee : ''} (machine ${edition.machineId}).` : ''}${edition.trial ? `<br><b>Trial version</b> – ${edition.expired ? 'ended (restricted mode)' : `${edition.daysLeft} day(s) left`}${edition.ends ? `, ends ${fmtDate(edition.ends)}` : ''}. Reports and drawings are marked “Trial version – not for issue”.` : ''}` }), edition.trial || edition.licensed ? h('button', { class: 'btn sm', style: { marginTop: '8px' }, onclick: () => licenceDialog() }, icon('badge'), 'Licence…') : null)),
+      card('About', h('div', null, h('div', { class: 'small', html: `<div style="margin-bottom:10px">${bannerImg(56)}</div><b>NWSDB WTP Designer</b> v1.8 – conventional water treatment plant design suite for the National Water Supply &amp; Drainage Board, Sri Lanka.<br><b>${CREDIT}</b><br>The design references and rates used are listed under Help &amp; methods.<br>Built with Electron, d3 (ISC), KaTeX (MIT), JSZip (MIT) and Lucide icons (ISC).<br>Calculation engine: ${f2(store.calcMs)} ms per full plant recalculation.${edition.licensed ? `<br><b>Licensed</b>${edition.licensee ? ' to ' + edition.licensee : ''} (machine ${edition.machineId}).` : ''}${edition.trial ? `<br><b>Trial version</b> – ${edition.expired ? 'ended (restricted mode)' : `${edition.daysLeft} day(s) left`}${edition.ends ? `, ends ${fmtDate(edition.ends)}` : ''}. Reports and drawings are marked “Trial version – not for issue”.` : ''}` }), edition.trial || edition.licensed ? h('button', { class: 'btn sm', style: { marginTop: '8px' }, onclick: () => licenceDialog() }, icon('badge'), 'Licence…') : null)),
     ];
   },
 };
