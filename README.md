@@ -7,6 +7,32 @@ storage & pumping → residuals → hydraulic profile → site layout → power 
 
 *For the National Water Supply & Drainage Board, Sri Lanka.*
 
+**Version 1.8 – operation & maintenance tools, and a stronger trial edition**
+* New sidebar group **Operation & maintenance**: Existing plant assessment, Jar-test dose calculator, Backwash &
+  chemical-stock planner and O&M manual (draft).
+* **Jar-test dose calculator** (NWSDB D3 §4.4.3.2, §6.1): fits the dose curve to the jar results, gives the optimum
+  and the economic dose, coagulation pH and alkalinity (pre-lime if needed), the **stroke setting** of the dosing pumps
+  for today's flow, a calibration-column check and a **dosing table** (stroke % for 50–120 % flow × doses). Past jar
+  tests recalibrate D = a·Tuᵇ and can be applied to the Chemical dosing page.
+* **Backwash & chemical-stock planner** (D3 §5.9.12–5.9.14, §5.12.8, §9.1): wash interval, staggered 7-day wash
+  timetable (day shift or round the clock), procedure with this plant's rates, wash water and energy; slow sand
+  scraping / re-sanding plan; for every chemical the days of stock, reorder level and date, order quantity in whole
+  packs, run-out date, 90-day projection and monthly consumption and cost.
+* **O&M manual (draft)** in the D3 Chapter 10 structure, filled from the design: plant data, SLS 614 targets and
+  monitoring schedule, SOPs for every process (jar test, solution preparation, dosing table, desludging, backwash,
+  chlorine container change, lime), start-up / shut-down, maintenance schedule, staff, laboratory, safety,
+  emergency response, chemical stock plan and log sheets. PDF or editable Word (.doc).
+* **Trial edition** (`TRIAL_DAYS=30 bash scripts/package-win.sh`):
+  * full features for 30 days per computer; outputs marked "Trial version – not for issue";
+  * after the trial: **restricted mode** – projects and samples open and every result can be viewed, but inputs
+    cannot be changed and nothing can be exported; the project file can still be saved;
+  * **licence keys**: the Licence dialog shows the computer's machine ID; a key made with the separate *Licence Key
+    Generator* (Ed25519-signed, bound to that machine ID) either unlocks the full version or extends the trial to a
+    date. The program holds only the public key, so keys cannot be forged from it;
+  * trial records in three places (two files and the registry) with clock roll-back protection; re-checked hourly;
+  * the program is bundled, minified and packed into `app.asar`; Electron fuses switch off run-as-Node, NODE_OPTIONS
+    and the inspector and load the app only from the archive; developer tools are disabled.
+
 **Version 1.7 – existing plant assessment, and a trial edition for sharing**
 * **Existing plant assessment** (Outputs → *Existing plant assessment*): enter the sizes of a plant that is already
   built (flocculators, sedimentation tanks, filters, contact tank, clear-water reservoir, chemical feeders, raw- and
@@ -138,7 +164,7 @@ is listed in **Library → NWSDB Design Manual D2** and in a dedicated report ch
 
 ## Install on Windows 10 / 11
 
-1. Extract `NWSDB-WTP-Designer-1.7.0-win-x64.zip` (right-click → *Extract all*).
+1. Extract `NWSDB-WTP-Designer-1.8.0-win-x64.zip` (right-click → *Extract all*).
 2. Double-click **Install.cmd**. The app is installed for the current user (no administrator rights), with Start-menu and
    desktop shortcuts and the `.wtpd` project-file association. Uninstall from *Settings → Apps*.
 3. Or run it without installing: open the `NWSDB WTP Designer` folder and double-click `NWSDB WTP Designer.exe`.
@@ -188,11 +214,11 @@ with jar tests and pilot data. The tool supports, and does not replace, the judg
 src/core      water chemistry & properties, criteria library, SLS 614, Sri Lanka data, NWSDB D2 (d2.js) and D3 (d3.js) tables, calc logger
 src/engine    one pure module per design step + index.js (dependency-ordered computeAll)
 src/ui        shell, schema-driven forms, d3 charts, drawing engine (SVG + DXF), report & Excel writers, pages
-electron      main process (file dialogs, PDF export, single instance, file association), secure preload bridge, trial.js (trial edition only)
+electron      main process (file dialogs, PDF export, single instance, file association), secure preload bridge, licence.js (trial edition only: trial records, machine ID, licence keys)
 test          engine.test.mjs (hand-calculation checks), functional and screenshot tests
 ```
 
 * Run from source: `npm install` then `npm start` (Node 20+).
-* Engine tests: `npm test` (280 checks incl. specified capacity, design chain and impact ripple, D2 tables & formulae, D3 tables and annex design examples, CT tables, carbonate chemistry, continuity, every unit combination).
+* Engine tests: `npm test` (305 checks incl. specified capacity, design chain and impact ripple, D2 tables & formulae, D3 tables and annex design examples, CT tables, carbonate chemistry, continuity, every unit combination).
 * **Building a signed installer:** `npm run dist` produces an NSIS installer and a portable EXE in `release/` with the
   application icon and `.wtpd` association embedded. Sign them with the NWSDB code-signing certificate if available.

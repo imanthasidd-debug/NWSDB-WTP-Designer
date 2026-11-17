@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('wtp', {
   platform: process.platform,
   trial: (() => { try { return ipcRenderer.sendSync('trial-status'); } catch { return null; } })(),
   onTrialExpired: (cb) => ipcRenderer.on('trial-expired', (_e, t) => cb(t)),
+  activateLicence: (key) => ipcRenderer.invoke('licence-activate', key),
   initialFile: () => ipcRenderer.invoke('initial-file'),
   openProject: () => ipcRenderer.invoke('open-project'),
   saveProject: (content, filePath, defaultName) => ipcRenderer.invoke('save-project', content, filePath, defaultName),

@@ -7,18 +7,23 @@ const os = require('node:os');
 
 const APP_ID = 'lk.gov.nwsdb.wtpdesigner';
 const TRIAL_DAYS = 0; // 0 = full edition; scripts/package-win.sh sets the number of days for the trial edition
-let trial = null;     // trial status of this run (trial edition only)
+let trial = null;     // licence / trial status of this run (trial edition only)
+const lic = () => require('./licence.js');
 const trialNow = () => {
   if (!TRIAL_DAYS) return null;
-  try { trial = require('./trial.js').trialStatus(app.getPath('userData'), TRIAL_DAYS); }
-  catch { trial = { trial: true, days: TRIAL_DAYS, expired: true, daysLeft: 0, ends: '', started: '' }; }
+  try { trial = lic().trialStatus(app.getPath('userData'), TRIAL_DAYS); }
+  catch { trial = { trial: true, days: TRIAL_DAYS, expired: true, mode: 'restricted', daysLeft: 0, ends: '', started: '', machineId: '' }; }
   return trial;
 };
-/** exports stop when the trial has ended (checked again at every export, the app may stay open for days) */
+/** restricted mode after the trial: no exports (checked again at every export – the app may stay open for days) */
 const trialBlocked = () => {
   if (!TRIAL_DAYS) return false;
-  if (!trialNow().expired) return false;
-  if (win) { win.webContents.send('trial-expired', trial); dialog.showMessageBox(win, { type: 'info', title: 'Trial period ended', message: 'The trial period of NWSDB WTP Designer has ended.', detail: 'Exports are switched off. Your project files (.wtpd) are kept and open in the full version.' }); }
+  const t = trialNow();
+  if (!t.expired) return false;
+  if (win) {
+    win.webContents.send('trial-expired', t);
+    dialog.showMessageBox(win, { type: 'info', title: 'Restricted mode', message: 'The trial period of NWSDB WTP Designer has ended.', detail: 'Exports are switched off. Enter a licence key (Help → Licence) to continue. Your project files (.wtpd) can still be saved and open in the full version.' });
+  }
   return true;
 };
 const DIST = path.join(__dirname, '..', 'dist');
@@ -50,13 +55,14 @@ function createWindow() {
     minWidth: 1100,
     minHeight: 680,
     show: false,
-    title: TRIAL_DAYS ? 'NWSDB WTP Designer – Trial' : 'NWSDB WTP Designer',
+    title: TRIAL_DAYS && trial?.trial !== false ? 'NWSDB WTP Designer – Trial' : 'NWSDB WTP Designer',
     backgroundColor: '#0a3d7a',
     icon: path.join(DIST, process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
     titleBarStyle: 'hidden',
     titleBarOverlay: { color: '#0a3d7a', symbolColor: '#ffffff', height: 40 },
     autoHideMenuBar: true,
     webPreferences: {
+      devTools: !TRIAL_DAYS,
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
@@ -108,6 +114,15 @@ const docsDir = () => { try { return app.getPath('documents'); } catch { return 
 const toBuffer = (data) => (typeof data === 'string' ? Buffer.from(data, 'utf8') : Buffer.from(data instanceof ArrayBuffer ? new Uint8Array(data) : data));
 
 ipcMain.on('trial-status', (e) => { e.returnValue = TRIAL_DAYS ? (trial || trialNow()) : null; });
+ipcMain.handle('licence-activate', (_e, key) => {
+  if (!TRIAL_DAYS) return { ok: false, error: 'This copy is already the full version.' };
+  let res;
+  try { res = lic().activate(app.getPath('userData'), key); } catch (err) { res = { ok: false, error: String(err.message || err) }; }
+  if (res.ok) { trialNow(); setTimeout(() => { if (win) win.reload(); }, 1200); }
+  return { ...res, status: trial };
+});
+// re-check every hour: a trial that ends while the program is open switches to restricted mode
+if (TRIAL_DAYS) setInterval(() => { const was = trial?.expired; const t = trialNow(); if (t.expired && !was && win) win.webContents.send('trial-expired', t); }, 3600 * 1000).unref?.();
 ipcMain.handle('initial-file', () => (pendingFile ? readProject(pendingFile) : null));
 ipcMain.handle('open-project', async () => {
   const r = await dialog.showOpenDialog(win, { title: 'Open project', defaultPath: docsDir(), properties: ['openFile'], filters: [...FILTERS.wtpd, ...FILTERS.json] });
@@ -152,7 +167,7 @@ ipcMain.handle('export-pdf', async (_e, html, defaultName, headerText, opts = {}
       pageSize: 'A4',
       printBackground: true,
       displayHeaderFooter: true,
-      headerTemplate: `<div style="font-size:7px;font-family:Segoe UI,Arial;color:#7a889c;width:100%;padding:0 14mm;display:flex;justify-content:space-between"><span>National Water Supply &amp; Drainage Board – WTP Design Report</span><span>${esc(headerText)}</span></div>`,
+      headerTemplate: `<div style="font-size:7px;font-family:Segoe UI,Arial;color:#7a889c;width:100%;padding:0 14mm;display:flex;justify-content:space-between"><span>National Water Supply &amp; Drainage Board – ${esc(opts.docName || 'WTP Design Report')}</span><span>${esc(headerText)}</span></div>`,
       footerTemplate: '<div style="font-size:7px;font-family:Segoe UI,Arial;color:#7a889c;width:100%;padding:0 14mm;display:flex;justify-content:space-between"><span>NWSDB WTP Designer</span><span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>',
       margins: { top: 0.6, bottom: 0.6, left: 0.5, right: 0.5 },
       preferCSSPageSize: false,

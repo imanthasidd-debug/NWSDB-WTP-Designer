@@ -8,6 +8,7 @@ import { groupTitle, groupViews } from './draw/views.js';
 import { mount3D } from './draw/view3d.js';
 import { saveSettings, store } from './store.js';
 import { h, icon, toast } from './dom.js';
+import { canExport } from './edition.js';
 
 export function kpis(list) {
   return h('div', { class: 'kpis' }, list.filter(Boolean).map((k) => h('div', { class: 'kpi' + (k.accent ? ' accent' : '') },
@@ -79,7 +80,8 @@ export function calcSheet(steps, { showRefs = true } = {}) {
 }
 
 // ---------------- file export helpers
-export async function saveFile(name, content, mime = 'text/plain') {
+export async function saveFile(name, content, mime = 'text/plain', { project = false } = {}) {
+  if (!project && !canExport()) return null;
   if (window.wtp?.saveFile) {
     const payload = content instanceof Blob ? new Uint8Array(await content.arrayBuffer()) : content;
     const ok = await window.wtp.saveFile(name, payload, mime);
@@ -99,6 +101,7 @@ const slug = (s) => String(s || 'drawing').toLowerCase().replace(/[^a-z0-9]+/g, 
 
 /** export an HTML document of A3 sheets to PDF (Electron) or open the print dialog (browser) */
 export async function exportSheetsPDF(html, name, title) {
+  if (!canExport()) return null;
   if (window.wtp?.exportPDF) {
     toast('Generating A3 PDF…', 'file');
     const p = await window.wtp.exportPDF(html, name, title, { pageSize: 'A3', landscape: true, header: false, cssPage: true, title: 'Export drawings (A3 PDF)' });

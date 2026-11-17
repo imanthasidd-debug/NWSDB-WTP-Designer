@@ -351,21 +351,71 @@ for (const route of ['conventional', 'direct', 'ssf']) for (const floc of ['hbaf
   ok(!e.errors.assess && e.assess.units.length === 0 && e.assess.plantCap === 0, 'assessment with nothing entered does not fail');
 
   const { createRequire } = await import('node:module');
-  const fs = await import('node:fs'); const os = await import('node:os'); const path = await import('node:path');
+  const fs = await import('node:fs'); const os = await import('node:os'); const path = await import('node:path'); const crypto = await import('node:crypto');
   process.env.WTP_TRIAL_NOREG = '1';
-  const T = createRequire(import.meta.url)('../electron/trial.js');
+  const T = createRequire(import.meta.url)('../electron/licence.js');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wtp-trial-'));
+  const o = { files: [path.join(dir, 'a.dat'), path.join(dir, 'b', 'c.bin')], keyFile: path.join(dir, 'licence.key'), machineId: 'ABCD-EFGH-JKMN-PQRS' };
   const now = Date.UTC(2026, 10, 16), D = T.DAY;
-  let s = T.trialStatus(dir, 30, now);
-  ok(s.trial && !s.expired && s.daysLeft === 30 && s.ends === '2026-12-16', 'trial: first run starts 30 days');
-  ok(T.trialStatus(dir, 30, now + 10 * D).daysLeft === 20, 'trial: 20 days left after 10 days');
-  ok(T.trialStatus(dir, 30, now - 100 * D).daysLeft === 20, 'trial: setting the clock back gains nothing');
-  ok(T.trialStatus(dir, 30, now + 29.5 * D).daysLeft === 1, 'trial: last day');
-  ok(T.trialStatus(dir, 30, now + 30 * D).expired, 'trial: ends after 30 days');
-  ok(T.trialStatus(dir, 30, now + 5 * D).expired, 'trial: stays ended when the clock is set back');
-  fs.writeFileSync(T.fileOf(dir), `${now + 300 * D}.${now + 300 * D}.00000000000000000000`);
-  ok(T.trialStatus(dir, 30, now).expired, 'trial: an edited record is rejected');
+  let s = T.trialStatus(dir, 30, now, o);
+  ok(s.trial && !s.expired && s.daysLeft === 30 && s.ends === '2026-12-16' && s.mode === 'trial', 'trial: first run starts 30 days');
+  ok(T.trialStatus(dir, 30, now + 10 * D, o).daysLeft === 20, 'trial: 20 days left after 10 days');
+  ok(T.trialStatus(dir, 30, now - 100 * D, o).daysLeft === 20, 'trial: setting the clock back gains nothing');
+  ok(T.trialStatus(dir, 30, now + 29.5 * D, o).daysLeft === 1, 'trial: last day');
+  s = T.trialStatus(dir, 30, now + 30 * D, o);
+  ok(s.expired && s.mode === 'restricted', 'trial: ends after 30 days → restricted mode');
+  ok(T.trialStatus(dir, 30, now + 5 * D, o).expired, 'trial: stays ended when the clock is set back');
+  fs.rmSync(o.files[0]);
+  ok(T.trialStatus(dir, 30, now + 31 * D, o).expired, 'trial: deleting one record does not restart the trial');
+  fs.writeFileSync(o.files[0], `${now + 300 * D}.${now + 300 * D}.00000000000000000000`); fs.writeFileSync(o.files[1], 'x');
+  ok(T.trialStatus(dir, 30, now, o).expired, 'trial: edited records are rejected');
+  ok(T.machineId().match(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/), 'machine ID has the form XXXX-XXXX-XXXX-XXXX');
+  // licence keys (signing key kept outside the project)
+  const kp = '/home/claude/wtp-keys/licence-private.json';
+  if (fs.existsSync(kp)) {
+    const k = JSON.parse(fs.readFileSync(kp, 'utf8'));
+    ok(k.x === T.PUBLIC_X, 'licence: app public key matches the signing key');
+    const priv = crypto.createPrivateKey({ key: { kty: 'OKP', crv: 'Ed25519', x: k.x, d: k.d }, format: 'jwk' });
+    const mk = (lic) => { const p = Buffer.from(JSON.stringify(lic)).toString('base64url'); return `WTP1-${p}.${crypto.sign(null, Buffer.from(p), priv).toString('base64url')}`; };
+    const ext = mk({ m: o.machineId, t: 'ext', u: '2027-03-31', n: 'Test RSC', i: '2026-11-17' });
+    ok(!T.activate(dir, mk({ m: 'ZZZZ-ZZZZ-ZZZZ-ZZZZ', t: 'full' }), o).ok, 'licence: a key for another computer is refused');
+    ok(!T.activate(dir, ext.slice(0, -3) + 'AAA', o).ok, 'licence: a tampered key is refused');
+    ok(T.activate(dir, ext, o).ok, 'licence: extension key accepted');
+    s = T.trialStatus(dir, 30, Date.UTC(2027, 0, 10), o);
+    ok(!s.expired && s.ends === '2027-03-31' && s.extended === '2027-03-31', 'licence: extension key reopens the trial until its date');
+    ok(T.trialStatus(dir, 30, Date.UTC(2027, 3, 2), o).expired, 'licence: restricted again after the extension date');
+    ok(T.activate(dir, '  ' + mk({ m: o.machineId, t: 'full', n: 'NWSDB RSC Western', i: '2026-11-17' }).replace(/(.{60})/g, '$1\n') + '  ', o).ok, 'licence: full key accepted (line breaks and spaces ignored)');
+    s = T.trialStatus(dir, 30, Date.UTC(2028, 0, 1), o);
+    ok(s.licensed && !s.trial && s.mode === 'licensed' && s.licensee === 'NWSDB RSC Western', 'licence: full key turns the copy into the full version');
+  }
   fs.rmSync(dir, { recursive: true, force: true });
+}
+// ---- v1.8: jar test and O&M planner
+{
+  const p = newProject();
+  p.inputs.omplan = { asOf: '2026-11-17' };
+  let r = computeAll(p);
+  const j = r.jartest, o = r.omplan;
+  ok(!r.errors.jartest && !r.errors.omplan, 'jar test and O&M planner compute');
+  ok(j.enabled && j.opt.dose > 40 && j.opt.dose < 50, 'jar: optimum of the default series lies between 40 and 50 mg/L');
+  ok(j.econ && j.econ.turb <= 4 + 1e-9 && j.econ.dose < j.opt.dose, 'jar: economic dose meets the 4 NTU target below the optimum');
+  near(j.jarDose, Math.min(j.econ.dose * 1.1, j.opt.dose), 1e-9, 'jar: selected dose = economic + 10 % (≤ optimum)');
+  near(j.qNow, (j.dose * (j.Qh / j.nS)) / (j.sol * 10), 1e-9, 'jar: pump feed q = D·Q/(10·C)');
+  near(j.sNow, (j.qNow / j.cap) * 100, 1e-9, 'jar: stroke = q / q_max');
+  ok(j.cal && Math.abs(j.cal.b - 0.35) < 0.05 && j.cal.r2 > 0.95, 'jar: history recalibrates D = a·Tuᵇ (b ≈ 0.35)');
+  near(j.mlPer10, 1, 1e-9, 'jar: 1 % stock → 1 mL per 10 mg/L in a 1 L jar');
+  ok(o.bw && o.bw.events.length > 5 && o.bw.events.every((e) => e.since <= o.bw.run + 1e-6), 'backwash: 7-day timetable, no filter beyond its interval');
+  ok(o.bw.dayMode && o.bw.events.every((e) => e.t % 24 >= 7 && e.t % 24 < 17), 'backwash: day-shift washes start inside 07:00–17:00');
+  near(o.bw.daily, o.bw.vol * o.bw.wpd, 1e-6, 'backwash: daily wash water = volume × washes');
+  const c = o.chems.find((x) => x.key === 'coag');
+  near(c.kgD, (r.coag.monthlyDose[10] * o.qDay) / 1000, 1e-6, 'stock: coagulant use at the November dose');
+  ok(c.assumedFull && Math.abs(c.days - c.cap / c.kgD) < 1e-6, 'stock: 0 on hand = store full');
+  p.inputs.omplan.stockCoag = c.kgD * 10;
+  const c2 = computeAll(p).omplan.chems.find((x) => x.key === 'coag');
+  ok(c2.status === 'fail' && c2.reorderIn === 0, 'stock: 10 days of coagulant with 21 days delivery → order now');
+  const ss = SAMPLES.find((x) => x.id === 'rural').build();
+  const rr = computeAll(ss);
+  ok(!rr.jartest.enabled && rr.omplan.ssf && rr.omplan.ssf.years > 1, 'slow sand plant: no jar test; scraping and re-sanding plan');
 }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

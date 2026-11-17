@@ -22,13 +22,25 @@ mkdir -p "$STAGE/$APP/resources/app"
 node -e "const p=require('$ROOT/package.json'); const o={name:p.name,productName:p.productName,version:p.version,description:p.description,main:p.main,author:p.author,license:p.license}; require('fs').writeFileSync('$STAGE/$APP/resources/app/package.json', JSON.stringify(o,null,2));"
 cp -r "$ROOT/electron" "$ROOT/dist" "$STAGE/$APP/resources/app/"
 rm -f "$STAGE/$APP/resources/app/dist/"*.map
+cp "$ROOT/dist/icon.ico" "$STAGE/$APP/resources/icon.ico"
 if [ "$TRIAL_DAYS" -gt 0 ]; then
-  sed -i "s/^const TRIAL_DAYS = 0;/const TRIAL_DAYS = $TRIAL_DAYS;/" "$STAGE/$APP/resources/app/electron/main.js"
-  grep -q "^const TRIAL_DAYS = $TRIAL_DAYS;" "$STAGE/$APP/resources/app/electron/main.js"
+  APPDIR="$STAGE/$APP/resources/app"
+  sed -i "s/^const TRIAL_DAYS = 0;/const TRIAL_DAYS = $TRIAL_DAYS;/" "$APPDIR/electron/main.js"
+  grep -q "^const TRIAL_DAYS = $TRIAL_DAYS;" "$APPDIR/electron/main.js"
   # no developer tools in the trial edition
-  sed -i "s/{ role: 'toggleDevTools'[^}]*}/{ type: 'separator' }/" "$STAGE/$APP/resources/app/electron/main.js"
+  sed -i "s/{ role: 'toggleDevTools'[^}]*}/{ type: 'separator' }/" "$APPDIR/electron/main.js"
+  # bundle + minify the main process (licence code inlined), minify the preload
+  node -e "
+    const esb = require('esbuild');
+    esb.buildSync({ entryPoints: ['$APPDIR/electron/main.js'], bundle: true, platform: 'node', format: 'cjs', external: ['electron'], minify: true, legalComments: 'none', outfile: '$APPDIR/electron/main.min.js', target: 'node22' });
+    esb.buildSync({ entryPoints: ['$APPDIR/electron/preload.js'], bundle: false, platform: 'node', format: 'cjs', minify: true, legalComments: 'none', outfile: '$APPDIR/electron/preload.min.js', target: 'node22' });"
+  mv "$APPDIR/electron/main.min.js" "$APPDIR/electron/main.js"; mv "$APPDIR/electron/preload.min.js" "$APPDIR/electron/preload.js"; rm -f "$APPDIR/electron/licence.js"
+  # pack into app.asar and lock the executable to it (Electron fuses: no RunAsNode, no NODE_OPTIONS, no --inspect, asar only)
+  node "$ROOT/scripts/asar-pack.mjs" "$APPDIR" "$STAGE/$APP/resources/app.asar"
+  rm -rf "$APPDIR"
+  python3 "$ROOT/scripts/fuses.py" "$STAGE/$APP/$APP.exe" 000001011
 else
-  rm -f "$STAGE/$APP/resources/app/electron/trial.js"
+  rm -f "$STAGE/$APP/resources/app/electron/licence.js"
 fi
 cp "$ROOT/installer/install.ps1" "$ROOT/installer/uninstall.ps1" "$ROOT/installer/Install.cmd" "$STAGE/"
 mkdir -p "$STAGE/Samples"

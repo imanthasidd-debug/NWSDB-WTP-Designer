@@ -1,11 +1,11 @@
 # NWSDB WTP Designer - per-user installer (no administrator rights required)
 $ErrorActionPreference = 'Stop'
 $AppName  = 'NWSDB WTP Designer'
-$Version  = '1.7.0'
+$Version  = '1.8.0'
 $Src      = Join-Path $PSScriptRoot $AppName
 $Dest     = Join-Path $env:LOCALAPPDATA "Programs\$AppName"
 $Exe      = Join-Path $Dest "$AppName.exe"
-$Icon     = Join-Path $Dest 'resources\app\dist\icon.ico'
+$Icon     = Join-Path $Dest 'resources\icon.ico'
 
 if (-not (Test-Path (Join-Path $Src "$AppName.exe"))) { throw "Application folder '$Src' not found. Extract the whole ZIP first, then run Install.cmd again." }
 

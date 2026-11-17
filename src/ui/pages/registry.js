@@ -7,6 +7,7 @@ import { dashboard, compliance, checks } from './outputs.js';
 import { chainPage } from '../chain.js';
 import { ratebook } from './ratebook.js';
 import { assess, buildings, special, structure } from './extra.js';
+import { jartest, omplan, ommanual } from './om.js';
 import { report, criteria, d2manual, d3manual, toolbox, help, settings } from './library.js';
 
 export const PAGES = [
@@ -14,7 +15,8 @@ export const PAGES = [
   demand, quality, source, process,
   intake, aeration, coag, rapidmix, floc, sed, filt, special, dis, stab,
   storage, buildings, sludge, hyd, structure, layout, energy, cost,
-  compliance, checks, assess, report,
+  compliance, checks, report,
+  assess, jartest, omplan, ommanual,
   criteria, d2manual, d3manual, ratebook, toolbox, help, settings,
 ];
-export const GROUPS = ['Project', 'Design basis', 'Treatment units', 'Plant-wide', 'Outputs', 'Library'];
+export const GROUPS = ['Project', 'Design basis', 'Treatment units', 'Plant-wide', 'Outputs', 'Operation & maintenance', 'Library'];

@@ -1,6 +1,7 @@
 // Application state: project, computed results, undo/redo history, persistence
 import { computeAll, newProject } from '../engine/index.js';
 import { deepClone, deepMerge } from '../core/util.js';
+import { canEdit } from './edition.js';
 import { DEFAULT_INPUTS } from '../engine/index.js';
 import { diffSnapshots, kpiSnapshot } from '../engine/chain.js';
 
@@ -81,6 +82,7 @@ function snapshot() {
 }
 /** set value at path like ['sed','sor'] */
 export function setInput(path, value, { immediate = false } = {}) {
+  if (!canEdit()) { emit('inputs'); return; }
   if (!lastSnapshot) lastSnapshot = JSON.stringify(store.project);
   // impact tracking: consecutive edits of the same input share one baseline
   const pathKey = path.join('.');
@@ -108,6 +110,7 @@ export function getInput(path) {
   return o;
 }
 export function setCriteria(key, field, value) {
+  if (!canEdit()) return;
   snapshot();
   store.project.criteria[key] = { ...(store.project.criteria[key] || {}), [field]: value };
   store.dirty = true;
@@ -115,10 +118,12 @@ export function setCriteria(key, field, value) {
   emit('results');
 }
 export function resetCriteria(key) {
+  if (!canEdit()) return;
   if (key) delete store.project.criteria[key]; else store.project.criteria = {};
   store.dirty = true; recompute(); emit('results');
 }
 export function resetModule(mod) {
+  if (!canEdit()) return;
   snapshot();
   const def = DEFAULT_INPUTS();
   store.project.inputs[mod] = deepClone(def[mod]);
@@ -127,6 +132,7 @@ export function resetModule(mod) {
   emit('project');
 }
 export function undo() {
+  if (!canEdit()) return;
   clearTimeout(snapshotTimer); snapshot();
   if (!store.history.length) return;
   store.future.push(JSON.stringify(store.project));
@@ -136,6 +142,7 @@ export function undo() {
   store.dirty = true; store.impact = null; recompute(); emit('project');
 }
 export function redo() {
+  if (!canEdit()) return;
   if (!store.future.length) return;
   store.history.push(JSON.stringify(store.project));
   const nxt = store.future.pop();

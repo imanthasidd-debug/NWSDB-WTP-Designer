@@ -129,7 +129,7 @@ export const structure = {
 const on = (i) => !!i.assess?.enabled;
 const copyDesign = () => { const cur = store.project.inputs.assess || {}; setInput(['assess'], { ...cur, enabled: true, ...fromDesign(store.results) }, { immediate: true }); toast('Existing-plant data filled from the current design – now edit it to the real plant'); };
 export const assess = {
-  id: 'assess', title: 'Existing plant assessment', sub: 'Enter the sizes of an existing plant and its flows: capacity of every unit against NWSDB D3, the bottleneck, and what to upgrade for a target flow', icon: 'target', group: 'Outputs', mod: 'assess',
+  id: 'assess', title: 'Existing plant assessment', sub: 'Enter the sizes of an existing plant and its flows: capacity of every unit against NWSDB D3, the bottleneck, and what to upgrade for a target flow', icon: 'target', group: 'Operation & maintenance', mod: 'assess',
   fields: [
     { k: 'enabled', l: 'Assess an existing plant', t: 'bool' },
     { t: 'help', html: 'Enter what is built, not what this project designs. Raw-water quality, doses and criteria are taken from the other pages. Leave a size at 0 to leave that unit out of the rating.' },

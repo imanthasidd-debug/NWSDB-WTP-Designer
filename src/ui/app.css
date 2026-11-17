@@ -598,7 +598,7 @@ table.dep td.self { background: var(--surface-3); }
 .rg-t b { color: var(--text); font-size: 12.5px; }
 .rg-s { color: var(--muted); }
 /* workflow */
-.wf { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; padding: 12px 10px; }
+.wf { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 0; padding: 12px 10px; }
 .wf-step { position: relative; padding: 0 8px; min-width: 0; }
 .wf-step:not(:last-child)::after { content: ''; position: absolute; top: 15px; right: -6px; width: 12px; height: 2px; background: var(--border-strong); }
 .wf-head { display: flex; align-items: center; gap: 7px; width: 100%; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); padding: 3px 10px 3px 3px; cursor: pointer; font: inherit; color: inherit; }
@@ -666,3 +666,17 @@ table.dep td.self { background: var(--surface-3); }
 .trial-lock h2 { margin: 18px 0 8px; font-size: 22px; }
 .trial-lock p { margin: 8px 0; color: var(--text-2); line-height: 1.5; }
 .trial-lock .tl-btns { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+
+/* ---------- v1.8: restricted mode, licence dialog, O&M tables ---------- */
+.restricted-bar { display: flex; align-items: center; gap: 10px; padding: 7px 14px; background: #fdecec; color: #8a1f1f; border-bottom: 1px solid #f1c4c4; font-size: 13px; }
+.restricted-bar .btn { margin-left: auto; }
+body.restricted .main .field input, body.restricted .main .field select, body.restricted .main .field textarea, body.restricted .main .switch, body.restricted .main .tbl-input { opacity: .6; pointer-events: none; }
+.lic p { margin: 6px 0; line-height: 1.5; } .lic .lic-reason { color: var(--fail); font-weight: 600; }
+.lic-mid { display: flex; align-items: center; gap: 10px; margin: 10px 0; padding: 8px 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; }
+.lic-mid code { font-size: 16px; font-weight: 700; letter-spacing: 1px; user-select: all; }
+.lic-key { width: 100%; font-family: Consolas, monospace; font-size: 12px; padding: 8px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); color: var(--text); resize: vertical; }
+.lic-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.lic-msg { font-size: 12.5px; } .lic-msg.ok { color: var(--ok); } .lic-msg.fail { color: var(--fail); }
+td .bad { color: var(--fail); font-weight: 600; } td .warnc { color: var(--warn); }
+body.restricted #app { grid-template-rows: var(--titlebar) auto 1fr var(--statusbar); }
+.restricted-bar { min-height: 0; }
