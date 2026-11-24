@@ -4,6 +4,7 @@ import { SAMPLES } from '../src/ui/samples.js';
 import { drawingGroups } from '../src/ui/draw/views.js';
 import { drawingDXF, drawingSVG } from '../src/ui/draw/render.js';
 const out = process.argv[2];
+fs.mkdirSync(out, { recursive: true });
 for (const s of SAMPLES) {
   const r = computeAll(s.build());
   const list = drawingGroups(r).flatMap((g) => g.views.map((v) => v.dw));
