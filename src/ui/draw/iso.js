@@ -62,6 +62,8 @@ const STY = {
   inner: { top: 'isoTop', l: 'isoIn', r: 'isoIn2' },
   ground: { top: 'isoGround', l: 'isoGround', r: 'isoGround' },
   sludge: { top: 'isoSludge', l: 'isoSludge', r: 'isoSludge' },
+  water: { top: 'isoWater', l: 'isoWater', r: 'isoWater' },
+  stock: { top: 'isoStock', l: 'isoStock', r: 'isoStockD' },
 };
 /** base colours of the mesh materials (interactive viewer shades them by face orientation) */
 export const MAT = {
@@ -80,6 +82,7 @@ export const MAT = {
   glass: '#8dbcf0',
   river: '#8dbcf0',
   bank: '#a58a5c',
+  stock: '#e6dcc4',
 };
 const WATER_MAT = {
   isoWater: 'water',
@@ -96,6 +99,8 @@ const KIND_MAT = {
   sludge: 'sludge',
   inner: 'inner',
   ground: 'ground',
+  water: 'water',
+  stock: 'stock',
 };
 
 /** Scene collects solids and renders them back-to-front (static) and as a mesh (interactive) */
@@ -444,8 +449,8 @@ export class Scene {
       this.lines.push({
         a: pts[i],
         b: pts[i + 1],
-        color: cls === 'isoPipe' ? '#2a78d6' : '#22324a',
-        w: cls === 'isoPipe' ? 2.4 : 1.6,
+        color: cls === 'isoPipe' ? '#2a78d6' : cls === 'isoGhost' ? '#8a96a6' : '#22324a',
+        w: cls === 'isoPipe' ? 2.4 : cls === 'isoGhost' ? 1 : 1.6,
       });
     }
     return this;
@@ -507,6 +512,28 @@ export class Scene {
         dimText: true,
       },
     );
+    return this;
+  }
+  /**
+   * outline of a building shown cut away (walls cut low to show the equipment): faint lines for the full-height
+   * walls and the eaves, drawn under the solids
+   */
+  ghostBox(x, y, z, w, d, h) {
+    const c = [
+      [x, y],
+      [x + w, y],
+      [x + w, y + d],
+      [x, y + d],
+    ];
+    for (const [px, py] of c)
+      this.pipe(
+        [
+          [px, py, z],
+          [px, py, z + h],
+        ],
+        'isoGhost',
+      );
+    this.pipe([...c.map(([px, py]) => [px, py, z + h]), [x, y, z + h]], 'isoGhost');
     return this;
   }
   /** overall length / width / height dimensions of a box-shaped structure */

@@ -7,6 +7,21 @@ storage & pumping → residuals → hydraulic profile → site layout → power 
 
 *For the National Water Supply & Drainage Board, Sri Lanka.*
 
+**Version 1.8.5 – 3D views of every structure and building**
+* New 3D views (static isometric for A3 sheets, PDF, DXF and SVG, and the interactive viewer – rotate, zoom, top /
+  front / side views, dimensions and labels) for the units that had plans and sections only:
+  * **Aerator** – cascade (steps with the water film, inlet chamber, collection channel, total fall) or multiple-tray
+    towers (trays, posts, distributor, collecting basin);
+  * **Rapid mixer** – hydraulic-jump channel (raised approach channel, drop weir with coagulant diffuser, jump length)
+    or mechanical flash mixers (basins, drive bridges, gearbox and motor);
+  * **Sludge thickeners** (scraper bridge and drive, underflow pipe) and **sludge drying beds** (beds drying and
+    cleaned, feed main, filtrate collector);
+  * **Treated-water pump house**, **chemical house** and **chlorination building**, shown with the front walls cut
+    away: pumps on plinths, suction and delivery headers, crane and MCC; bag stores, bunded solution tanks with
+    agitators, dosing pumps, lime slurry tanks or saturators; chlorine containers on cradles and weigh scales,
+    monorail hoist, chlorinators and the scrubber.
+* The 3D view is added as the last view of each drawing set, so the drawing numbers of existing views do not change.
+
 **Version 1.8.4 – crash recovery, backups, error log, background calculation, automatic checks**
 * **Crash recovery**: the open project is written to the program's data folder 1.5 s after every change and comes
   back, marked unsaved, after a crash or power cut. A project you saved opens as saved.

@@ -55,6 +55,9 @@ export const STYLE = {
   isoGround: { fill: '#e7efe0', stroke: '#9db38c', sw: 0.8 },
   isoRoad: { fill: '#d9dce1', stroke: 'none' },
   isoPipe: { fill: 'none', stroke: '#2a78d6', sw: 2.4 },
+  isoGhost: { fill: 'none', stroke: '#8a96a6', sw: 0.8, dash: '6 4' },
+  isoStock: { fill: '#e6dcc4', stroke: '#8a7a55', sw: 0.5 },
+  isoStockD: { fill: '#cfc3a6', stroke: '#8a7a55', sw: 0.5 },
   cut: { fill: 'none', stroke: 'var(--dw-dimc)', sw: 1.4, dash: '18 4 3 4' },
   dimline: { fill: 'none', stroke: 'var(--dw-dimc)', sw: 0.7 },
 };
@@ -403,6 +406,9 @@ const LAYER_OF = {
   isoGround: 'GROUND',
   isoRoad: 'ROADS',
   isoPipe: 'PIPES',
+  isoGhost: 'ISO',
+  isoStock: 'EQUIPMENT',
+  isoStockD: 'EQUIPMENT',
   cut: 'CENTER',
   dimline: 'DIMENSIONS',
 };

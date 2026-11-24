@@ -33,7 +33,7 @@ npm run typecheck                # TypeScript checkJs of src/core and src/engine
 npm run format                   # Prettier (format:check in CI); data tables, CSS, HTML and Markdown are not formatted
 npm run check                    # lint + typecheck + format:check + test – what the GitHub "Checks" workflow runs first
 ```
-Test suites (`npm test` runs all four): `test/engine.test.mjs` (311 checks without the licence key),
+Test suites (`npm test` runs all four): `test/engine.test.mjs` (360 checks without the licence key),
 `test/fixtures.test.mjs` (38 projects saved by v1.1.0–v1.8.2 must open, calculate without errors and match
 `test/fixtures/golden.json` – after an intended engine change review the printed differences, then run
 `node test/fixtures.test.mjs --update`), `test/scaling.test.mjs` (every sample at 500–200,000 m³/d: no errors, totals
@@ -70,7 +70,9 @@ Each edition takes ~2 min; run them as separate commands. Release ZIPs (~160 MB)
   `src/ui/pages/*.js` registered in `pages/registry.js` (`{id, title, sub, icon, group, mod, fields, render(r)}` or
   `layout: 'full'` + `renderFull()`), store/undo/autosave (`store.js`), report (`report.js`), Excel (`xlsx.js`),
   O&M manual (`ommanual.js`), drawings in `src/ui/draw/` (`units.js` primitives, `views.js` `drawingGroups(r)`,
-  `iso.js`/`view3d.js` 3D, `sheet.js` A3 title block, `render.js` SVG + DXF).
+  `iso.js`/`view3d.js` 3D, `views3d.js` 3D views of aerator, rapid mixer, thickener, drying beds, pump house and the
+  buildings (cut away), `sheet.js` A3 title block, `render.js` SVG + DXF). Every structure's drawing set ends with
+  its 3D view (`V('iso', …)`); append new views at the end so existing drawing numbers do not change.
 - `src/engine/worker.js` – calculation worker (built to `dist/engine.worker.js`). `store.js` sends delayed (typing)
   recalculations there and drops stale replies; immediate changes, undo/redo and project loads calculate on the
   screen thread, as does everything when a worker cannot start (browser from disk).

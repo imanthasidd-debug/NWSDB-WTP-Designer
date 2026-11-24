@@ -4,6 +4,7 @@ import { fmt } from '../../core/util.js';
 import { Scene } from './iso.js';
 import * as U from './units.js';
 import { chemHousePlan, chlorPlan, rebarDetail, siteLevelsPlan } from './extra.js';
+import { aerator3D, beds3D, chemHouse3D, chlor3D, pumpHouse3D, rapidMix3D, thickener3D } from './views3d.js';
 import { Dm, Ln, Lv, R, T, auto } from './units.js';
 
 const f2 = (v) => fmt(v, 2),
@@ -1932,6 +1933,7 @@ export function drawingGroups(r) {
           { dw: s, label: 'Section A–A' },
         ]),
       ),
+      V('iso', '3D view', aerator3D(r.aeration)),
     ]);
   }
   if (r.process.has.rapidmix && r.rapidmix?.enabled !== false) {
@@ -1948,6 +1950,7 @@ export function drawingGroups(r) {
           { dw: s, label: 'Section A–A' },
         ]),
       ),
+      V('iso', '3D view', rapidMix3D(r.rapidmix)),
     ]);
   }
   if (r.process.has.floc && r.floc) {
@@ -2091,7 +2094,10 @@ export function drawingGroups(r) {
       ),
       V('iso', '3D view', cwr3D(st, r.hyd)),
     ]);
-    add('twp', 'Treated-water pump house', 'storage', [V('plan', 'Plan', pumpHousePlan(st))]);
+    add('twp', 'Treated-water pump house', 'storage', [
+      V('plan', 'Plan', pumpHousePlan(st)),
+      V('iso', '3D view', pumpHouse3D(st)),
+    ]);
   }
   if (r.sludge) {
     const sl = r.sludge,
@@ -2108,15 +2114,23 @@ export function drawingGroups(r) {
           { dw: ts, label: 'Section A–A' },
         ]),
       ),
+      V('iso', '3D view', thickener3D(sl)),
     ]);
     add('beds', 'Sludge drying beds', 'sludge', [
       V('plan', 'Plan', bedsPlan(sl)),
       V('secA', 'Section A–A', bedsSection(sl)),
+      V('iso', '3D view', beds3D(sl)),
     ]);
   }
   if (r.buildings) {
-    add('chem', 'Chemical house', 'buildings', [V('plan', 'Plan', chemHousePlan(r.buildings))]);
-    add('chlor', 'Chlorination building', 'buildings', [V('plan', 'Plan', chlorPlan(r.buildings))]);
+    add('chem', 'Chemical house', 'buildings', [
+      V('plan', 'Plan', chemHousePlan(r.buildings)),
+      V('iso', '3D view', chemHouse3D(r.buildings)),
+    ]);
+    add('chlor', 'Chlorination building', 'buildings', [
+      V('plan', 'Plan', chlorPlan(r.buildings)),
+      V('iso', '3D view', chlor3D(r.buildings)),
+    ]);
   }
   if (r.structure?.list?.length)
     add(

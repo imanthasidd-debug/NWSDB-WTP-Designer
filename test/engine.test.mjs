@@ -276,6 +276,28 @@ ok(
     );
   }
 }
+// ---- v1.8.5: every structure and building has a 3D view (static isometric + mesh for the interactive viewer)
+{
+  const { drawingGroups } = await import('../src/ui/draw/views.js');
+  const units = ['intake', 'aer', 'rm', 'floc', 'sed', 'filt', 'ct', 'cwr', 'twp', 'thick', 'beds', 'chem', 'chlor'];
+  const seen = new Set();
+  for (const proc of [{}, { rapidMix: 'mechanical', aeration: 'cascade' }, { aeration: 'tray' }, { route: 'ssf' }]) {
+    const p = newProject();
+    Object.assign(p.inputs.process, proc);
+    for (const g of drawingGroups(computeAll(p))) {
+      if (!units.includes(g.key)) continue;
+      const iso = g.views.find((v) => v.id === 'iso');
+      const fine =
+        iso && iso.dw.scene3d?.faces.length > 0 && Number.isFinite(iso.dw.bounds.x0) && iso === g.views.at(-1);
+      ok(fine, `3D view of ${g.title} ${JSON.stringify(proc)} (last view, so earlier drawing numbers are unchanged)`);
+      if (fine) seen.add(g.key);
+    }
+  }
+  ok(
+    units.every((k) => seen.has(k)),
+    `3D views for every structure: ${units.filter((k) => !seen.has(k)).join(', ') || 'all present'}`,
+  );
+}
 // ---- v1.6: new units, buildings, structures, hydraulics and drawings
 {
   const { drawingGroups } = await import('../src/ui/draw/views.js');
