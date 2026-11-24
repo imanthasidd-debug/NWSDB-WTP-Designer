@@ -73,7 +73,12 @@ export const TREATMENT_LOSS = [5, 10]; // raw-water facilities & treatment plant
 // ------------------------------------------------------------------ §4 Hydrology
 export const CLIMATIC_ZONES = { wet: [2000, 5000], intermediate: [1300, 3500], dry: [1000, 2000] };
 // Table 4.1 – River basin characteristics: [code, name, area km², annual rainfall mm, annual runoff mm, runoff factor %]
-export const BASINS = [
+/**
+ * @typedef {{ code: number, name: string, area: number, rain: number, runoff: number, factor: number | null, unit: number,
+ *   own?: boolean, rainEst?: boolean, runoffEst?: boolean, ratio?: number }} Basin
+ */
+/** @type {Basin[]} */
+export const BASINS = /** @type {Array<[number, string, number, number, number, number]>} */ ([
   [1, 'Kelani Ganga', 2278, 3800, 2445, 64], [2, 'Bolgoda Ganga', 374, 2668, 1069, 40], [3, 'Kalu Ganga', 2688, 4416, 2827, 64],
   [4, 'Bentara Ganga', 622, 4505, 1607, 36], [5, 'Madu Ganga', 59, 3915, 474, 12], [6, 'Madampe Lake', 90, 2955, 477, 16],
   [7, 'Telwatte Ganga', 51, 3588, 490, 14], [8, 'Ratgama Lake', 10, 4800, 500, 10], [9, 'Gin Ganga', 922, 3683, 2136, 58],
@@ -109,7 +114,8 @@ export const BASINS = [
   [97, 'Kalagamu Oya', 151, 1668, 165, 10], [98, 'Rathambala Oya', 215, 1627, 218, 13], [99, 'Deduru Oya', 2616, 1648, 451, 27],
   [100, 'Karambala Oya', 589, 1651, 555, 34], [101, 'Ratmal Oya', 215, 1697, 265, 16], [102, 'Maha Oya', 1510, 2413, 834, 35],
   [103, 'Attanagalu Oya', 727, 2544, 1017, 40],
-].map(([code, name, area, rain, runoff, factor]) => ({ code, name, area, rain, runoff, factor, unit: (runoff * 1000) / 365 }));
+]).map(([code, name, area, rain, runoff, factor]) => ({ code, name, area, rain, runoff, factor, unit: (runoff * 1000) / 365 }));
+/** @returns {Basin | null} */
 export const basinOf = (code) => BASINS.find((b) => b.code === +code) || null;
 /**
  * Runoff ratio (runoff / rainfall) for a catchment that is not in Table 4.1: area-weighted ratio of the 15 Table 4.1
@@ -123,7 +129,10 @@ export function runoffRatioFor(rainMm) {
 }
 /** indicative mean annual rainfall by climatic zone (mm) – used only when an own source has no rainfall entered */
 export const ZONE_RAIN = { wet: 3000, intermediate: 2100, dry: 1450 };
-/** basin record for a user-defined source (code 0) built from the source inputs */
+/**
+ * basin record for a user-defined source (code 0) built from the source inputs
+ * @returns {Basin}
+ */
 export function ownBasin(d, zone = 'wet') {
   const area = d.ownArea > 0 ? d.ownArea : d.catchment > 0 ? d.catchment : 10;
   const rain = d.ownRain > 0 ? d.ownRain : ZONE_RAIN[zone] || ZONE_RAIN.wet;

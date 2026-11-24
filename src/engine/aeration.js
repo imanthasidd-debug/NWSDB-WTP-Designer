@@ -3,6 +3,7 @@ import { Calc, n } from '../core/calc.js';
 import { DOsat } from '../core/water.js';
 import { clamp } from '../core/util.js';
 import { AER, AER_EFF, FE_MN, OXIDANT } from '../core/d3.js';
+import { qGet, qWorst } from './quality.js';
 
 export const DEFAULTS = {
   type: 'auto',           // auto (from process) | cascade | tray
@@ -29,7 +30,7 @@ export function compute(inp, ctx) {
   const T = q.T;
   const z = num(ctx.inp.setup?.siteElevation, 10);
   const Cs = DOsat(T, z);
-  const C0 = q.get('do', 1);
+  const C0 = qGet(q, 'do', 1);
   const Qh = dem.Qh;
   const coef = d.waterClass === 'polluted' ? 0.36 : 0.45;
 
@@ -87,14 +88,14 @@ export function compute(inp, ctx) {
     calc.step('Hydraulic loading on trays', 'q = Q/A', `${n(Qh / 3600, 3)}/${n(area)}`, Qh / 3600 / area, 'm³/s per m²', 'NWSDB D3 §5.3.3.3 – 0.01–0.02 m³/s per m²');
   }
   // iron & manganese oxidation demand
-  const fe = q.worst('fe');
-  const mn = q.worst('mn');
+  const fe = qWorst(q, 'fe');
+  const mn = qWorst(q, 'mn');
   const o2need = OXIDANT.O2.fe * fe + OXIDANT.O2.mn * mn;
   calc.section('Iron & manganese oxidation');
   calc.step('Stoichiometric O₂ demand', 'O_2 = 0.14\\,Fe^{2+} + 0.29\\,Mn^{2+}', `0.14\\times${n(fe)} + 0.29\\times${n(mn)}`, o2need, 'mg/L', 'NWSDB D3 Table 7-1');
   calc.flag('DO after aeration covers Fe/Mn oxidation demand', Ce - o2need >= 2, `${(Ce - o2need).toFixed(2)} mg/L spare`, '≥ 2 mg/L spare');
   // CO2 stripping (same K, negative driving force)
-  const co20 = q.worst('co2');
+  const co20 = qWorst(q, 'co2');
   const kS = type === 'cascade' ? clamp(K / d.nSteps, 0, 0.99) * 0.7 : clamp(coef * (1 + 0.046 * T) * d.traySpacing * 1.3, 0, 0.95);
   const nS = type === 'cascade' ? d.nSteps : d.nTrays;
   const co2e = d.co2Sat + (co20 - d.co2Sat) * (1 - kS) ** nS;

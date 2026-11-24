@@ -3,7 +3,8 @@ import { CHEM as RBCHEM } from '../core/ratebook.js';
 import { Calc, n } from '../core/calc.js';
 import { CTfrom, alSpecies, pHfrom } from '../core/water.js';
 import { MONTHS, ceilTo, clamp, maxOf, mean, minOf, num } from '../core/util.js';
-import { CHEM, COAG_PH, DIRECT, PAC, doseCheck } from '../core/d3.js';
+import { CHEM, COAG_PH, DIRECT, doseCheck } from '../core/d3.js';
+import { qGet } from './quality.js';
 
 export const COAGULANTS = {
   alum: { label: 'Aluminium sulphate (alum, Al₂(SO₄)₃·14H₂O)', alkPer: 0.505, sludgePer: 0.44, metal: 'Al', alPer: 0.0909, price: RBCHEM.alum.v, priceRef: RBCHEM.alum.ref, bulkDensity: 980, liquid: { strength: 0.48, density: 1330 } },
@@ -93,8 +94,8 @@ export function compute(inp, ctx) {
 
   // --- alkalinity & pH (closed carbonate system)
   calc.section('Alkalinity and coagulation pH');
-  const alk0 = q.get('alk', 1);
-  const pH0 = q.get('pH', 1);
+  const alk0 = qGet(q, 'alk', 1);
+  const pH0 = qGet(q, 'pH', 1);
   const CT0 = CTfrom(pH0, alk0, T);
   const alkUsed = C.alkPer * Ddes;
   calc.step('Alkalinity consumed by coagulant', '\\Delta Alk = k\\,D', `${n(C.alkPer, 3)} \\times ${n(Ddes)}`, alkUsed, 'mg/L as CaCO₃', d.coagulant === 'alum' ? 'Al₂(SO₄)₃·14H₂O + 3Ca(HCO₃)₂ → 2Al(OH)₃ + 3CaSO₄ + 6CO₂ (1 mg/L alum ≡ 0.5 mg/L alk.)' : '');

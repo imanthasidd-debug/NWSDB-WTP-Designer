@@ -1,6 +1,7 @@
 // Expert-system process selection: recommends the treatment train from source, raw quality & capacity.
 import { Calc } from '../core/calc.js';
 import { BLEACH, DIRECT, PROC, SSF, table45, TRAINS_MIN, typicalTrain } from '../core/d3.js';
+import { qGet, qWorst } from './quality.js';
 
 export const DEFAULTS = {
   route: 'auto',        // auto | conventional | direct | ssf
@@ -39,17 +40,17 @@ export function compute(inp, ctx) {
   const src = setup.sourceType || 'river';
   const gw = src === 'groundwater';
   const tmax = q.turbMax;
-  const colour = q.worst('colour');
-  const fe = q.worst('fe');
-  const mn = q.worst('mn');
-  const algae = q.worst('algae');
-  const nh3 = q.worst('nh3');
-  const toc = q.worst('toc');
-  const DO = q.get('do', 1);
-  const co2 = q.worst('co2');
-  const h2s = q.worst('h2s');
-  const tc = q.worst('tc');
-  const mclr = q.worst('mclr') || 0;
+  const colour = qWorst(q, 'colour');
+  const fe = qWorst(q, 'fe');
+  const mn = qWorst(q, 'mn');
+  const algae = qWorst(q, 'algae');
+  const nh3 = qWorst(q, 'nh3');
+  const toc = qWorst(q, 'toc');
+  const DO = qGet(q, 'do', 1);
+  const co2 = qWorst(q, 'co2');
+  const h2s = qWorst(q, 'h2s');
+  const tc = qWorst(q, 'tc');
+  const mclr = qWorst(q, 'mclr') || 0;
   const reasons = [];
   const why = (unit, txt) => reasons.push({ unit, txt });
 
@@ -133,13 +134,13 @@ export function compute(inp, ctx) {
   if (sludge === 'auto') sludge = Q > 20000 ? 'mechanical' : Q > 5000 ? 'thickener' : 'beds';
 
   // ---- Warnings that conventional treatment cannot solve
-  const f = q.worst('f');
+  const f = qWorst(q, 'f');
   if (f > 1.0) calc.note('fail', `Fluoride ${f} mg/L exceeds SLS 614 (1.0 mg/L). Conventional treatment does not remove fluoride – select another source, blend, or add defluoridation (NWSDB D3 §7.2 Table 7-4: activated alumina 85–95 %, bone char, Nalgonda alum + lime, RO).`);
-  const hard = q.worst('hard');
+  const hard = qWorst(q, 'hard');
   if (hard > 200) calc.note(hard > 250 ? 'warn' : 'info', `Total hardness ${hard} mg/L > 200 mg/L – NWSDB D3 Table 4-5 lists softening as essential; ion-exchange softening of a portion and blending to 20–50 mg/L is preferred (D3 §7.4). Conventional treatment does not soften.`);
-  const cl = q.worst('cl');
+  const cl = qWorst(q, 'cl');
   if (cl > 250) calc.note('fail', `Chloride ${cl} mg/L (salinity intrusion?) exceeds SLS 614 – reverse osmosis is essential (NWSDB D3 Table 4-5); otherwise relocate the intake upstream / provide a salinity barrier (D3 §5.1.2) or raw-water storage for dry-weather periods.`);
-  const no3 = q.worst('no3');
+  const no3 = qWorst(q, 'no3');
   if (no3 > 50) calc.note('fail', `Nitrate ${no3} mg/L exceeds SLS 614 – not removed by conventional treatment.`);
   for (const k of ['as', 'pb', 'cd', 'cr', 'hg', 'se', 'ni', 'cn']) {
     const r = q.rows.find((x) => x.key === k);

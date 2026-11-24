@@ -7,8 +7,7 @@ import { IMPELLERS } from '../../engine/rapidmix.js';
 import { AGENTS } from '../../engine/disinfection.js';
 import { synthGradation } from '../../engine/filtration.js';
 import { h, icon, modal } from '../dom.js';
-import { aeratorSection, contactPlan, filterPlan, filterSection, flocDrawing, intakeSection, rapidMixDrawing, sedPlan, sedSection } from '../draw/units.js';
-import { card, chartCard, drawingCard, kpis, kvTable, notes, structureCard, table } from '../results.js';
+import { card, chartCard, kpis, kvTable, notes, structureCard, table } from '../results.js';
 import { getInput, setInput, store } from '../store.js';
 
 const f1 = (v) => fmt(v, 1), f2 = (v) => fmt(v, 2), f0 = (v) => fmt(v, 0);

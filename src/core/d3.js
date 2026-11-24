@@ -107,7 +107,8 @@ export function table45(q, has) {
   const rows = TABLE_4_5.filter((r) => r.when(q)).map((r) => {
     const missing = r.E.filter((p) => !has[p]);
     const isSoft = (p) => (r.soft || []).includes(p) || alt(p);
-    return { ...r, missing, hard: missing.filter((p) => !isSoft(p)), soft: missing.filter(isSoft) };
+    const { when, ...row } = r; // the test function stays here – results must be plain data (cloned, saved, sent to the worker)
+    return { ...row, missing, hard: missing.filter((p) => !isSoft(p)), soft: missing.filter(isSoft) };
   });
   const E = [...new Set(rows.flatMap((r) => r.E))];
   const O = [...new Set(rows.flatMap((r) => r.O))].filter((p) => !E.includes(p));

@@ -11,25 +11,66 @@
     "build": "node build/build.mjs",
     "start": "node build/build.mjs && electron .",
     "dev": "node build/build.mjs --dev && electron .",
-    "test": "node test/engine.test.mjs",
-    "dist": "node build/build.mjs && electron-builder --win nsis portable --x64"
+    "test": "node test/engine.test.mjs && node test/fixtures.test.mjs && node test/scaling.test.mjs && node test/plants.test.mjs",
+    "dist": "node build/build.mjs && electron-builder --win nsis portable --x64",
+    "test:engine": "node test/engine.test.mjs",
+    "test:fixtures": "node test/fixtures.test.mjs",
+    "test:scaling": "node test/scaling.test.mjs",
+    "test:plants": "node test/plants.test.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "format": "prettier --write \"**/*.{js,mjs,cjs}\"",
+    "format:check": "prettier --check \"**/*.{js,mjs,cjs}\"",
+    "check": "npm run lint && npm run typecheck && npm run format:check && npm test"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "d3": "7.9.0",
     "electron": "44.7.0",
     "electron-builder": "^26.0.12",
     "esbuild": "0.28.2",
+    "eslint": "10.15.0",
+    "globals": "17.14.0",
     "jszip": "3.10.1",
-    "katex": "0.16.47"
+    "katex": "0.16.47",
+    "prettier": "3.10.1",
+    "typescript": "7.0.2"
   },
   "build": {
     "appId": "lk.gov.nwsdb.wtpdesigner",
     "productName": "NWSDB WTP Designer",
     "copyright": "National Water Supply & Drainage Board, Sri Lanka",
-    "files": ["electron/**", "dist/**", "package.json"],
-    "directories": { "output": "release" },
-    "fileAssociations": [{ "ext": "wtpd", "name": "WTP Designer project", "description": "NWSDB WTP Designer project", "icon": "assets/icon.ico", "role": "Editor" }],
-    "win": { "target": ["nsis", "portable"], "icon": "assets/icon.ico" },
-    "nsis": { "oneClick": false, "perMachine": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true, "shortcutName": "NWSDB WTP Designer" }
+    "files": [
+      "electron/**",
+      "dist/**",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "fileAssociations": [
+      {
+        "ext": "wtpd",
+        "name": "WTP Designer project",
+        "description": "NWSDB WTP Designer project",
+        "icon": "assets/icon.ico",
+        "role": "Editor"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "NWSDB WTP Designer"
+    }
   }
 }

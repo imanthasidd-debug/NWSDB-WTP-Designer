@@ -8,7 +8,8 @@ import { renderForm } from './form.js';
 import { GROUPS, PAGES } from './pages/registry.js';
 import { calcSheet, checksTable, notes, saveFile } from './results.js';
 import { SAMPLES } from './samples.js';
-import { loadAutosave, markSaved, navigate, normalise, on, redo, resetModule, saveSettings, setProject, store, undo } from './store.js';
+import { autosaveNow, emitAll, loadAutosave, markSaved, navigate, normalise, on, redo, resetModule, saveSettings, setProject, store, undo } from './store.js';
+import { installErrorLog, logError } from './diag.js';
 import { buildWorkbook } from './xlsx.js';
 import { defaultHint, fieldFor, locate } from './locate.js';
 import { edition, licenceDialog, restrictedBanner } from './edition.js';
@@ -62,7 +63,7 @@ function loadText(text, path) {
     if (store.project.migratedRB2025 || store.project.migratedRB2026) { delete store.project.migratedRB2025; delete store.project.migratedRB2026; setTimeout(() => toast('Unit rates and chemical prices were updated to NWSDB Rates 2026 (circular CQS/22/2026/98)', 'info'), 600); }
     navigate('dashboard');
     toast('Opened ' + String(path).split(/[\\/]/).pop());
-  } catch (e) { modal('Could not open file', String(e.message)); }
+  } catch (e) { logError('open file', e, 'warn'); modal('Could not open file', String(e.message)); }
 }
 export async function saveProject(saveAs = false) {
   const content = JSON.stringify({ ...store.project, saved: new Date().toISOString() }, null, 1);
@@ -92,9 +93,33 @@ function fileMenu(anchor) {
     { label: 'Design report (PDF)…', icon: 'fileDown', kbd: 'Ctrl+P', action: () => navigate('report') },
     { label: 'Export Excel workbook', icon: 'sheet', kbd: 'Ctrl+E', action: exportExcel },
     '-',
+    ...(isElectron && window.wtp.listBackups ? [{ label: 'Restore a backup…', icon: 'undo', action: backupsDialog }] : []),
     { label: 'Settings', icon: 'settings', action: () => navigate('settings') },
     ...(isElectron ? [{ label: 'Exit', icon: 'x', action: () => window.wtp.quit() }] : []),
   ]);
+}
+
+/** list of timestamped backups (<app data>/Backups) – open one as a new, unsaved copy */
+async function backupsDialog() {
+  const list = (await window.wtp.listBackups()) || [];
+  const when = (t) => new Date(t).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  await modal('Restore a backup', (close) => h('div', null,
+    h('p', { style: { marginTop: 0 } }, 'A copy is kept every time you save and every 10 minutes while you work (last 20 per project). Opening a backup does not change the original file – save it under a new name.'),
+    list.length ? h('div', { style: { maxHeight: '46vh', overflow: 'auto', border: '1px solid var(--border)', borderRadius: '8px' } }, h('table', { class: 'res' },
+      h('thead', null, h('tr', null, h('th', null, 'Project'), h('th', null, 'Saved'), h('th', { class: 'num' }, 'Size'), h('th', null, ''))),
+      h('tbody', null, list.map((b) => h('tr', null, h('td', null, b.project), h('td', null, when(b.when)), h('td', { class: 'num' }, `${Math.max(1, Math.round(b.size / 1024))} kB`),
+        h('td', null, h('button', { class: 'btn sm', onclick: async () => {
+          close('open');
+          if (!(await confirmDiscard())) return;
+          const res = await window.wtp.readBackup(b.path);
+          if (!res) { modal('Could not open backup', 'The backup file is no longer there.'); return; }
+          loadText(res.content, null);
+          store.dirty = true;
+          emitAll();
+          toast(`Backup of ${when(b.when)} opened – use Save as to keep it`, 'info');
+        } }, icon('open'), 'Open'))))))) : h('div', { class: 'empty', style: { padding: '20px' } }, 'No backups yet – they are made when you save.'),
+    h('div', { class: 'flex', style: { marginTop: '10px' } }, h('button', { class: 'btn sm ghost', onclick: () => window.wtp.openDataFolder('Backups') }, icon('open'), 'Open backups folder'))),
+  [{ label: 'Close', primary: true }]);
 }
 
 // ------------------------------------------------------------------ shell
@@ -162,7 +187,7 @@ function renderStatus() {
     h('span', { class: 'sb' }, h('span', { class: 'dot ok' }), `${r.summary.ok} pass`), h('span', { class: 'sb' }, h('span', { class: 'dot warn' }), `${r.summary.warn} review`), h('span', { class: 'sb' }, h('span', { class: 'dot fail' }), `${r.summary.fail} fail`),
     h('span', { class: 'grow' }),
     Object.keys(r.errors || {}).length ? h('span', { class: 'sb', style: { color: 'var(--fail)' } }, icon('warn'), 'Calculation error in: ' + Object.keys(r.errors).join(', ')) : null,
-    h('span', { class: 'sb' }, `recalc ${fmt(store.calcMs, 0)} ms`),
+    h('span', { class: 'sb', title: store.calcThread === 'worker' ? 'Last calculation ran in the background' : 'Last calculation ran on the screen thread', 'data-thread': store.calcThread }, `recalc ${fmt(store.calcMs, 0)} ms`),
     h('span', { class: 'sb' }, 'SI units · SLS 614:2013'),
     h('span', { class: 'sb' }, store.filePath ? String(store.filePath).split(/[\\/]/).pop() : 'not saved')].filter(Boolean));
   els.pname.textContent = store.project.inputs.setup.name || 'Untitled project';
@@ -194,7 +219,7 @@ function renderMain() {
   if (page.renderFull) {
     const full = h('div', { class: 'full' });
     body.append(full);
-    try { full.append(...page.renderFull(r).filter(Boolean)); } catch (e) { full.append(errorBox(e)); console.error(e); }
+    try { full.append(...page.renderFull(r).filter(Boolean)); } catch (e) { full.append(errorBox(e)); console.error(e); logError(`page: ${page.id}`, e); }
     current.full = full;
     if (keepScroll) body.scrollTop = keepScroll;
     return;
@@ -224,7 +249,7 @@ function renderResults() {
     return;
   }
   let o;
-  try { o = page.render(r) || {}; } catch (e) { out.append(errorBox(e)); console.error(e); return; }
+  try { o = page.render(r) || {}; } catch (e) { out.append(errorBox(e)); console.error(e); logError(`page: ${page.id}`, e); return; }
   const res = page.mod ? r[page.mod] : null;
   const tabs = [['overview', 'Results', o.overview]];
   if (o.visuals?.filter(Boolean).length) tabs.push(['visuals', 'Charts', o.visuals]);
@@ -294,6 +319,7 @@ function onKey(e) {
 
 // ------------------------------------------------------------------ boot
 export async function boot(root) {
+  installErrorLog();
   buildShell(root);
   applyTheme();
   const splash = h('div', { class: 'splash' }, h('div', { class: 'si', html: `<div class="si-logo">${bannerImg(86)}</div><h2>WTP Designer</h2><p>Conventional Water Treatment Plant Design Suite</p><div class="si-bar"><span></span></div>` }));
@@ -305,8 +331,11 @@ export async function boot(root) {
     if (initial) { try { setProject(normalise(JSON.parse(initial.content)), initial.path); started = true; } catch { /* ignore */ } }
   }
   if (!started) {
-    const a = loadAutosave();
-    if (a) { setProject(normalise(a.project), a.path); store.dirty = true; } else setProject(newProject(), null);
+    const a = await loadAutosave();
+    if (a) {
+      try { setProject(normalise(a.project), a.path); store.dirty = a.dirty ?? true; started = true; } catch (e) { logError('autosave restore', e); }
+    }
+    if (!started) setProject(newProject(), null);
   }
   on((what) => {
     if (what === 'results') { renderSidebar(); renderStatus(); current?.form?.update(); renderResults(); if (current?.full && (['dashboard', 'checks', 'compliance', 'chain'].includes(store.page) || current.page.live)) renderMain(); updateImpactDock(); }
@@ -320,6 +349,6 @@ export async function boot(root) {
   window.wtp?.onTrialExpired?.((t) => { Object.assign(edition, t || {}, { expired: true }); enterRestricted(); renderMain(); });
   if (edition.trial && edition.expired) enterRestricted();
   else if (edition.trial && !sessionStorage.getItem('wtp-trial-seen')) { try { sessionStorage.setItem('wtp-trial-seen', '1'); } catch { /* private mode */ } setTimeout(() => toast(`Trial version – ${edition.daysLeft} day${edition.daysLeft === 1 ? '' : 's'} left`, 'info'), 1600); }
-  window.wtp?.onCloseRequest?.(async () => { const ok = await confirmDiscard(); window.wtp.closeResponse(ok); });
+  window.wtp?.onCloseRequest?.(async () => { const ok = await confirmDiscard(); if (ok) autosaveNow(); window.wtp.closeResponse(ok); });
   setTimeout(() => { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 450); }, 900);
 }

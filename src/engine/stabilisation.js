@@ -7,6 +7,7 @@ import { CTfrom, lsiText, pHfrom, stability } from '../core/water.js';
 import { bisect } from '../core/util.js';
 import { CHEM, STABILITY, ccppText, pHsEq83 } from '../core/d3.js';
 import { chlorineDose } from './disinfection.js';
+import { qGet, qWorst } from './quality.js';
 
 export const DEFAULTS = {
   target: 'LSI',      // LSI | pH
@@ -29,14 +30,14 @@ export function compute(inp, ctx) {
   const co = ctx.res.coag;
   const dem = ctx.res.demand;
   const T = q.T;
-  const TDS0 = q.get('tds', 1);
-  const ca0 = q.get('ca', 1) * 2.497; // mg/L as CaCO3
+  const TDS0 = qGet(q, 'tds', 1);
+  const ca0 = qGet(q, 'ca', 1) * 2.497; // mg/L as CaCO3
   // state after coagulation (or raw if no coagulation)
-  let alk = co ? co.alk1 : q.get('alk', 1);
+  let alk = co ? co.alk1 : qGet(q, 'alk', 1);
   const CT = co ? co.CT0 + (co.sodaDose ? (co.sodaDose * co.inputs.sodaPurity / 100) / 105990 : 0) : null;
-  const CTuse = CT ?? CTfrom(q.get('pH', 1), alk, T);
+  const CTuse = CT ?? CTfrom(qGet(q, 'pH', 1), alk, T);
   let caH = ca0 + (co ? co.need * (co.inputs.phAdjust === 'lime' ? 1 : 0) : 0);
-  let pH = co ? co.pH1 : q.get('pH', 1);
+  let pH = co ? co.pH1 : qGet(q, 'pH', 1);
   const alumTDS = co ? 0.485 * co.Ddes : 0;
   calc.section('Water after coagulation & filtration');
   calc.step('pH', 'pH_1', '', pH, '');
@@ -102,7 +103,7 @@ export function compute(inp, ctx) {
   calc.check('stab.CCPP', ccpp);
   calc.check('stab.alk', fin.alkF);
   calc.check('stab.ca', fin.caF);
-  const clF = q.worst('cl') + 0.5 * cd.post, so4F = q.worst('so4') + (co && co.inputs.coagulant === 'alum' ? 0.485 * co.Ddes : 0);
+  const clF = qWorst(q, 'cl') + 0.5 * cd.post, so4F = qWorst(q, 'so4') + (co && co.inputs.coagulant === 'alum' ? 0.485 * co.Ddes : 0);
   const larson = (clF / 35.45 + so4F / 48.03) / Math.max(fin.alkF / 50, 1e-6);
   calc.step('Larson ratio (Cl⁻ + SO₄²⁻)/Alk (equivalents)', 'LR = \\frac{Cl/35.45 + SO_4/48.03}{Alk/50}', `\\frac{${n(clF)}/35.45 + ${n(so4F)}/48.03}{${n(fin.alkF)}/50}`, larson, '', 'NWSDB D3 §8.1 – ≤ 0.2 (or Cl⁻, SO₄²⁻ each ≤ 50 mg/L)');
   calc.flag('Corrosion protection – Larson ratio / chloride & sulphate', larson <= STABILITY.clso4Ratio + 1e-9 || (clF <= STABILITY.clso4Each && so4F <= STABILITY.clso4Each), `LR ${larson.toFixed(2)} · Cl ${clF.toFixed(0)} · SO₄ ${so4F.toFixed(0)} mg/L`, 'LR ≤ 0.2 or each ≤ 50 mg/L', 'If not met, use lined metal or plastic pipes', 'info', 'NWSDB D3 §8.1');

@@ -4,9 +4,9 @@
 // reservoir level), chemical dosing stations dripping into their dosing points, numbered process streams with a
 // stream table, sludge / wash-water lines to the residuals plant and recovered water returned to the head of works.
 // statik = true gives a print version (literal colours, no animation) for the report.
-import { esc, fmt } from '../../core/util.js';
+import { fmt } from '../../core/util.js';
 import { h, icon } from '../dom.js';
-import { navigate, store } from '../store.js';
+import { navigate } from '../store.js';
 
 const PAGE_OF = { intake: 'intake', rwp: 'intake', aeration: 'aeration', presed: 'sed', rapidmix: 'rapidmix', floc: 'floc', sed: 'sed', filt: 'filt', dis: 'dis', cwr: 'storage', twp: 'storage', supply: 'storage', sludge: 'sludge', recov: 'sludge', thick: 'sludge', dewater: 'sludge', cake: 'sludge', coag: 'coag', stab: 'stab', pac: 'coag', prechlor: 'dis', limecoag: 'coag', poly: 'coag', cl2: 'dis' };
 const MOD_OF = { intake: 'intake', rwp: 'intake', aeration: 'aeration', presed: 'sed', rapidmix: 'rapidmix', floc: 'floc', sed: 'sed', filt: 'filt', dis: 'dis', cwr: 'storage', twp: 'storage', supply: 'storage', recov: 'sludge', thick: 'sludge', dewater: 'sludge', cake: 'sludge' };

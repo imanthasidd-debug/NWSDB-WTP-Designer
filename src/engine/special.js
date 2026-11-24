@@ -4,6 +4,7 @@
 import { Calc, n } from '../core/calc.js';
 import { CHEM as RB } from '../core/ratebook.js';
 import { ceilTo } from '../core/util.js';
+import { qGet, qWorst } from './quality.js';
 
 // D3 Table 7-1: oxidant demand (mg per mg) and solids produced (kg per kg) for Fe²⁺ and Mn²⁺
 export const OXIDANTS = {
@@ -36,8 +37,8 @@ export function compute(inp, ctx) {
   const calc = new Calc(ctx.crit);
   const q = ctx.res.quality, dem = ctx.res.demand, proc = ctx.res.process;
   const Qd = dem.Qd, Qavg = dem.design.gross * (1 + dem.inputs.ownUse / 100);
-  const fe = q.worst('fe') || 0, mn = q.worst('mn') || 0, f = q.worst('f') || 0;
-  const pH = q.get ? q.get('pH', 0) : 7;
+  const fe = qWorst(q, 'fe') || 0, mn = qWorst(q, 'mn') || 0, f = qWorst(q, 'f') || 0;
+  const pH = qGet(q, 'pH', 0);
   const out = { inputs: d, fe, mn, f, annualCost: 0, solidsKgD: 0 };
 
   // ------------------------------------------------------------ iron & manganese

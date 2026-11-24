@@ -26,6 +26,20 @@ await esbuild.build({
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   logLevel: 'warning',
 });
+// calculation worker (src/engine/worker.js) – same engine code, run off the screen thread
+await esbuild.build({
+  entryPoints: [path.join(root, 'src/engine/worker.js')],
+  bundle: true,
+  format: 'iife',
+  target: ['chrome120'],
+  outfile: path.join(dist, 'engine.worker.js'),
+  minify: !process.argv.includes('--dev'),
+  sourcemap: process.argv.includes('--dev'),
+  nodePaths,
+  legalComments: 'eof',
+  logLevel: 'warning',
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
+});
 fs.copyFileSync(path.join(root, 'src/index.html'), path.join(dist, 'index.html'));
 fs.copyFileSync(path.join(root, 'src/ui/app.css'), path.join(dist, 'app.css'));
 // KaTeX stylesheet + fonts

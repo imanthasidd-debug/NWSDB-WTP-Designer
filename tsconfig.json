@@ -1,0 +1,15 @@
+{
+  // Type checking of the calculation code (no build output): npm run typecheck
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2023", "DOM", "WebWorker.ImportScripts"],
+    "strict": false,
+    "skipLibCheck": true
+  },
+  "include": ["src/core/**/*.js", "src/engine/**/*.js"]
+}

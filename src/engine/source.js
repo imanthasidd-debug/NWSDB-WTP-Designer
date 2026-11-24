@@ -2,7 +2,6 @@
 // yield by mass diagram, sedimentation, evaporation & seepage, rational-formula flood estimate)
 import { Calc, n } from '../core/calc.js';
 import { EVAPORATION, SEDIMENT_YEARS, SEDIMENT_YIELD, SEEPAGE_MONTHLY_PCT, basinOf, kirpich, ownBasin, rational, ref, runoffCforCatchment, specificFloodEnvelope, tcVelocity } from '../core/d2.js';
-import { num } from '../core/util.js';
 
 const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 // indicative monthly distribution of runoff (fraction of annual) by climatic zone – replace with gauged data

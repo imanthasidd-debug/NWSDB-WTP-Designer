@@ -25,4 +25,14 @@ contextBridge.exposeInMainWorld('wtp', {
   onOpenFile: (cb) => ipcRenderer.on('open-file', (_e, f) => cb(f)),
   onCloseRequest: (cb) => ipcRenderer.on('close-request', () => cb()),
   closeResponse: (ok) => ipcRenderer.send('close-response', ok),
+  // crash recovery, backups and error log (files in the program's app-data folder)
+  autosave: (content) => ipcRenderer.send('autosave-write', content),
+  readAutosave: () => ipcRenderer.invoke('autosave-read'),
+  backup: (content, name) => ipcRenderer.invoke('backup-write', content, name),
+  listBackups: () => ipcRenderer.invoke('backups-list'),
+  readBackup: (p) => ipcRenderer.invoke('backup-read', p),
+  openDataFolder: (sub) => ipcRenderer.invoke('open-data-folder', sub),
+  log: (level, where, msg) => ipcRenderer.send('log', level, where, msg),
+  readLog: (n) => ipcRenderer.invoke('log-read', n),
+  diagnostics: () => ipcRenderer.invoke('diagnostics'),
 });

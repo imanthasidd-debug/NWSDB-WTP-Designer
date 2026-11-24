@@ -67,7 +67,7 @@ export function intakePlan(ik) {
   it.push(T(bankX - 0.8, -(r * 0.55) - d.portW, `${ik.nPorts} ports ${f2(d.portW)}×${f2(d.portH)} m, coarse ${d.cOpen} / fine ${d.fOpen} mm screens`, { anchor: 'end', size: 0.75 }));
   // pumps and delivery header
   const nP = d.nDuty + (ik.pumps?.nStandby ?? d.nStandby ?? 1);
-  const px = r * 0.15, hx = r * 0.62, dnm = (ik.pumps?.dn || 400) / 1000;
+  const px = r * 0.15, hx = r * 0.62;
   for (let i = 0; i < nP; i++) {
     const y = (i - (nP - 1) / 2) * Math.min(1.8, (2 * r - 2) / nP);
     it.push(C(px, y, 0.42, 'equipFill'), C(px, y, 0.12, 'equip'), Ln(px + 0.42, y, hx, y, 'pipe'));

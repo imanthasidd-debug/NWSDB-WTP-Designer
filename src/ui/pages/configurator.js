@@ -12,6 +12,7 @@ import { locate } from '../locate.js';
 import { card, checksTable, kpis, notes, statusBadge, table } from '../results.js';
 import { navigate, setInput, store } from '../store.js';
 import { choiceCards } from '../widgets.js';
+import { qWorst } from '../../engine/quality.js';
 
 /** what the expert system would choose with every decision on Auto */
 let recCache = { key: null, val: null };
@@ -44,7 +45,7 @@ function stageRows(r, rec) {
   const Q = r.demand.Qd;
   const pr = r.process;
   const inp = store.project.inputs;
-  const tmax = q.turbMax, colour = q.worst('colour'), algae = q.worst('algae'), fe = q.worst('fe'), mn = q.worst('mn'), tc = q.worst('tc'), mclr = q.worst('mclr') || 0;
+  const tmax = q.turbMax, colour = qWorst(q, 'colour'), algae = qWorst(q, 'algae'), fe = qWorst(q, 'fe'), mn = qWorst(q, 'mn'), tc = qWorst(q, 'tc'), mclr = qWorst(q, 'mclr') || 0;
   const gw = inp.setup?.sourceType === 'groundwater';
   const dis = inp.dis || {};
   const estKgD = ((+dis.demand || 1.2) + (+dis.residual || 0.8)) * Q / 1000;
@@ -79,7 +80,7 @@ function stageRows(r, rec) {
       { key: 'cascade', label: 'Cascade aerator', art: ART.cascade, desc: '4–6 drops of 0.3–0.6 m; robust, larger plants', rec: rec?.aeration === 'cascade' },
       { key: 'tray', label: 'Multiple-tray aerator', art: ART.tray, desc: '3–5 trays with coke / gravel; compact', rec: rec?.aeration === 'tray' },
     ] },
-    { k: 'prechlor', l: 'Pre-chlorination', d: 'Coliforms > 5,000, Fe > 1 mg/L, algae, Mn (D3 Table 4-5); THM risk with TOC', opts: ynCards('prechlor', ART.prechlorYes, rec?.prechlor, tc > 5000 || fe > 1.0 ? 'Essential for this raw water (D3 Table 4-5)' : null, q.worst('toc') > 4 ? `TOC ${q.worst('toc')} mg/L – THM risk (D3 §6.10)` : null, 'Oxidant dosed at the inlet', 'Chlorine only after filtration') },
+    { k: 'prechlor', l: 'Pre-chlorination', d: 'Coliforms > 5,000, Fe > 1 mg/L, algae, Mn (D3 Table 4-5); THM risk with TOC', opts: ynCards('prechlor', ART.prechlorYes, rec?.prechlor, tc > 5000 || fe > 1.0 ? 'Essential for this raw water (D3 Table 4-5)' : null, qWorst(q, 'toc') > 4 ? `TOC ${qWorst(q, 'toc')} mg/L – THM risk (D3 §6.10)` : null, 'Oxidant dosed at the inlet', 'Chlorine only after filtration') },
     { k: 'pac', l: 'Powdered activated carbon', d: 'Algae, taste & odour, microcystin (D3 §5.2.3): 2–20 mg/L, ≥ 15 min contact', opts: ynCards('pac', ART.pacYes, rec?.pac, algae > 2000 || mclr > 1 ? 'Essential for algae / toxins (D3 Table 4-5)' : null, null, 'Slurry dosed at the plant head', 'No adsorption step') },
   ];
   if (!pr.ssf) {

@@ -6,6 +6,10 @@ import { maxOf, mean, num } from '../core/util.js';
 import { nu } from '../core/water.js';
 
 const ctxNu = (ctx, T) => nu(T) * 1e6;
+/** raw-water value of parameter k from a quality result (i = 0 average, 1 design) */
+export const qGet = (q, k, i = 1) => num(q?.inputs?.values?.[k]?.[i], NaN);
+/** worse of the average and design values of parameter k (lowest for alkalinity-type parameters) */
+export const qWorst = (q, k) => q?.rows?.find((r) => r.key === k)?.worst;
 
 export const DEFAULTS = {
   values: Object.fromEntries(PARAMS.map((p) => [p.key, [...p.raw]])),
@@ -59,8 +63,6 @@ export function compute(inp, ctx) {
   calc.step('Peak monthly turbidity', 'T_{u,max}', '\\max(T_{u,i})', maxOf(monthly), 'NTU');
   return {
     inputs: d, T, zone, district, rows, exceed, monthly, turbAvg, turbMax, turbClass, alerts,
-    get: (k, i = 1) => v(k, i),
-    worst: (k) => rows.find((r) => r.key === k)?.worst,
     ...calc.result(),
   };
 }

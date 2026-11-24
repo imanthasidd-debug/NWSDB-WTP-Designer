@@ -3,6 +3,7 @@ import JSZip from 'jszip';
 import { PAGES } from './pages/registry.js';
 import { store } from './store.js';
 
+// eslint-disable-next-line no-control-regex -- strips characters that are not allowed in XML
 const xmlEsc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
 const colName = (i) => { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
 

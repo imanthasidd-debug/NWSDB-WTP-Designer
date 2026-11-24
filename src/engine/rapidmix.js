@@ -32,7 +32,6 @@ export function compute(inp, ctx) {
   const d = { ...DEFAULTS, ...inp };
   const calc = new Calc(ctx.crit);
   const proc = ctx.res.process;
-  const T = ctx.res.quality.T;
   const { rho, mu, nu } = ctx.water;
   const Q = ctx.res.demand.Qs;
   const type = d.type === 'auto' ? proc.rapidMix || 'jump' : d.type;

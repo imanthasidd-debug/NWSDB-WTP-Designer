@@ -4,6 +4,7 @@
 import { Calc, n } from '../core/calc.js';
 import { DN, G, MOTOR_KW, ceilTo, clamp, nextStd, selectDNRange, vel } from '../core/util.js';
 import { GRAVEL_RULES, RSF, SSF, SSF_LIMITS, filterAreaMax, minFilters, sandDepthMin, ssfUnits } from '../core/d3.js';
+import { qWorst } from './quality.js';
 
 export const DEFAULTS = {
   type: 'auto',            // auto | rsf | dual | ssf
@@ -146,7 +147,6 @@ export function compute(inp, ctx) {
   let type = d.type === 'auto' ? (proc.filter && proc.filter !== 'auto' ? proc.filter : 'rsf') : d.type;
   if (proc.ssf && d.type === 'auto') type = 'ssf';
   const Qh = dem.Qh;
-  const Qs = dem.Qs;
   const out = { inputs: d, type, enabled: true };
   const rate = d.rate > 0 ? d.rate : type === 'dual' ? 10 : type === 'ssf' ? 0.15 : 7.5; // D3 Annex F.1 avg 5.7–8.1 m/h
 
@@ -186,7 +186,7 @@ export function compute(inp, ctx) {
     calc.check('f.ssfSuper', d.ssfSupernatant);
     calc.check('f.ssfTurb', infAvg, 'Average turbidity applied to SSF');
     calc.flag('Peak turbidity applied to SSF', infPeak < SSF.turbPretreat, `${infPeak.toFixed(1)} NTU`, '< 20 NTU (pre-treat to average ≤ 5)', infPeak >= SSF.turbPretreat ? 'Pre-treatment necessary when the maximum is ≥ 20 NTU' : '', infPeak > SSF.turbMaxPretreated ? 'fail' : 'warn', 'NWSDB D3 §5.12.1, §5.12.6');
-    const lim = SSF_LIMITS.filter(([k, , , mx]) => mx !== null && k !== 'turb').map(([k, name, txt, mx]) => ({ name, txt, v: k === 'po4' ? null : q.worst(k), mx })).filter((x) => x.v !== null && x.v !== undefined && !Number.isNaN(x.v));
+    const lim = SSF_LIMITS.filter(([k, , , mx]) => mx !== null && k !== 'turb').map(([k, name, txt, mx]) => ({ name, txt, v: k === 'po4' ? null : qWorst(q, k), mx })).filter((x) => x.v !== null && x.v !== undefined && !Number.isNaN(x.v));
     const over = lim.filter((x) => x.v > x.mx);
     calc.flag('Source water within SSF limits (Table 5-35)', !over.length, over.length ? over.map((x) => `${x.name} ${x.v}`).join(', ') : `${lim.length} parameters within`, 'algae ≤ 200/mL, colour ≤ 25, DOC ≤ 3, NH₃ ≤ 3, Fe & Mn < 1 mg/L', '', 'warn', 'NWSDB D3 Table 5-35');
     const boxDepth = 0.3 + 0.3 + d.ssfDepth + d.ssfSupernatant + 0.3;
@@ -392,12 +392,12 @@ export function compute(inp, ctx) {
   // gallery pipework
   calc.section('Filter gallery pipework (per filter)');
   const Qf = Qh / 3600 / N;
-  const pipes = [
+  const pipes = /** @type {Array<[string, number, number, string]>} */ ([
     ['Influent (settled water)', Qf, 0.6, 'f.vInf'],
     ['Filtered water', Qf, 1.5, 'f.vEff'],
     ['Wash water', Qbw, 2.4, 'f.vWash'],
     ['Wash waste', Qbw, 1.5, 'f.vWaste'],
-  ].map(([label, Qp, vt, key]) => {
+  ]).map(([label, Qp, vt, key]) => {
     const dn = selectDNRange(Qp, ctx.crit[key].min, ctx.crit[key].max, Math.max(vt, ctx.crit[key].min));
     const vv = vel(Qp, dn / 1000);
     calc.step(label + ' pipe', 'DN', `Q=${n(Qp, 3)}\\,m^3/s`, dn, 'mm');

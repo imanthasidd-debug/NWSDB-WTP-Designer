@@ -6,7 +6,7 @@ import { DEPENDS, KPI_ORDER, diffSnapshots, kpiSnapshot } from '../engine/chain.
 import { fmt, fmtAuto } from '../core/util.js';
 import { clear, h, icon } from './dom.js';
 import { card, chartCard, kpis, table } from './results.js';
-import { getInput, navigate, setInput, store, undo } from './store.js';
+import { navigate, setInput, store, undo } from './store.js';
 import { PAGES } from './pages/registry.js';
 import { streamRows } from './draw/pfd.js';
 

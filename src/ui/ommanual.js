@@ -38,7 +38,7 @@ table.log td { height: 18px; } table.log th { font-size: 7.5pt; padding: 3px; } 
 export function buildManual(opts = {}) {
   const o = Object.fromEntries(MANUAL_SECTIONS.map(([k]) => [k, opts[k] !== false]));
   const r = store.results, s = store.project.inputs.setup;
-  const d = r.demand, co = r.coag, fl = r.floc, sd = r.sed, fi = r.filt, ds = r.dis, st = r.stab, jt = r.jartest, om = r.omplan, ik = r.intake, cw = r.storage, sl = r.sludge, sp = r.special, bl = r.buildings;
+  const d = r.demand, co = r.coag, fl = r.floc, sd = r.sed, fi = r.filt, ds = r.dis, st = r.stab, jt = r.jartest, om = r.omplan, ik = r.intake, cw = r.storage, sl = r.sludge, sp = r.special;
   const word = !!opts.word;
   const base = word ? '' : location.href.replace(/[^/]*$/, '');
   const logo = bannerImg(70, 'cover-banner'); // fixed organisation logo

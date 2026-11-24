@@ -1,0 +1,20 @@
+{
+  "name": "Example – replace with a built NWSDB plant",
+  "reference": "As-built drawings / commissioning report (drawing numbers, year)",
+  "basedOn": "sample:wet",
+  "project": null,
+  "inputs": {
+    "setup": { "name": "Example WTP", "district": "Gampaha" },
+    "demand": { "basis": "capacity", "capacity": 42000 }
+  },
+  "tolerance": 0.15,
+  "asBuilt": [
+    { "label": "Plant capacity", "result": "demand.Qd", "value": 42000, "unit": "m³/d", "tolerance": 0 },
+    { "label": "Number of sedimentation tanks", "result": "sed.N", "value": 2, "unit": "no." },
+    { "label": "Total sedimentation area", "result": "sed.A*sed.N", "value": 1750, "unit": "m²" },
+    { "label": "Number of rapid sand filters", "result": "filt.N", "value": 6, "unit": "no." },
+    { "label": "Total filter area", "result": "filt.A", "value": 240, "unit": "m²" },
+    { "label": "Clear-water reservoir volume", "result": "storage.V", "value": 7000, "unit": "m³" },
+    { "label": "Head through the plant", "result": "hyd.totalHead", "value": 6.0, "unit": "m", "tolerance": 0.25 }
+  ]
+}

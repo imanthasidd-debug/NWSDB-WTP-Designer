@@ -1,5 +1,4 @@
 // Engine verification: independent hand calculations and invariants (run: node test/engine.test.mjs)
-import assert from 'node:assert/strict';
 import { computeAll, newProject } from '../src/engine/index.js';
 import { CTfrom, DOsat, ctGiardia, mu, pHfrom, rho, stability } from '../src/core/water.js';
 import { gradation } from '../src/engine/filtration.js';

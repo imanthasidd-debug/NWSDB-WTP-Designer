@@ -1,0 +1,16 @@
+# generated, data and vendored files – formatting them only adds noise
+dist/
+release/
+node_modules/
+package-lock.json
+src/core/ratebook.data.js
+src/core/ratebook2026.data.js
+src/ui/icons.gen.js
+src/ui/logo.js
+scripts/ratebook/*.json
+test/fixtures/
+docs/
+*.md
+*.css
+*.html
+*.json

@@ -56,6 +56,9 @@ export const SETUP_DEFAULTS = {
   notes: '',
 };
 
+/** @typedef {{ DEFAULTS?: Record<string, any>, compute: (inp: any, ctx: any) => any }} EngineModule */
+/** design steps in calculation order – a step may only read the results of the steps before it */
+/** @type {Array<[string, EngineModule]>} */
 export const MODULES = [
   ['demand', demand], ['quality', quality], ['source', source], ['process', process], ['coag', coag], ['aeration', aeration],
   ['rapidmix', rapidmix], ['floc', floc], ['sed', sed], ['filt', filt], ['stab', stab], ['dis', dis],

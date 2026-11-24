@@ -28,8 +28,8 @@ if (!RB_DATA.rev2026) {
   for (const pn of ['pn10', 'pn16']) Object.assign(RB_DATA.hdpe[pn], RB26.hdpe[pn]);
   RB_DATA.hdpe.ref = 'A-PE/01-06 (Rates 2026, Annex 03), B-PE/01B, 03B local (Annex 12)';
   Object.assign(RB_DATA.pvc, RB26.pvc, { ref: 'A-PVC/01-03 (Rates 2026, Annex 01)' });
-  RB_DATA.chemicals = RB26.chemicals.map((c) => ({ ...c, role: c.name, page: 'Annex 06' }));
-  RB_DATA.labour = RB26.labour.map((x) => ({ table: 'Annex 02: Basic Rates – Labour (Rates 2026, Annex 09)', ...x }));
+  RB_DATA.chemicals = /** @type {any} */ (RB26.chemicals.map((c) => ({ ...c, role: c.name, page: 'Annex 06' })));
+  RB_DATA.labour = /** @type {any} */ (RB26.labour.map((x) => ({ table: 'Annex 02: Basic Rates – Labour (Rates 2026, Annex 09)', ...x })));
   for (const m of RB_DATA.materials || []) { const v = RB26.fuel[m.description]; if (v) { m.rate = v; m.table = 'Annex 01: Basic Prices – Material (Rates 2026, Annex 08)'; } }
   // carried-forward sections × adjustment factor
   for (const [id, g] of Object.entries(RB_DATA.graphs)) { const f = graphFactor(id); for (const s of g.series) s.pts = s.pts.map(([x, y]) => [x, Math.round(y * f * 10) / 10]); g.factor = f; }
@@ -103,7 +103,7 @@ const nearestRow = (rows, dn) => rows.find((r) => r[0] >= dn) || rows[rows.lengt
 // ------------------------------------------------------------------ location factors (Table B-COM/02)
 export function locationFactor(district) {
   const row = RB_DATA.location.find(([d]) => String(d).toLowerCase().replace(/[^a-z]/g, '') === String(district || '').toLowerCase().replace(/[^a-z]/g, ''));
-  return row ? row[1] : 1.0;
+  return row ? Number(row[1]) : 1.0;
 }
 
 // ------------------------------------------------------------------ pipes (Section A tables, per metre)
@@ -159,7 +159,7 @@ export function valveCost(kind, dn, pn = 16) {
     const pick = rows.find((v) => parseInt(v.desc, 10) >= dn) || rows[rows.length - 1];
     return { value: pick.rate, ref: rbRef(`B-V&M/02 item ${pick.item} (${pick.desc.slice(0, 48)}; 2025 × ${ADJ.valveSupply})`) };
   }
-  rows = rows.map((v) => ({ ...v, d: parseInt(v.dn, 10) })).filter((v) => v.d > 0).sort((a, b) => a.d - b.d);
+  rows = rows.map((v) => ({ ...v, d: parseInt(String(v.dn), 10) })).filter((v) => v.d > 0).sort((a, b) => a.d - b.d);
   if (!rows.length) return { value: NaN, ref: '' };
   // the book's PN16 butterfly 300/350 mm prices exceed 400–600 mm: use a monotone envelope
   const pick = rows.find((v) => v.d >= dn) || rows[rows.length - 1];

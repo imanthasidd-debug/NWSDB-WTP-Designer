@@ -409,7 +409,6 @@ export function compute(inp, ctx) {
   // parametric cross-check: RB Graph A-UC/07 (treatment plant base cost, incl. markup & duties, excl. VAT)
   const uc7 = graph('UC/07', Q);
   const ucBase = uc7.value * Q;
-  const boqBase = works;
   calc.section('Cross-check with the Rate Book unit-cost graphs (Rates 2026)');
   calc.step('RB Graph A-UC/07 unit cost of a treatment plant', 'c_{UC07}(Q)', `Q=${n(Q, 0)}`, uc7.value, 'LKR per m³/d', rbRef('Graph A-UC/07') + (uc7.extrap ? ' – extrapolated' : ''));
   calc.step('Parametric base cost (excl. intake, mains, administration buildings, VAT)', 'C_{UC07} = c\\,Q', '', ucBase, 'LKR');

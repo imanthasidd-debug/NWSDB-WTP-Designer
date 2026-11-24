@@ -2,6 +2,7 @@
 import { Calc } from '../core/calc.js';
 import { PARAMS, exceeds } from '../core/standards.js';
 import { TURBIDITY_TARGETS } from '../core/d3.js';
+import { qWorst } from './quality.js';
 
 const REMOVAL = { as: 0.5, pb: 0.7, cd: 0.3, cr: 0.3, hg: 0.3, cu: 0.5, zn: 0.3, ni: 0.2, cod: 0.6, po4: 0.8, toc: 0.4, cn: 0.2, se: 0.1, albnh3: 0.5, mbas: 0.3, oil: 0.7, phenol: 0.3, mclr: 0.6 };
 
@@ -14,7 +15,7 @@ export function compute(inp, ctx) {
   const pred = {};
   const coagOn = !!co && proc.has.coag;
   for (const p of PARAMS) {
-    const raw = q.worst(p.key);
+    const raw = qWorst(q, p.key);
     let v = raw;
     let how = 'Not removed by conventional treatment';
     switch (p.key) {

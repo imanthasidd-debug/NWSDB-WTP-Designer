@@ -1,14 +1,13 @@
 // Project setup, demand forecast, raw-water quality and process selection pages
 import { BASINS, COMMUNITY, DESIGN_PERIODS, EVAPORATION, NON_DOMESTIC, lpcdRange } from '../../core/d2.js';
 import { PARAMS, limitText, rawGlText } from '../../core/standards.js';
-import { PROC as D3PROC } from '../../core/d3.js';
 import { AREA_PRESETS, DISTRICTS, ZONE_LABEL, elevationOf, provinceOf, waterTempOf } from '../../core/srilanka.js';
-import { MONTHS, esc, fmt, fmtAuto } from '../../core/util.js';
-import { LABELS } from '../../engine/process.js';
+import { MONTHS, fmt, fmtAuto } from '../../core/util.js';
 import { h, icon, toast } from '../dom.js';
 import { card, chartCard, kpis, notes, statusBadge, table } from '../results.js';
-import { emitAll, navigate, saveSettings, setInput, store } from '../store.js';
+import { emitAll, saveSettings, setInput, store } from '../store.js';
 import { basisCards, capacityPresets } from '../widgets.js';
+import { qGet, qWorst } from '../../engine/quality.js';
 
 const opt = (o) => Object.entries(o);
 
@@ -257,7 +256,6 @@ export const source = {
   render(r) {
     const s = r.source;
     if (s.isGW) return { overview: [notes(s.notes)] };
-    const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     const monthly = s.months.map((m, i) => ({ m: MONTHS[i], I: m.I, D: m.D }));
     return {
       overview: [
@@ -334,10 +332,10 @@ export const quality = {
       overview: [
         kpis([
           { label: 'Design turbidity', value: q.turbMax, unit: 'NTU', sub: `average ${q.turbAvg} NTU · ${q.turbClass}`, icon: 'droplet' },
-          { label: 'Colour (design)', value: q.worst('colour'), unit: 'Hazen', sub: 'SLS 614 ≤ 15' },
-          { label: 'Alkalinity (lowest)', value: q.worst('alk'), unit: 'mg/L CaCO₃', sub: q.worst('alk') < 40 ? 'Low – lime needed with alum' : 'Adequate for alum' },
-          { label: 'pH (design)', value: q.get('pH', 1), sub: 'SLS 614 6.5–8.5' },
-          { label: 'E. coli (design)', value: fmt(q.worst('ec_'), 0), unit: 'MPN/100 mL', sub: 'Disinfection mandatory' },
+          { label: 'Colour (design)', value: qWorst(q, 'colour'), unit: 'Hazen', sub: 'SLS 614 ≤ 15' },
+          { label: 'Alkalinity (lowest)', value: qWorst(q, 'alk'), unit: 'mg/L CaCO₃', sub: qWorst(q, 'alk') < 40 ? 'Low – lime needed with alum' : 'Adequate for alum' },
+          { label: 'pH (design)', value: qGet(q, 'pH', 1), sub: 'SLS 614 6.5–8.5' },
+          { label: 'E. coli (design)', value: fmt(qWorst(q, 'ec_'), 0), unit: 'MPN/100 mL', sub: 'Disinfection mandatory' },
           { label: 'Parameters exceeding SLS', value: q.exceed.length, sub: q.exceed.slice(0, 4).map((x) => x.name.split(' (')[0]).join(', '), status: q.exceed.length ? 'warn' : 'ok' },
         ]),
         notes([...q.alerts, ...q.notes]),

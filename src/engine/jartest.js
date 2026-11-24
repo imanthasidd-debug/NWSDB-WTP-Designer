@@ -8,6 +8,7 @@ import { Calc, n } from '../core/calc.js';
 import { fmt } from '../core/util.js';
 const tx = (v, d = 2) => fmt(v, d).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
 import { clamp, num } from '../core/util.js';
+import { qGet } from './quality.js';
 
 export const PUMP_SIZES = [1, 2.5, 4, 6, 10, 16, 25, 40, 63, 100, 160, 250, 400, 630, 1000, 1600, 2500, 4000];
 
@@ -78,8 +79,8 @@ export function compute(inp, ctx) {
   const C = co?.coag || { alkPer: 0.505, label: 'coagulant' };
   const name = (C.label || 'coagulant').split(' (')[0];
   const rawTurb = d.rawTurb > 0 ? d.rawTurb : num(ci.jarTurb, 50);
-  const rawPH = d.rawPH > 0 ? d.rawPH : q.get('pH', 1);
-  const rawAlk = d.rawAlk > 0 ? d.rawAlk : q.get('alk', 1);
+  const rawPH = d.rawPH > 0 ? d.rawPH : qGet(q, 'pH', 1);
+  const rawAlk = d.rawAlk > 0 ? d.rawAlk : qGet(q, 'alk', 1);
   const jars = (d.jars || []).map((j) => ({ dose: num(j.dose), turb: num(j.turb), pH: Number.isFinite(+j.pH) && +j.pH > 0 ? +j.pH : NaN })).filter((j) => j.dose > 0 && j.turb > 0).sort((a, b) => a.dose - b.dose);
 
   // ---- jar procedure

@@ -31,6 +31,23 @@ let win = null;
 let forceClose = false;
 let pendingFile = null;
 
+// ------------------------------------------------------------------ app-data folders: Recovery, Backups, Logs
+const dataDir = (sub) => { const d = path.join(app.getPath('userData'), sub); fs.mkdirSync(d, { recursive: true }); return d; };
+const writeAtomic = (file, content) => { const tmp = `${file}.tmp`; fs.writeFileSync(tmp, content, 'utf8'); fs.renameSync(tmp, file); };
+const LOG_MAX = 1024 * 1024; // 1 MB, then wtp.log → wtp.1.log
+/** append one entry to <app data>/Logs/wtp.log – never throws */
+function logLine(level, where, msg) {
+  try {
+    const f = path.join(dataDir('Logs'), 'wtp.log');
+    if (fs.existsSync(f) && fs.statSync(f).size > LOG_MAX) fs.renameSync(f, path.join(path.dirname(f), 'wtp.1.log'));
+    const text = msg instanceof Error ? (msg.stack || msg.message) : String(msg);
+    fs.appendFileSync(f, `${new Date().toISOString()} [${level}] ${where}: ${text.replace(/\r?\n/g, '\n    ')}\n`, 'utf8');
+  } catch { /* logging must never break the program */ }
+}
+// record main-process failures without changing Electron's own handling of them
+process.on('uncaughtExceptionMonitor', (err) => logLine('error', 'main', err));
+process.on('unhandledRejection', (err) => logLine('error', 'main (promise)', err));
+
 const isProjectFile = (p) => typeof p === 'string' && /\.(wtpd|json)$/i.test(p) && fs.existsSync(p);
 const fileFromArgv = (argv) => argv.slice(1).find((a) => !a.startsWith('-') && isProjectFile(a)) || null;
 const readProject = (p) => ({ path: p, content: fs.readFileSync(p, 'utf8') });
@@ -81,8 +98,8 @@ function createWindow() {
   });
   win.on('closed', () => { win = null; });
   // never trap the user if the renderer stops responding
-  win.on('unresponsive', () => { forceClose = true; });
-  win.webContents.on('render-process-gone', () => { forceClose = true; });
+  win.on('unresponsive', () => { forceClose = true; logLine('warn', 'window', 'renderer not responding'); });
+  win.webContents.on('render-process-gone', (_e, d) => { forceClose = true; logLine('error', 'renderer', `process gone: ${d?.reason} (exit ${d?.exitCode})`); });
 }
 
 // Minimal application menu (hidden title bar) – keeps zoom / full-screen / dev-tools accelerators
@@ -93,6 +110,7 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
 app.whenReady().then(() => {
   if (process.platform === 'win32') app.setAppUserModelId(APP_ID);
   trialNow();
+  logLine('info', 'start', `${app.getName()} ${app.getVersion()} · Electron ${process.versions.electron} · ${os.type()} ${os.release()} ${os.arch()}`);
   createWindow();
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
@@ -188,3 +206,65 @@ ipcMain.on('set-theme', (_e, theme) => {
 });
 ipcMain.on('close-response', (_e, ok) => { if (ok && win) { forceClose = true; win.close(); } });
 ipcMain.on('quit', () => { if (win) win.close(); });
+
+// ------------------------------------------------------------------ autosave (crash recovery) and backups
+ipcMain.on('autosave-write', (_e, content) => {
+  try { writeAtomic(path.join(dataDir('Recovery'), 'autosave.json'), String(content)); } catch (err) { logLine('error', 'autosave', err); }
+});
+ipcMain.handle('autosave-read', () => {
+  try { const f = path.join(dataDir('Recovery'), 'autosave.json'); return fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : null; } catch (err) { logLine('error', 'autosave', err); return null; }
+});
+const BACKUPS_KEEP = 20; // per project
+// eslint-disable-next-line no-control-regex -- control characters are not allowed in Windows file names
+const safeName = (s) => String(s || 'project').replace(/[<>:"/\\|?*\x00-\x1f]+/g, '_').replace(/\s+/g, ' ').trim().replace(/[. ]+$/, '').slice(0, 60) || 'project';
+const pad = (n) => String(n).padStart(2, '0');
+const stamp = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+ipcMain.handle('backup-write', (_e, content, name) => {
+  try {
+    const dir = path.join(dataDir('Backups'), safeName(name));
+    fs.mkdirSync(dir, { recursive: true });
+    const f = path.join(dir, `${stamp()}.wtpd`);
+    writeAtomic(f, String(content));
+    const all = fs.readdirSync(dir).filter((x) => x.endsWith('.wtpd')).sort();
+    for (const old of all.slice(0, Math.max(0, all.length - BACKUPS_KEEP))) fs.rmSync(path.join(dir, old), { force: true });
+    return f;
+  } catch (err) { logLine('error', 'backup', err); return null; }
+});
+ipcMain.handle('backups-list', () => {
+  const out = [];
+  try {
+    const root = dataDir('Backups');
+    for (const d of fs.readdirSync(root, { withFileTypes: true })) {
+      if (!d.isDirectory()) continue;
+      for (const f of fs.readdirSync(path.join(root, d.name))) {
+        if (!f.endsWith('.wtpd')) continue;
+        const p = path.join(root, d.name, f);
+        const st = fs.statSync(p);
+        out.push({ project: d.name, file: f, path: p, when: st.mtimeMs, size: st.size });
+      }
+    }
+  } catch (err) { logLine('error', 'backup', err); }
+  return out.sort((a, b) => b.when - a.when).slice(0, 80);
+});
+ipcMain.handle('backup-read', (_e, p) => {
+  const root = dataDir('Backups');
+  const full = path.resolve(String(p || ''));
+  if (!full.startsWith(root + path.sep) || !full.endsWith('.wtpd') || !fs.existsSync(full)) return null; // only files in the Backups folder
+  return readProject(full);
+});
+ipcMain.handle('open-data-folder', (_e, sub) => shell.openPath(dataDir(['Backups', 'Logs', 'Recovery'].includes(sub) ? sub : 'Backups')));
+
+// ------------------------------------------------------------------ error log and diagnostics
+ipcMain.on('log', (_e, level, where, msg) => logLine(['error', 'warn', 'info'].includes(level) ? level : 'info', String(where).slice(0, 80), String(msg).slice(0, 8000)));
+ipcMain.handle('log-read', (_e, n = 120) => {
+  try {
+    const dir = dataDir('Logs');
+    const text = ['wtp.1.log', 'wtp.log'].map((f) => path.join(dir, f)).filter((f) => fs.existsSync(f)).map((f) => fs.readFileSync(f, 'utf8')).join('');
+    return text.split('\n').filter(Boolean).slice(-Math.max(1, Math.min(1000, +n || 120))).join('\n');
+  } catch { return ''; }
+});
+ipcMain.handle('diagnostics', () => ({
+  version: app.getVersion(), electron: process.versions.electron, chrome: process.versions.chrome, node: process.versions.node,
+  os: `${os.type()} ${os.release()} ${os.arch()}`, cpu: os.cpus()[0]?.model || '', cores: os.cpus().length, memGB: +(os.totalmem() / 2 ** 30).toFixed(1),
+  locale: app.getLocale(), edition: TRIAL_DAYS ? `trial (${TRIAL_DAYS} days)` : 'full', dataFolder: app.getPath('userData'),
+}));

@@ -5,10 +5,11 @@ import * as D3M from '../../core/d3.js';
 import { DN, G, fmt, fmtAuto, hwLoss, vel } from '../../core/util.js';
 import { DOsat, mu, nu, pHs, rho, stability, stokes, lsiText, pVap } from '../../core/water.js';
 import JSZip from 'jszip';
-import { h, icon, toast } from '../dom.js';
+import { h, icon, modal, toast } from '../dom.js';
 import { canExport, edition, fmtDate, licenceDialog } from '../edition.js';
-import { CREDIT, bannerImg, emblemImg } from '../brand.js';
+import { CREDIT, bannerImg } from '../brand.js';
 import { APP, VERSION } from '../version.js';
+import { diagnosticsText } from '../diag.js';
 import { REPORT_SECTIONS, buildReport } from '../report.js';
 import { locate } from '../locate.js';
 import { card, chartCard, checksTable, exportSheetsPDF, kpis, saveFile, statusBadge, table } from '../results.js';
@@ -358,6 +359,16 @@ export const help = {
   },
 };
 
+/** diagnostics report in a box, copied to the clipboard */
+async function showDiagnostics() {
+  const text = await diagnosticsText(store, edition);
+  const ta = h('textarea', { class: 'lic-key', rows: 14, readonly: true, style: { fontSize: '11px' } });
+  ta.value = text;
+  let copied = false;
+  try { await navigator.clipboard.writeText(text); copied = true; } catch { ta.select(); try { copied = document.execCommand('copy'); } catch { copied = false; } }
+  modal('Diagnostics', h('div', null, h('p', { style: { marginTop: 0 } }, copied ? 'Copied to the clipboard – paste it into your e-mail or problem report.' : 'Select the text below and copy it (Ctrl+C) into your e-mail or problem report.'), ta), [{ label: 'Close', primary: true }]);
+}
+
 // ------------------------------------------------------------------ Settings
 export const settings = {
   id: 'settings', title: 'Settings', sub: 'Appearance, defaults and about this program', icon: 'settings', group: 'Library', layout: 'full',
@@ -369,7 +380,11 @@ export const settings = {
     return [
       card('Appearance', h('div', { class: 'field' }, h('label', null, 'Theme'), theme)),
       card('Defaults', h('div', { class: 'field' }, h('label', null, 'Designer name for new projects'), h('div', { class: 'inp' }, designer))),
-      card('About', h('div', null, h('div', { class: 'small', html: `<div class="about-logo" style="margin-bottom:10px">${bannerImg(56)}</div><br><b>NWSDB WTP Designer</b> v${VERSION} – conventional water treatment plant design suite for the National Water Supply &amp; Drainage Board, Sri Lanka.<br><span class="dev-credit">${CREDIT}</span><br>The design references and rates used are listed under Help &amp; methods.<br>Built with Electron, d3 (ISC), KaTeX (MIT), JSZip (MIT) and Lucide icons (ISC).<br>Calculation engine: ${f2(store.calcMs)} ms per full plant recalculation.${edition.licensed ? `<br><b>Licensed</b>${edition.licensee ? ' to ' + edition.licensee : ''} (machine ${edition.machineId}).` : ''}${edition.trial ? `<br><b>Trial version</b> – ${edition.expired ? 'ended (restricted mode)' : `${edition.daysLeft} day(s) left`}${edition.ends ? `, ends ${fmtDate(edition.ends)}` : ''}. Reports and drawings are marked “Trial version – not for issue”.` : ''}` }), edition.trial || edition.licensed ? h('button', { class: 'btn sm', style: { marginTop: '8px' }, onclick: () => licenceDialog() }, icon('badge'), 'Licence…') : null)),
+      card('About', h('div', null, h('div', { class: 'small', html: `<div class="about-logo" style="margin-bottom:10px">${bannerImg(56)}</div><br><b>NWSDB WTP Designer</b> v${VERSION} – conventional water treatment plant design suite for the National Water Supply &amp; Drainage Board, Sri Lanka.<br><span class="dev-credit">${CREDIT}</span><br>The design references and rates used are listed under Help &amp; methods.<br>Built with Electron, d3 (ISC), KaTeX (MIT), JSZip (MIT) and Lucide icons (ISC).<br>Calculation engine: ${f2(store.calcMs)} ms per full plant recalculation.${edition.licensed ? `<br><b>Licensed</b>${edition.licensee ? ' to ' + edition.licensee : ''} (machine ${edition.machineId}).` : ''}${edition.trial ? `<br><b>Trial version</b> – ${edition.expired ? 'ended (restricted mode)' : `${edition.daysLeft} day(s) left`}${edition.ends ? `, ends ${fmtDate(edition.ends)}` : ''}. Reports and drawings are marked “Trial version – not for issue”.` : ''}` }), h('div', { class: 'flex', style: { marginTop: '10px', flexWrap: 'wrap' } },
+        edition.trial || edition.licensed ? h('button', { class: 'btn sm', onclick: () => licenceDialog() }, icon('badge'), 'Licence…') : null,
+        h('button', { class: 'btn sm', title: 'Copy program, computer and error details for a problem report', onclick: () => showDiagnostics() }, icon('copy'), 'Copy diagnostics'),
+        window.wtp?.openDataFolder ? h('button', { class: 'btn sm ghost', onclick: () => window.wtp.openDataFolder('Logs') }, icon('open'), 'Open log folder') : null,
+        window.wtp?.openDataFolder ? h('button', { class: 'btn sm ghost', onclick: () => window.wtp.openDataFolder('Backups') }, icon('open'), 'Open backups folder') : null))),
     ];
   },
 };

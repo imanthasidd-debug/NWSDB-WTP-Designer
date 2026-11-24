@@ -5,6 +5,7 @@ import { Calc, n } from '../core/calc.js';
 import { fracHOCl, pKaHOCl } from '../core/water.js';
 import { BLEACH, CREDITS, GAS, RESIDUAL, baffleFactorFor, ctGiardiaD3, ctVirusD3 } from '../core/d3.js';
 import { ceilTo, nextStd } from '../core/util.js';
+import { qWorst } from './quality.js';
 
 export const AGENTS = {
   gas: { label: 'Chlorine gas', strength: 1.0, price: RBCHEM.cl2.v, unit: 'kg Cl₂' },
@@ -36,7 +37,7 @@ export const DEFAULTS = {
 export function chlorineDose(ctx) {
   const d = { ...DEFAULTS, ...(ctx.inp.dis || {}) };
   const q = ctx.res.quality;
-  const nh3 = q.worst('nh3');
+  const nh3 = qWorst(q, 'nh3');
   const nh3n = nh3 * 14 / 17;
   const bp = nh3n > 0.05 ? d.bpRatio * nh3n : 0;
   return { post: d.demand + d.residual + bp, pre: ctx.res.process.prechlor === 'yes' ? d.prechlorDose : 0, bp, nh3n, d };
@@ -166,7 +167,7 @@ export function compute(inp, ctx) {
   calc.text('Residuals: 0.5–0.8 mg/L in the contact basin; ≥ 0.2 mg/L at consumer taps / stand posts; ≥ 0.1 mg/L at dead ends (boost in the network rather than over-dose > 1.0 mg/L at the plant). Monitor primary disinfection with continuous analysers + alarms (±0.05 mg/L). Dose through a diffuser at the basin inlet; mixing G ≈ 400 s⁻¹, not upstream of a weir (NWSDB D3 §6.2.7–6.3.5, §6.5.6).');
   const hocl = fracHOCl(pHc, T);
   calc.step('Fraction of free chlorine as HOCl', '\\frac{1}{1+10^{pH-pK_a}}', `pK_a=${n(pKaHOCl(T), 2)}`, hocl * 100, '%', 'LN: HOCl is the stronger disinfectant – keep pH ≤ 7–7.5');
-  if (q.worst('toc') > 4) calc.note('warn', 'TOC > 4 mg/L – monitor disinfection by-products: TTHM ≤ 100 µg/L and HAA5 ≤ 80 µg/L in distribution (< 80 / < 60 µg/L after storage); avoid pre-chlorination; SUVA = UV₂₅₄ × 100/DOC > 4 indicates high THM potential (NWSDB D3 §6.10).');
+  if (qWorst(q, 'toc') > 4) calc.note('warn', 'TOC > 4 mg/L – monitor disinfection by-products: TTHM ≤ 100 µg/L and HAA5 ≤ 80 µg/L in distribution (< 80 / < 60 µg/L after storage); avoid pre-chlorination; SUVA = UV₂₅₄ × 100/DOC > 4 indicates high THM potential (NWSDB D3 §6.10).');
   if (key === 'gas') calc.text('Chlorine room: separate building with no interconnecting doors, two outward-opening exits, low-level exhaust (1 air change per minute), chlorine-leak detectors + siren (shall), 20 % NaOH scrubber / neutralisation, SCBA and safety shower outside, cylinders restrained and shaded (NWSDB D3 §6.5.3, §6.5.8, §9.8.2).');
 
   // curves

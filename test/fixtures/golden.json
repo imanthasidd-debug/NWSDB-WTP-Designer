@@ -1,0 +1,762 @@
+{
+ "v1.1.0-dry.wtpd": {
+  "Qd": 12500,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 24.295277,
+  "sedArea": 211.25,
+  "filterArea": 69.444444,
+  "nFilters": 4,
+  "clDose": 4.6882353,
+  "cwrVolume": 2083.3333,
+  "totalHead": 6.2895867,
+  "maxDemandKVA": 364.9389,
+  "capex": 4809065200,
+  "checks": {
+   "ok": 205,
+   "warn": 7,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.1.0-rural.wtpd": {
+  "Qd": 2300,
+  "route": "direct",
+  "nTrains": 1,
+  "alum": 19.250562,
+  "sedArea": 39,
+  "filterArea": 12.777778,
+  "nFilters": 4,
+  "clDose": 3.1882353,
+  "cwrVolume": 383.33333,
+  "totalHead": 4.4255869,
+  "maxDemandKVA": 131.85529,
+  "capex": 1102842600,
+  "checks": {
+   "ok": 166,
+   "warn": 10,
+   "fail": 4
+  },
+  "sls": "39/39"
+ },
+ "v1.1.0-wet.wtpd": {
+  "Qd": 42000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 702.1,
+  "filterArea": 233.33333,
+  "nFilters": 4,
+  "clDose": 4.6882353,
+  "cwrVolume": 7000,
+  "totalHead": 6.4939255,
+  "maxDemandKVA": 1285.5106,
+  "capex": 11616669000,
+  "checks": {
+   "ok": 195,
+   "warn": 7,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.2.0-dry.wtpd": {
+  "Qd": 12500,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 24.295277,
+  "sedArea": 262.8,
+  "filterArea": 69.444444,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 2083.3333,
+  "totalHead": 6.2020254,
+  "maxDemandKVA": 365.24036,
+  "capex": 4808554200,
+  "checks": {
+   "ok": 210,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.2.0-rural.wtpd": {
+  "Qd": 2300,
+  "route": "ssf",
+  "nTrains": 2,
+  "alum": null,
+  "sedArea": 520,
+  "filterArea": 638.88889,
+  "nFilters": 4,
+  "clDose": 2.9882353,
+  "cwrVolume": 383.33333,
+  "totalHead": 2.9886243,
+  "maxDemandKVA": 110.17059,
+  "capex": 1261571100,
+  "checks": {
+   "ok": 121,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.2.0-wet.wtpd": {
+  "Qd": 42000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 877.8,
+  "filterArea": 233.33333,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 7000,
+  "totalHead": 6.4921869,
+  "maxDemandKVA": 1287.1963,
+  "capex": 11614800000,
+  "checks": {
+   "ok": 200,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.3.0-cap25.wtpd": {
+  "Qd": 25000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 525.3,
+  "filterArea": 138.88889,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 4166.6667,
+  "totalHead": 6.4054623,
+  "maxDemandKVA": 834.58274,
+  "capex": 7784537400,
+  "checks": {
+   "ok": 198,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.3.0-dry.wtpd": {
+  "Qd": 12500,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 24.295277,
+  "sedArea": 262.8,
+  "filterArea": 69.444444,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 2083.3333,
+  "totalHead": 6.2020254,
+  "maxDemandKVA": 365.24036,
+  "capex": 4808554200,
+  "checks": {
+   "ok": 210,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.3.0-rural.wtpd": {
+  "Qd": 2300,
+  "route": "ssf",
+  "nTrains": 2,
+  "alum": null,
+  "sedArea": 520,
+  "filterArea": 638.88889,
+  "nFilters": 4,
+  "clDose": 2.9882353,
+  "cwrVolume": 383.33333,
+  "totalHead": 2.9886243,
+  "maxDemandKVA": 110.17059,
+  "capex": 1261571100,
+  "checks": {
+   "ok": 121,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.3.0-wet.wtpd": {
+  "Qd": 42000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 877.8,
+  "filterArea": 233.33333,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 7000,
+  "totalHead": 6.4921869,
+  "maxDemandKVA": 1287.1963,
+  "capex": 11614800000,
+  "checks": {
+   "ok": 200,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.4.0-cap25.wtpd": {
+  "Qd": 25000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 525.3,
+  "filterArea": 138.88889,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 4166.6667,
+  "totalHead": 6.4054623,
+  "maxDemandKVA": 834.58274,
+  "capex": 7784020600,
+  "checks": {
+   "ok": 198,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.4.0-dry.wtpd": {
+  "Qd": 12500,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 24.295277,
+  "sedArea": 262.8,
+  "filterArea": 69.444444,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 2083.3333,
+  "totalHead": 6.2020254,
+  "maxDemandKVA": 365.24036,
+  "capex": 4808465500,
+  "checks": {
+   "ok": 210,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.4.0-rural.wtpd": {
+  "Qd": 2300,
+  "route": "ssf",
+  "nTrains": 2,
+  "alum": null,
+  "sedArea": 520,
+  "filterArea": 638.88889,
+  "nFilters": 4,
+  "clDose": 2.9882353,
+  "cwrVolume": 383.33333,
+  "totalHead": 2.9886243,
+  "maxDemandKVA": 110.17059,
+  "capex": 1264835800,
+  "checks": {
+   "ok": 121,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.4.0-wet.wtpd": {
+  "Qd": 42000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 877.8,
+  "filterArea": 233.33333,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 7000,
+  "totalHead": 6.4921869,
+  "maxDemandKVA": 1287.1963,
+  "capex": 11614092000,
+  "checks": {
+   "ok": 200,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.5.0-cap25.wtpd": {
+  "Qd": 25000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 525.3,
+  "filterArea": 138.88889,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 4166.6667,
+  "totalHead": 6.4054623,
+  "maxDemandKVA": 834.58274,
+  "capex": 7784020600,
+  "checks": {
+   "ok": 198,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.5.0-dry.wtpd": {
+  "Qd": 12500,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 24.295277,
+  "sedArea": 262.8,
+  "filterArea": 69.444444,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 2083.3333,
+  "totalHead": 6.2020254,
+  "maxDemandKVA": 365.24036,
+  "capex": 4808465500,
+  "checks": {
+   "ok": 210,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.5.0-rural.wtpd": {
+  "Qd": 2300,
+  "route": "ssf",
+  "nTrains": 2,
+  "alum": null,
+  "sedArea": 520,
+  "filterArea": 638.88889,
+  "nFilters": 4,
+  "clDose": 2.9882353,
+  "cwrVolume": 383.33333,
+  "totalHead": 2.9886243,
+  "maxDemandKVA": 110.17059,
+  "capex": 1264835800,
+  "checks": {
+   "ok": 121,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.5.0-wet.wtpd": {
+  "Qd": 42000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 877.8,
+  "filterArea": 233.33333,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 7000,
+  "totalHead": 6.4921869,
+  "maxDemandKVA": 1287.1963,
+  "capex": 11614092000,
+  "checks": {
+   "ok": 200,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.6.0-cap25.wtpd": {
+  "Qd": 25000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 525.3,
+  "filterArea": 138.88889,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 4166.6667,
+  "totalHead": 6.4054623,
+  "maxDemandKVA": 834.58274,
+  "capex": 7784537400,
+  "checks": {
+   "ok": 198,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.6.0-dry.wtpd": {
+  "Qd": 12500,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 24.295277,
+  "sedArea": 262.8,
+  "filterArea": 69.444444,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 2083.3333,
+  "totalHead": 6.2020254,
+  "maxDemandKVA": 365.24036,
+  "capex": 4808554200,
+  "checks": {
+   "ok": 210,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.6.0-rural.wtpd": {
+  "Qd": 2300,
+  "route": "ssf",
+  "nTrains": 2,
+  "alum": null,
+  "sedArea": 520,
+  "filterArea": 638.88889,
+  "nFilters": 4,
+  "clDose": 2.9882353,
+  "cwrVolume": 383.33333,
+  "totalHead": 2.9886243,
+  "maxDemandKVA": 110.17059,
+  "capex": 1261571100,
+  "checks": {
+   "ok": 121,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.6.0-wet.wtpd": {
+  "Qd": 42000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 877.8,
+  "filterArea": 233.33333,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 7000,
+  "totalHead": 6.4921869,
+  "maxDemandKVA": 1287.1963,
+  "capex": 11614800000,
+  "checks": {
+   "ok": 200,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.7.0-cap25.wtpd": {
+  "Qd": 25000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 525.3,
+  "filterArea": 138.88889,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 4166.6667,
+  "totalHead": 6.4054623,
+  "maxDemandKVA": 834.58274,
+  "capex": 7784537400,
+  "checks": {
+   "ok": 198,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.7.0-dry.wtpd": {
+  "Qd": 12500,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 24.295277,
+  "sedArea": 262.8,
+  "filterArea": 69.444444,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 2083.3333,
+  "totalHead": 6.2020254,
+  "maxDemandKVA": 365.24036,
+  "capex": 4808554200,
+  "checks": {
+   "ok": 210,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.7.0-rural.wtpd": {
+  "Qd": 2300,
+  "route": "ssf",
+  "nTrains": 2,
+  "alum": null,
+  "sedArea": 520,
+  "filterArea": 638.88889,
+  "nFilters": 4,
+  "clDose": 2.9882353,
+  "cwrVolume": 383.33333,
+  "totalHead": 2.9886243,
+  "maxDemandKVA": 110.17059,
+  "capex": 1261571100,
+  "checks": {
+   "ok": 121,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.7.0-wet.wtpd": {
+  "Qd": 42000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 877.8,
+  "filterArea": 233.33333,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 7000,
+  "totalHead": 6.4921869,
+  "maxDemandKVA": 1287.1963,
+  "capex": 11614800000,
+  "checks": {
+   "ok": 200,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.0-cap25.wtpd": {
+  "Qd": 25000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 525.3,
+  "filterArea": 138.88889,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 4166.6667,
+  "totalHead": 6.4054623,
+  "maxDemandKVA": 834.58274,
+  "capex": 7784537400,
+  "checks": {
+   "ok": 198,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.0-dry.wtpd": {
+  "Qd": 12500,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 24.295277,
+  "sedArea": 262.8,
+  "filterArea": 69.444444,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 2083.3333,
+  "totalHead": 6.2020254,
+  "maxDemandKVA": 365.24036,
+  "capex": 4808554200,
+  "checks": {
+   "ok": 210,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.0-rural.wtpd": {
+  "Qd": 2300,
+  "route": "ssf",
+  "nTrains": 2,
+  "alum": null,
+  "sedArea": 520,
+  "filterArea": 638.88889,
+  "nFilters": 4,
+  "clDose": 2.9882353,
+  "cwrVolume": 383.33333,
+  "totalHead": 2.9886243,
+  "maxDemandKVA": 110.17059,
+  "capex": 1261571100,
+  "checks": {
+   "ok": 121,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.0-wet.wtpd": {
+  "Qd": 42000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 877.8,
+  "filterArea": 233.33333,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 7000,
+  "totalHead": 6.4921869,
+  "maxDemandKVA": 1287.1963,
+  "capex": 11614800000,
+  "checks": {
+   "ok": 200,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.1-cap25.wtpd": {
+  "Qd": 25000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 525.3,
+  "filterArea": 138.88889,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 4166.6667,
+  "totalHead": 6.4054623,
+  "maxDemandKVA": 834.58274,
+  "capex": 7784537400,
+  "checks": {
+   "ok": 198,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.1-dry.wtpd": {
+  "Qd": 12500,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 24.295277,
+  "sedArea": 262.8,
+  "filterArea": 69.444444,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 2083.3333,
+  "totalHead": 6.2020254,
+  "maxDemandKVA": 365.24036,
+  "capex": 4808554200,
+  "checks": {
+   "ok": 210,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.1-rural.wtpd": {
+  "Qd": 2300,
+  "route": "ssf",
+  "nTrains": 2,
+  "alum": null,
+  "sedArea": 520,
+  "filterArea": 638.88889,
+  "nFilters": 4,
+  "clDose": 2.9882353,
+  "cwrVolume": 383.33333,
+  "totalHead": 2.9886243,
+  "maxDemandKVA": 110.17059,
+  "capex": 1261571100,
+  "checks": {
+   "ok": 121,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.1-wet.wtpd": {
+  "Qd": 42000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 877.8,
+  "filterArea": 233.33333,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 7000,
+  "totalHead": 6.4921869,
+  "maxDemandKVA": 1287.1963,
+  "capex": 11614800000,
+  "checks": {
+   "ok": 200,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.2-cap25.wtpd": {
+  "Qd": 25000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 525.3,
+  "filterArea": 138.88889,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 4166.6667,
+  "totalHead": 6.4054623,
+  "maxDemandKVA": 834.58274,
+  "capex": 7784537400,
+  "checks": {
+   "ok": 198,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.2-dry.wtpd": {
+  "Qd": 12500,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 24.295277,
+  "sedArea": 262.8,
+  "filterArea": 69.444444,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 2083.3333,
+  "totalHead": 6.2020254,
+  "maxDemandKVA": 365.24036,
+  "capex": 4808554200,
+  "checks": {
+   "ok": 210,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.2-rural.wtpd": {
+  "Qd": 2300,
+  "route": "ssf",
+  "nTrains": 2,
+  "alum": null,
+  "sedArea": 520,
+  "filterArea": 638.88889,
+  "nFilters": 4,
+  "clDose": 2.9882353,
+  "cwrVolume": 383.33333,
+  "totalHead": 2.9886243,
+  "maxDemandKVA": 110.17059,
+  "capex": 1261571100,
+  "checks": {
+   "ok": 121,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ },
+ "v1.8.2-wet.wtpd": {
+  "Qd": 42000,
+  "route": "conventional",
+  "nTrains": 2,
+  "alum": 40.432443,
+  "sedArea": 877.8,
+  "filterArea": 233.33333,
+  "nFilters": 4,
+  "clDose": 4.4882353,
+  "cwrVolume": 7000,
+  "totalHead": 6.4921869,
+  "maxDemandKVA": 1287.1963,
+  "capex": 11614800000,
+  "checks": {
+   "ok": 200,
+   "warn": 0,
+   "fail": 0
+  },
+  "sls": "39/39"
+ }
+}

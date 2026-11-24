@@ -2,7 +2,7 @@
 import katex from 'katex';
 import { esc, fmtAuto, isNum } from '../core/util.js';
 import { renderChart } from './charts.js';
-import { drawingSVG, mountDrawing } from './draw/render.js';
+import { mountDrawing } from './draw/render.js';
 import { drawingNumber, sheetDXF, sheetMeta, sheetSVG, sheetsHTML } from './draw/sheet.js';
 import { groupTitle, groupViews } from './draw/views.js';
 import { mount3D } from './draw/view3d.js';

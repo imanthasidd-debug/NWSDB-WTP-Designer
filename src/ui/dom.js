@@ -47,7 +47,7 @@ export function modal(title, body, buttons = [{ label: 'OK', primary: true }]) {
     const close = (v) => { bg.remove(); resolve(v); };
     const m = h('div', { class: 'modal' },
       h('div', { class: 'mh2' }, title),
-      h('div', { class: 'mb' }, typeof body === 'string' ? h('div', { html: body }) : body),
+      h('div', { class: 'mb' }, typeof body === 'string' ? h('div', { html: body }) : typeof body === 'function' ? body(close) : body),
       h('div', { class: 'mf' }, buttons.map((b) => h('button', { class: 'btn' + (b.primary ? ' primary' : ''), onclick: () => close(b.value ?? b.label) }, b.label))));
     bg.append(m);
     bg.addEventListener('mousedown', (e) => { if (e.target === bg) close(null); });

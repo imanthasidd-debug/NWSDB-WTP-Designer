@@ -108,7 +108,7 @@ export function compute(inp, ctx) {
     const Wm = pf.W / 1000;
     const Ha = parshallHa(Qm, Wm), HaMin = parshallHa((Qm * d.minFlowPct) / 100, Wm);
     const sub = parshallSubmergence(Wm), Hb = sub * Ha;
-    calc.step('Throat width selected from the capacity table', 'W', `Q = ${n(QmD, 0)}\,m^3/d`, pf.W, 'mm', `NWSDB D3 Annex C.1 Table A 3 – ${pf.Qmin.toLocaleString('en-US')}–${pf.Qmax.toLocaleString('en-US')} m³/d`);
+    calc.step('Throat width selected from the capacity table', 'W', `Q = ${n(QmD, 0)}\\,m^3/d`, pf.W, 'mm', `NWSDB D3 Annex C.1 Table A 3 – ${pf.Qmin.toLocaleString('en-US')}–${pf.Qmax.toLocaleString('en-US')} m³/d`);
     calc.step('Upstream head at design flow', 'H_a = \\left(\\frac{Q}{2.273\\,W}\\right)^{1/(1.4757\\,W^{0.026})}', `Q=${n(Qm, 3)},\\ W=${n(Wm)}`, Ha, 'm', 'NWSDB D3 Annex C.1 – free flow');
     calc.step(`Head at ${d.minFlowPct} % of design flow`, 'H_{a,min}', '', HaMin, 'm');
     calc.step('Maximum downstream head for free flow', 'H_b = s\\,H_a', `${n(sub)}\\times${n(Ha)}`, Hb, 'm', 'NWSDB D3 Annex C.1 Table A 4 – submergence limit');

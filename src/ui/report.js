@@ -4,7 +4,6 @@ import { esc, fmt, fmtMoney } from '../core/util.js';
 import { evaluate, rangeText } from '../core/criteria.js';
 import { chartToSVG } from './charts.js';
 import { drawingSVG } from './draw/render.js';
-import { hydraulicProfile, layoutPlan } from './draw/units.js';
 import { pfdSVG } from './draw/pfd.js';
 import { chooseScale, drawingNumber } from './draw/sheet.js';
 import { groupViews } from './draw/views.js';

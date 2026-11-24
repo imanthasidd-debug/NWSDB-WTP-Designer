@@ -4,6 +4,7 @@ import { deepClone, deepMerge } from '../core/util.js';
 import { canEdit } from './edition.js';
 import { DEFAULT_INPUTS } from '../engine/index.js';
 import { diffSnapshots, kpiSnapshot } from '../engine/chain.js';
+import { logEngineErrors, logError } from './diag.js';
 
 const listeners = new Set();
 export const store = {
@@ -15,6 +16,7 @@ export const store = {
   history: [],
   future: [],
   calcMs: 0,
+  calcThread: 'screen', // where the last calculation ran: 'screen' or 'worker'
   impact: null,      // last input change and its ripple through the downstream units
   settings: loadSettings(),
 };
@@ -61,10 +63,64 @@ export function normalise(p) {
   return out;
 }
 
+/** full plant calculation on the screen thread (used at start-up, for undo / redo / resets and when there is no worker) */
 export function recompute() {
+  calcSeq++; // replies from the worker that are still on their way are now out of date
+  startWorker();
   const t0 = performance.now();
   store.results = computeAll(store.project);
   store.calcMs = performance.now() - t0;
+  store.calcThread = 'screen';
+  logEngineErrors(store.results.errors);
+}
+
+// ---- calculation worker (dist/engine.worker.js): edits made while typing are calculated off the screen thread, so the
+// form stays responsive on slower PCs. If the worker cannot start (e.g. a browser opening the page from disk), every
+// calculation simply runs on the screen thread as before.
+let worker = null;
+let workerState = 'off'; // off | starting | ready | failed
+let calcSeq = 0;         // id of the newest calculation – older replies are dropped
+const jobs = new Map();  // id → reply handler
+function startWorker() {
+  if (workerState !== 'off' || typeof Worker === 'undefined' || typeof document === 'undefined') return;
+  workerState = 'starting';
+  try {
+    const w = new Worker(new URL('engine.worker.js', document.baseURI));
+    w.onmessage = (e) => {
+      const m = e.data || {};
+      if (m.ready) { worker = w; workerState = 'ready'; return; }
+      const done = jobs.get(m.id);
+      jobs.delete(m.id);
+      done?.(m);
+    };
+    w.onerror = (e) => {
+      e.preventDefault?.();
+      logError('calculation worker', e.message || 'could not start – calculating on the screen thread', 'warn');
+      try { w.terminate(); } catch { /* already stopped */ }
+      worker = null;
+      workerState = 'failed';
+      for (const done of jobs.values()) done({ error: 'worker stopped' });
+      jobs.clear();
+    };
+  } catch (e) {
+    workerState = 'failed';
+    logError('calculation worker', e, 'warn');
+  }
+}
+/** calculate in the worker when it is ready, else on the screen thread; then call done() with store.results set */
+function recomputeAsync(done) {
+  if (workerState !== 'ready') { recompute(); done(); return; }
+  const id = ++calcSeq;
+  jobs.set(id, (m) => {
+    if (id !== calcSeq) return; // a newer calculation has started since
+    if (m.error || !m.results) { if (m.error !== 'worker stopped') logError('calculation worker', m.error || 'no results'); recompute(); done(); return; }
+    store.results = m.results;
+    store.calcMs = m.ms || 0;
+    store.calcThread = 'worker';
+    logEngineErrors(m.results.errors);
+    done();
+  });
+  worker.postMessage({ id, project: store.project });
 }
 
 export function setProject(p, filePath = null) {
@@ -76,6 +132,7 @@ export function setProject(p, filePath = null) {
   store.impact = null;
   recompute();
   emit('project');
+  autosave();
 }
 
 let pending = null;
@@ -110,8 +167,10 @@ export function setInput(path, value, { immediate = false, what = null } = {}) {
   clearTimeout(snapshotTimer);
   snapshotTimer = setTimeout(snapshot, 600);
   clearTimeout(pending);
-  const run = () => { recompute(); if (store.impact?.base) store.impact.diff = diffSnapshots(store.impact.base, kpiSnapshot(store.results)); emit('results'); autosave(); };
-  if (immediate) run(); else pending = setTimeout(run, 140);
+  const finish = () => { if (store.impact?.base) store.impact.diff = diffSnapshots(store.impact.base, kpiSnapshot(store.results)); emit('results'); autosave(); };
+  // immediate changes (lists, buttons) are calculated at once – callers may read the results straight after;
+  // typing waits 140 ms for the next key and is then calculated in the worker
+  if (immediate) { recompute(); finish(); } else pending = setTimeout(() => recomputeAsync(finish), 140);
 }
 export function getInput(path) {
   let o = store.project.inputs;
@@ -125,11 +184,12 @@ export function setCriteria(key, field, value) {
   store.dirty = true;
   recompute();
   emit('results');
+  autosave();
 }
 export function resetCriteria(key) {
   if (!canEdit()) return;
   if (key) delete store.project.criteria[key]; else store.project.criteria = {};
-  store.dirty = true; recompute(); emit('results');
+  store.dirty = true; recompute(); emit('results'); autosave();
 }
 export function resetModule(mod) {
   if (!canEdit()) return;
@@ -139,6 +199,7 @@ export function resetModule(mod) {
   store.dirty = true;
   recompute();
   emit('project');
+  autosave();
 }
 export function undo() {
   if (!canEdit()) return;
@@ -148,7 +209,7 @@ export function undo() {
   const prev = store.history.pop();
   store.project = JSON.parse(prev);
   lastSnapshot = prev;
-  store.dirty = true; store.impact = null; recompute(); emit('project');
+  store.dirty = true; store.impact = null; recompute(); emit('project'); autosave();
 }
 export function redo() {
   if (!canEdit()) return;
@@ -157,7 +218,7 @@ export function redo() {
   const nxt = store.future.pop();
   store.project = JSON.parse(nxt);
   lastSnapshot = nxt;
-  store.dirty = true; store.impact = null; recompute(); emit('project');
+  store.dirty = true; store.impact = null; recompute(); emit('project'); autosave();
 }
 export function navigate(page) {
   store.page = page;
@@ -167,13 +228,47 @@ export function markSaved(path) {
   store.filePath = path || store.filePath;
   store.dirty = false;
   emit('saved');
+  autosaveNow();
+  backupNow(); // every saved version is also kept in the Backups folder
 }
+
+// ---- crash recovery: the open project is written 1.5 s after each change – to a file in the program's app-data
+// folder (desktop) and to browser storage (fallback, may be too small for big projects) – and restored at start-up.
 let autosaveTimer;
 function autosave() {
   clearTimeout(autosaveTimer);
-  autosaveTimer = setTimeout(() => { try { localStorage.setItem('wtp.autosave', JSON.stringify({ when: Date.now(), path: store.filePath, project: store.project })); } catch { /* ignore */ } }, 1500);
+  autosaveTimer = setTimeout(autosaveNow, 1500);
 }
-export function loadAutosave() {
-  try { const a = JSON.parse(localStorage.getItem('wtp.autosave') || 'null'); return a && a.project ? a : null; } catch { return null; }
+export function autosaveNow() {
+  clearTimeout(autosaveTimer);
+  if (!store.project) return;
+  const rec = JSON.stringify({ when: Date.now(), path: store.filePath, dirty: store.dirty, project: store.project });
+  try { localStorage.setItem('wtp.autosave', rec); } catch { /* storage full or unavailable */ }
+  try { globalThis.window?.wtp?.autosave?.(rec); } catch { /* browser version */ }
+  if (store.dirty && Date.now() - lastBackup.t > BACKUP_EVERY) backupNow();
+}
+/** newest autosave record of the file (desktop) and browser storage, or null */
+export async function loadAutosave() {
+  const parse = (t) => { try { const a = JSON.parse(t || 'null'); return a && a.project && a.project.inputs ? a : null; } catch { return null; } };
+  let fileRec = null;
+  try { fileRec = parse(await globalThis.window?.wtp?.readAutosave?.()); } catch { /* browser version */ }
+  let lsRec = null;
+  try { lsRec = parse(localStorage.getItem('wtp.autosave')); } catch { /* storage unavailable */ }
+  if (fileRec && lsRec) return (lsRec.when || 0) > (fileRec.when || 0) ? lsRec : fileRec;
+  return fileRec || lsRec;
+}
+
+// ---- backups: timestamped copies in <app data>/Backups/<project>/ – at every save and every 10 min while editing
+const BACKUP_EVERY = 10 * 60 * 1000;
+let lastBackup = { t: 0, json: '' };
+export const backupName = () => { const s = store.project?.inputs?.setup || {}; return [s.code, s.name].filter(Boolean).join(' – ') || 'Untitled project'; };
+export function backupNow() {
+  const w = globalThis.window?.wtp;
+  if (!w?.backup || !store.project) return;
+  const json = JSON.stringify({ ...store.project, saved: new Date().toISOString() }, null, 1);
+  const cmp = JSON.stringify(store.project);
+  if (cmp === lastBackup.json) return;
+  lastBackup = { t: Date.now(), json: cmp };
+  w.backup(json, backupName()).catch?.(() => {});
 }
 export const emitAll = () => emit('project');

@@ -1,10 +1,10 @@
 // Plant-wide pages: storage & pumping, residuals, hydraulic profile, site layout, power, cost
-import { COST, FACILITIES, PIPE_MATERIALS, PUMP_TYPES, SITE_CHECKLIST } from '../../core/d2.js';
-import { MONTHS, fmt, fmtAuto, fmtMoney } from '../../core/util.js';
+import { PIPE_MATERIALS, PUMP_TYPES } from '../../core/d2.js';
+import { MONTHS, fmt, fmtMoney } from '../../core/util.js';
 import { PATTERNS } from '../../engine/storage.js';
 import { h, icon } from '../dom.js';
 import { mountDrawing } from '../draw/render.js';
-import { cwrPlan, hydraulicProfile, layoutPlan } from '../draw/units.js';
+import { hydraulicProfile, layoutPlan } from '../draw/units.js';
 import { card, chartCard, drawingCard, kpis, kvTable, notes, statusBadge, structureCard, table } from '../results.js';
 import { econChart, mainSpecCard } from './units.js';
 import { DIESEL, ENG_PCT, RB, TARIFFS } from '../../core/ratebook.js';

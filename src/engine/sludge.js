@@ -1,9 +1,10 @@
 // Residuals: sludge production (NWSDB D3 §5.14.3.6 Method 02 mass balance, Table 5-44), wash-water recovery,
 // thickening (D3 §5.14.5), drying beds (§5.14.8), mechanical dewatering (§5.14.9–5.14.11), disposal
 import { Calc, n } from '../core/calc.js';
-import { MONTHS, ceilTo, maxOf } from '../core/util.js';
+import { MONTHS, ceilTo } from '../core/util.js';
 import { zoneOf } from '../core/srilanka.js';
 import { DRYING_BED, MECH_DEWATER, RECYCLE, SLUDGE_K, THICKENER, sludgeMethod1 } from '../core/d3.js';
+import { qWorst } from './quality.js';
 
 export const DEFAULTS = {
   sedCapture: 90,       // % of solids removed in clarifiers (rest to filters) – D3 §5.14.3.6: 90 %
@@ -35,11 +36,9 @@ export function compute(inp, ctx) {
   const proc = ctx.res.process;
   const Qop = dem.design.gross * (1 + dem.inputs.ownUse / 100);
   const b = q.inputs.tssPerNtu || 1.4;
-  const kc = co ? co.sludgeFactor : 0;
   const poly = co ? co.inputs.polymer : 0;
-  const limeIns = co ? co.limeDose * 0.1 : 0; // insoluble fraction of pre-lime
   calc.section('Dry-solids production (NWSDB D3 §5.14.3.6 – Method 02, Table 5-44)');
-  const fe = q.worst('fe'), mn = q.worst('mn');
+  const fe = qWorst(q, 'fe'), mn = qWorst(q, 'mn');
   const coagKey = co ? co.inputs.coagulant : null;
   const kCo = coagKey === 'pacl' ? SLUDGE_K.pacl : coagKey === 'fecl3' ? SLUDGE_K.fecl3 : SLUDGE_K.alum;
   const pacD = co?.pac ? co.pac.dose : 0;
@@ -79,7 +78,7 @@ export function compute(inp, ctx) {
   if (proc.recovery === 'yes' && fi && fi.type !== 'ssf') {
     calc.flag('Backwash recycling – plant size', dem.Qd > RECYCLE.minPlant, `${dem.Qd.toFixed(0)} m³/d`, '> 4,500 m³/d', 'Recycling is advantageous above 4,500 m³/d (or where the source is scarce / pumping energy high)', 'info', 'NWSDB D3 §5.14.3.8');
     calc.flag('Backwash recycling – no polymer in use', !(poly > 0), poly > 0 ? `polymer ${poly} mg/L` : 'no polymer', 'not allowed where polymer is used', 'Also not where raw water has blue-green algae, Cryptosporidium or Giardia', 'warn', 'NWSDB D3 §5.14.3.8, §5.14.12');
-    if (q.worst('algae') > 2000) calc.note('warn', 'Raw water carries algae – do not recycle spent wash water unless toxin / T&O destruction follows (NWSDB D3 §5.9.12, §5.14.12).');
+    if (qWorst(q, 'algae') > 2000) calc.note('warn', 'Raw water carries algae – do not recycle spent wash water unless toxin / T&O destruction follows (NWSDB D3 §5.9.12, §5.14.12).');
     calc.text('Recovery: two compartments each holding at least one (preferably two) filter washes, settled 1–2 h and decanted by floating arm; pumps 1 duty + 1 standby; thickener supernatant and dewatering filtrate are not recycled to the plant (NWSDB D3 §5.14.3.8, §5.14.12).');
   }
   // thickener
