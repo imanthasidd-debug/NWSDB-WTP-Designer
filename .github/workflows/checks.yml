@@ -64,9 +64,9 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Playwright for Python + Chromium
+      - name: Playwright for Python + Chromium, openpyxl (reads the exported workbook)
         run: |
-          pip install playwright
+          pip install playwright openpyxl
           python -m playwright install --with-deps chromium
       - name: UI test (samples, forms, navigation, undo)
         run: python3 test/functional.py
