@@ -1,3 +1,4 @@
+import pathlib
 import asyncio, zipfile, json, openpyxl
 from playwright.async_api import async_playwright
 OUT = '/tmp/claude-0/-home-claude/ab443502-a195-5238-a92b-65d538795bc7/scratchpad/exports'
@@ -10,7 +11,7 @@ async def main():
         errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.add_init_script("localStorage.clear()")
-        await pg.goto('file:///home/claude/wtp-designer/dist/index.html'); await pg.wait_for_timeout(1500)
+        await pg.goto(pathlib.Path(__file__).resolve().parent.parent.joinpath('dist', 'index.html').as_uri()); await pg.wait_for_timeout(1500)
         async def dl(action):
             async with pg.expect_download() as d:
                 await action()

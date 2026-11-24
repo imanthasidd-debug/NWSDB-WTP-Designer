@@ -1,5 +1,6 @@
 import json, sys
-R='/tmp/claude-0/-home-claude/ab443502-a195-5238-a92b-65d538795bc7/scratchpad/rb/'
+# Intermediate extraction files of the 2025 Rate Book PDF (not kept in the repo): set RB_EXTRACT_DIR to their folder
+R=__import__('os').environ.get('RB_EXTRACT_DIR', 'rb') + '/'
 pv=json.load(open(R+'out_pipes_valves.json'))
 cv=json.load(open(R+'out_civil.json'))
 ct=json.load(open(R+'out_chem_tariff.json'))
@@ -72,5 +73,5 @@ D['estimate']=ct['estimate_format']
 D['importTariff']=ct['import_tariff']
 D['waterTariff']=ct.get('water_tariff_summary')
 s=json.dumps(D, ensure_ascii=False, separators=(',',':'))
-open('/home/claude/wtp-designer/src/core/ratebook.data.js','w').write('// AUTO-GENERATED from the NWSDB Rate Book 2025 (QS Section, P&D Division), Vols I & II – see scripts/ratebook\n// eslint-disable-next-line\nexport const RB_DATA = '+s+';\n')
+open(__import__('os').path.join(__import__('os').path.dirname(__file__), '..', '..', 'src', 'core', 'ratebook.data.js'),'w').write('// AUTO-GENERATED from the NWSDB Rate Book 2025 (QS Section, P&D Division), Vols I & II – see scripts/ratebook\n// eslint-disable-next-line\nexport const RB_DATA = '+s+';\n')
 print(len(s), {k:(len(v) if hasattr(v,'__len__') else v) for k,v in D.items()})

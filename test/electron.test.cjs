@@ -1,10 +1,11 @@
 // Launches the real Electron app (Linux build) and exercises the main-process bridge + PDF export.
-const { _electron: electron } = require('/opt/npm-tools/node_modules/playwright');
+// Needs Playwright and an Electron binary: PLAYWRIGHT_PATH (default 'playwright'), ELECTRON_PATH (default the electron devDependency)
+const { _electron: electron } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
 const path = require('path');
 const fs = require('fs');
 const out = process.argv[2];
 (async () => {
-  const app = await electron.launch({ executablePath: '/home/claude/vendor/electron-linux/electron', args: ['--no-sandbox', path.resolve(__dirname, '..')], env: { ...process.env, ELECTRON_DISABLE_SECURITY_WARNINGS: '0' } });
+  const app = await electron.launch({ executablePath: process.env.ELECTRON_PATH || require('electron'), args: ['--no-sandbox', path.resolve(__dirname, '..')], env: { ...process.env, ELECTRON_DISABLE_SECURITY_WARNINGS: '0' } });
   const win = await app.firstWindow();
   const logs = [];
   win.on('console', (m) => { if (['error', 'warning'].includes(m.type())) logs.push(m.type() + ': ' + m.text()); });

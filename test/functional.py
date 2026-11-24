@@ -1,3 +1,4 @@
+import pathlib
 import asyncio, json
 from playwright.async_api import async_playwright
 async def main():
@@ -8,7 +9,7 @@ async def main():
         pg.on('pageerror', lambda e: errs.append(str(e)))
         pg.on('console', lambda m: errs.append(m.text) if m.type == 'error' else None)
         await pg.add_init_script("localStorage.clear()")
-        await pg.goto('file:///home/claude/wtp-designer/dist/index.html')
+        await pg.goto(pathlib.Path(__file__).resolve().parent.parent.joinpath('dist', 'index.html').as_uri())
         await pg.wait_for_timeout(1500)
         nav = lambda t: pg.evaluate(f"[...document.querySelectorAll('.nav')].find(n=>n.textContent.trim().startsWith('{t}')).click()")
         await nav('Sedimentation'); await pg.wait_for_timeout(500)

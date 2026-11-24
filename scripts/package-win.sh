@@ -2,7 +2,7 @@
 # Assembles the Windows x64 distribution from the official Electron runtime (no wine/NSIS needed).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ELECTRON_ZIP="${ELECTRON_ZIP:-/home/claude/vendor/electron-v44.7.0-win32-x64.zip}"
+ELECTRON_ZIP="${ELECTRON_ZIP:?set ELECTRON_ZIP to electron-v44.7.0-win32-x64.zip (official Electron release)}"
 VERSION="$(node -p "require('$ROOT/package.json').version")"
 APP="NWSDB WTP Designer"
 OUT="$ROOT/release"
@@ -11,7 +11,7 @@ TRIAL_DAYS="${TRIAL_DAYS:-0}"
 if [ "$TRIAL_DAYS" -gt 0 ]; then TAG="NWSDB-WTP-Designer-$VERSION-Trial-${TRIAL_DAYS}days-win-x64"; else TAG="NWSDB-WTP-Designer-$VERSION-win-x64"; fi
 STAGE="$OUT/$TAG"
 rm -rf "$STAGE" && mkdir -p "$STAGE/$APP"
-export NODE_PATH="/opt/npm-tools/node_modules${NODE_PATH:+:$NODE_PATH}"
+[ -d /opt/npm-tools/node_modules ] && export NODE_PATH="/opt/npm-tools/node_modules${NODE_PATH:+:$NODE_PATH}"
 node "$ROOT/build/build.mjs"
 unzip -q "$ELECTRON_ZIP" -d "$STAGE/$APP"
 mv "$STAGE/$APP/electron.exe" "$STAGE/$APP/$APP.exe"
@@ -31,7 +31,7 @@ if [ "$TRIAL_DAYS" -gt 0 ]; then
   sed -i "s/{ role: 'toggleDevTools'[^}]*}/{ type: 'separator' }/" "$APPDIR/electron/main.js"
   # bundle + minify the main process (licence code inlined), minify the preload
   node -e "
-    const esb = require('esbuild');
+    const esb = require(require.resolve('esbuild', { paths: ['$ROOT', ...(process.env.NODE_PATH || '').split(':').filter(Boolean)] }));
     esb.buildSync({ entryPoints: ['$APPDIR/electron/main.js'], bundle: true, platform: 'node', format: 'cjs', external: ['electron'], minify: true, legalComments: 'none', outfile: '$APPDIR/electron/main.min.js', target: 'node22' });
     esb.buildSync({ entryPoints: ['$APPDIR/electron/preload.js'], bundle: false, platform: 'node', format: 'cjs', minify: true, legalComments: 'none', outfile: '$APPDIR/electron/preload.min.js', target: 'node22' });"
   mv "$APPDIR/electron/main.min.js" "$APPDIR/electron/main.js"; mv "$APPDIR/electron/preload.min.js" "$APPDIR/electron/preload.js"; rm -f "$APPDIR/electron/licence.js"

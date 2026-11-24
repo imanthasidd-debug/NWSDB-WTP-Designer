@@ -1,3 +1,4 @@
+import pathlib
 import sys, asyncio, json
 from playwright.async_api import async_playwright
 OUT = sys.argv[1]
@@ -12,7 +13,7 @@ async def main():
         pg.on('console', lambda m: errs.append(f'{m.type}: {m.text}') if m.type in ('error','warning') else None)
         pg.on('pageerror', lambda e: errs.append(f'pageerror: {e}'))
         await pg.add_init_script(f"localStorage.setItem('wtp.settings', JSON.stringify({{theme:'{theme}'}})); localStorage.removeItem('wtp.autosave');")
-        await pg.goto('file:///home/claude/wtp-designer/dist/index.html')
+        await pg.goto(pathlib.Path(__file__).resolve().parent.parent.joinpath('dist', 'index.html').as_uri())
         await pg.wait_for_timeout(1600)
         for name in pages:
             await pg.evaluate(f"document.querySelectorAll('.nav').forEach(n => {{ if (n.title === n.title && n.textContent.trim().toLowerCase().startsWith('{name.lower()}')) n.click(); }})")

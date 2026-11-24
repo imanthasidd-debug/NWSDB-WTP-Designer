@@ -13,3 +13,5 @@ test/out/
 *private*.json
 *Key-Generator*.html
 keys/
+__pycache__/
+*.pyc

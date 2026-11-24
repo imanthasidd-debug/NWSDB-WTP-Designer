@@ -377,8 +377,8 @@ for (const route of ['conventional', 'direct', 'ssf']) for (const floc of ['hbaf
   ok(T.trialStatus(dir, 30, now, o).expired, 'trial: edited records are rejected');
   ok(T.machineId().match(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/), 'machine ID has the form XXXX-XXXX-XXXX-XXXX');
   // licence keys (signing key kept outside the project)
-  const kp = '/home/claude/wtp-keys/licence-private.json';
-  if (fs.existsSync(kp)) {
+  const kp = process.env.WTP_LICENCE_PRIVATE_KEY || ''; // path to the signing key (kept outside the repo); key tests are skipped without it
+  if (kp && fs.existsSync(kp)) {
     const k = JSON.parse(fs.readFileSync(kp, 'utf8'));
     ok(k.x === T.PUBLIC_X, 'licence: app public key matches the signing key');
     const priv = crypto.createPrivateKey({ key: { kty: 'OKP', crv: 'Ed25519', x: k.x, d: k.d }, format: 'jwk' });

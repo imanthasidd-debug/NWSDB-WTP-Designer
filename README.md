@@ -242,7 +242,7 @@ electron      main process (file dialogs, PDF export, single instance, file asso
 test          engine.test.mjs (hand-calculation checks), functional and screenshot tests
 ```
 
-* Run from source: `npm install` then `npm start` (Node 20+).
+* Run from source: `npm install` then `npm start` (Node 20+). Guidance for AI-assisted development: `CLAUDE.md`.
 * Engine tests: `npm test` (311 checks incl. specified capacity, design chain and impact ripple, D2 tables & formulae, D3 tables and annex design examples, CT tables, carbonate chemistry, continuity, every unit combination).
 * **Building a signed installer:** `npm run dist` produces an NSIS installer and a portable EXE in `release/` with the
   application icon and `.wtpd` association embedded. Sign them with the NWSDB code-signing certificate if available.
