@@ -27,8 +27,18 @@ version history.
 npm install                      # devDependencies: d3, jszip, katex, esbuild, electron, electron-builder
 npm run build                    # node build/build.mjs → dist/ (renderer bundle, CSS, KaTeX fonts, icons)
 npm start                        # build + run in Electron
-npm test                         # node test/engine.test.mjs – 311 engine checks (hand calculations, D2/D3, rates)
+npm test                         # engine checks (hand calculations, D2/D3, rates) + old project files + scaling + built plants
+npm run lint                     # ESLint (must be clean)
+npm run typecheck                # TypeScript checkJs of src/core and src/engine (must be clean)
+npm run format                   # Prettier (format:check in CI); data tables, CSS, HTML and Markdown are not formatted
+npm run check                    # lint + typecheck + format:check + test – what the GitHub "Checks" workflow runs first
 ```
+Test suites (`npm test` runs all four): `test/engine.test.mjs` (311 checks without the licence key),
+`test/fixtures.test.mjs` (38 projects saved by v1.1.0–v1.8.2 must open, calculate without errors and match
+`test/fixtures/golden.json` – after an intended engine change review the printed differences, then run
+`node test/fixtures.test.mjs --update`), `test/scaling.test.mjs` (every sample at 500–200,000 m³/d: no errors, totals
+never shrink with flow, results are plain data), `test/plants.test.mjs` (built-plant validation, see
+`test/plants/README.md`; only a template so far).
 Optional checks (need Playwright + Chromium, run `npm run build` first):
 ```
 # optional: WTP_TEST_OUT=<dir> (output folder), CHROMIUM_PATH=/opt/pw-browsers/chromium (when the Python Playwright
@@ -37,6 +47,8 @@ python3 test/functional.py       # drives the UI: samples, forms, navigation
 python3 test/exports.py          # report PDF, Excel, drawings ZIP, project save/reopen
 node test/dxf-export.mjs <dir> && python3 test/validate_dxf.py <dir>   # all drawings as DXF + SVG (needs ezdxf)
 PLAYWRIGHT_PATH=… ELECTRON_PATH=… node test/electron.test.cjs <dir>      # real Electron: bridge, PDF export (Linux: Xvfb)
+PLAYWRIGHT_PATH=… ELECTRON_PATH=… xvfb-run -a node test/electron-desktop.test.cjs <dir>   # worker, autosave, crash
+                                 # recovery, backups, log, diagnostics (uses its own HOME in <dir>)
 WTP_LICENCE_PRIVATE_KEY=<path> npm test                                 # also runs the licence-key tests
 ```
 Packaging (Windows ZIP with installer scripts, built on Linux without wine):
@@ -59,7 +71,13 @@ Each edition takes ~2 min; run them as separate commands. Release ZIPs (~160 MB)
   `layout: 'full'` + `renderFull()`), store/undo/autosave (`store.js`), report (`report.js`), Excel (`xlsx.js`),
   O&M manual (`ommanual.js`), drawings in `src/ui/draw/` (`units.js` primitives, `views.js` `drawingGroups(r)`,
   `iso.js`/`view3d.js` 3D, `sheet.js` A3 title block, `render.js` SVG + DXF).
-- `electron/` – `main.js` (window, file dialogs, PDF via `printToPDF`, IPC), `preload.js` (`window.wtp` bridge),
+- `src/engine/worker.js` – calculation worker (built to `dist/engine.worker.js`). `store.js` sends delayed (typing)
+  recalculations there and drops stale replies; immediate changes, undo/redo and project loads calculate on the
+  screen thread, as does everything when a worker cannot start (browser from disk).
+- `src/ui/diag.js` – error log (`logError`, once per distinct error) and `diagnosticsText()`; `src/ui/version.js` –
+  `VERSION` / `APP` from the build.
+- `electron/` – `main.js` (window, file dialogs, PDF via `printToPDF`, IPC; app-data folders `Recovery/`
+  autosave.json, `Backups/<project>/` (20 per project), `Logs/wtp.log`), `preload.js` (`window.wtp` bridge),
   `licence.js` (trial edition only: trial records, machine ID, Ed25519 licence keys).
 - `src/ui/edition.js` – full / trial / restricted / licensed behaviour in the renderer (`canEdit`, `canExport`,
   licence dialog). Browser test of trial states: `dist/index.html?trial=N` (N = 0 → restricted mode).
@@ -69,7 +87,9 @@ Each edition takes ~2 min; run them as separate commands. Release ZIPs (~160 MB)
   A field placed after a `{ sec, show }` header is hidden together with that section.
 - Inputs are merged with `DEFAULTS`; test "is default" by comparing with `DEFAULTS`, not with `undefined`.
 - `0` in a numeric input usually means "auto" (value computed by the engine and shown as `auto = …`).
-- Never put functions in engine results (they are cloned / serialised).
+- Never put functions in engine results – they are saved, exported and sent from the worker (`structuredClone`);
+  the scaling test enforces it. Read raw-water values with `qGet(q, key, i)` / `qWorst(q, key)` from
+  `engine/quality.js`.
 - Use `n()` from `calc.js` only inside LaTeX; plain text uses `fmt()`.
 - Rate Book: replaced tables come from `scripts/ratebook/rb2026.py`; all other sections are the 2025 data × the
   circular's factors (`ADJ` in `ratebook.js`); every reference string says "(2025 × f)". Cost estimate follows the
@@ -85,7 +105,9 @@ Each edition takes ~2 min; run them as separate commands. Release ZIPs (~160 MB)
 Rate Book 2025 summary). Use them to cite clauses; confirm against the printed manuals when in doubt.
 
 ## Open items (owner's backlog)
-Test on real Windows PCs; validate against 2–3 built NWSDB plants; code signing; user guide; rate-update import
+Test on real Windows PCs; validate against 2–3 built NWSDB plants (harness ready in `test/plants/`, needs as-built
+figures); decide whether auto route selection should avoid direct filtration when its own filter checks fail (rural
+sample above 2,500 m³/d: D3 §5.9.11 allows it at 18 NTU but runs are 5.5 h at monsoon peak); code signing; user guide; rate-update import
 without rebuilding; Excel sheets for the O&M tools; pipe & valve schedules and filter pipe gallery; DXF dimensions
 and NWSDB layer names (needs NWSDB CAD standard); in-plant booster pumps (D3 p 6-43); surge analysis; licence
 register / expiring keys; Sinhala / Tamil UI. To confirm: Annex 13 "Sub Total 2" wording, escalation base 2026,

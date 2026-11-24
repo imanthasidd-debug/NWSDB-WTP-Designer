@@ -1,0 +1,92 @@
+# Runs on every push and pull request: code checks, all calculation tests, the build, every drawing as DXF/SVG,
+# the browser UI and export tests, and the real Electron desktop test (worker, autosave, crash recovery, backups, log).
+name: Checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  engine:
+    name: Lint, types, tests, build, drawings
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Lint (ESLint)
+        run: npm run lint
+      - name: Type check (src/core, src/engine)
+        run: npm run typecheck
+      - name: Formatting (Prettier)
+        run: npm run format:check
+      - name: Engine, old-project, scaling and built-plant tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: All drawings as DXF + SVG
+        run: |
+          pip install ezdxf
+          node test/dxf-export.mjs "$RUNNER_TEMP/dxf"
+          python3 test/validate_dxf.py "$RUNNER_TEMP/dxf"
+
+  ui:
+    name: UI and exports (Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      WTP_TEST_OUT: ${{ runner.temp }}/wtp-tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Playwright for Python + Chromium
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: UI test (samples, forms, navigation, undo)
+        run: python3 test/functional.py
+      - name: Export test (report PDF, Excel, drawings ZIP, save / reopen)
+        run: python3 test/exports.py
+
+  desktop:
+    name: Electron desktop
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Playwright (Electron driver only)
+        run: npm install --no-save playwright@1.65.1
+      - name: Worker, autosave, crash recovery, backups, log, diagnostics
+        run: xvfb-run -a node test/electron-desktop.test.cjs "$RUNNER_TEMP/desktop"

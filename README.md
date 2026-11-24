@@ -7,6 +7,25 @@ storage & pumping → residuals → hydraulic profile → site layout → power 
 
 *For the National Water Supply & Drainage Board, Sri Lanka.*
 
+**Version 1.8.4 – crash recovery, backups, error log, background calculation, automatic checks**
+* **Crash recovery**: the open project is written to the program's data folder 1.5 s after every change and comes
+  back, marked unsaved, after a crash or power cut. A project you saved opens as saved.
+* **Backups**: a timestamped copy is kept every time you save and every 10 minutes while you work (last 20 per
+  project). *File → Restore a backup…* lists them; a backup opens as an unsaved copy and never overwrites the original.
+* **Error log and diagnostics**: program, page and calculation errors are written to a log file. *Settings → About →
+  Copy diagnostics* copies the program version, computer details, project summary and recent log for a problem report;
+  buttons open the log and backups folders.
+* **Smoother typing**: calculations while you type run in the background, so the form stays responsive on slower PCs
+  (the status bar's *recalc* tooltip shows where the last one ran). Lists, buttons, undo and opening a project are
+  still calculated at once.
+* Fix: the Parshall-flume throat-width step of the calculation sheet showed a stray comma before "m³/d".
+* Quality checks for every change (GitHub *Checks* workflow): ESLint, type checking of the calculation code,
+  Prettier formatting, the engine tests, **38 project files saved by versions 1.1–1.8.2** that must open and give the
+  recorded results, **every sample at 500–200,000 m³/d** (no calculation errors; tanks, filters, storage, power and
+  cost never shrink as flow rises; cost per m³/d does not rise), every drawing as DXF/SVG, the browser UI and export
+  tests and the real desktop program. A harness for comparing designs with built NWSDB plants is ready in
+  `test/plants/` (add the as-built figures of 2–3 plants).
+
 **Version 1.8.3 – own water source, dark-mode fixes, clearer drawings**
 * **Own water source**: the river-basin list on *Source & hydrology* now starts with *★ Own source*. Enter the source
   name, catchment area at the intake, mean annual rainfall and runoff for a stream that is not in D2 Table 4.1; the 103
