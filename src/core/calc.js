@@ -27,13 +27,31 @@ export class Calc {
   check(key, value, label, extra = {}) {
     const c = { ...(this.criteria[key] || {}), ...(extra.crit || {}) };
     const status = extra.status || evaluate(c, value);
-    const rec = { key, label: label || c.label, value, unit: extra.unit ?? c.unit, range: extra.range ?? rangeText(c), status, src: extra.src || c.src, note: extra.note || '' };
+    const rec = {
+      key,
+      label: label || c.label,
+      value,
+      unit: extra.unit ?? c.unit,
+      range: extra.range ?? rangeText(c),
+      status,
+      src: extra.src || c.src,
+      note: extra.note || '',
+    };
     this.checks.push(rec);
     return rec;
   }
   /** a custom boolean check */
   flag(label, ok, valueText, rangeTxt, note = '', severity = 'warn', src = '') {
-    const rec = { key: '', label, value: valueText, unit: '', range: rangeTxt, status: ok ? 'ok' : severity, note, src };
+    const rec = {
+      key: '',
+      label,
+      value: valueText,
+      unit: '',
+      range: rangeTxt,
+      status: ok ? 'ok' : severity,
+      note,
+      src,
+    };
     this.checks.push(rec);
     return rec;
   }

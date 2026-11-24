@@ -31,40 +31,86 @@ function parse(tok) {
   if (!m || mac(m[1], m[2]) !== m[3]) return 'bad';
   return { first: +m[1], last: +m[2] };
 }
-const readF = (p) => { try { return fs.readFileSync(p, 'utf8'); } catch { return null; } };
-const writeF = (p, s) => { try { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, s, 'utf8'); } catch { /* read-only */ } };
+const readF = (p) => {
+  try {
+    return fs.readFileSync(p, 'utf8');
+  } catch {
+    return null;
+  }
+};
+const writeF = (p, s) => {
+  try {
+    fs.mkdirSync(path.dirname(p), { recursive: true });
+    fs.writeFileSync(p, s, 'utf8');
+  } catch {
+    /* read-only */
+  }
+};
 function readReg(name) {
   if (!useReg()) return null;
   try {
-    const out = execFileSync('reg', ['query', REG_KEY, '/v', name], { encoding: 'utf8', windowsHide: true, timeout: 5000, stdio: ['ignore', 'pipe', 'ignore'] });
+    const out = execFileSync('reg', ['query', REG_KEY, '/v', name], {
+      encoding: 'utf8',
+      windowsHide: true,
+      timeout: 5000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
     const m = new RegExp(`${name}\\s+REG_SZ\\s+(\\S+)`).exec(out);
     return m ? m[1] : null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 function writeReg(name, val) {
   if (!useReg()) return;
-  try { execFileSync('reg', ['add', REG_KEY, '/v', name, '/t', 'REG_SZ', '/d', val, '/f'], { windowsHide: true, timeout: 5000, stdio: 'ignore' }); } catch { /* not writable */ }
+  try {
+    execFileSync('reg', ['add', REG_KEY, '/v', name, '/t', 'REG_SZ', '/d', val, '/f'], {
+      windowsHide: true,
+      timeout: 5000,
+      stdio: 'ignore',
+    });
+  } catch {
+    /* not writable */
+  }
 }
 /** default record locations: user-data folder + local app-data folder */
 function locations(userData) {
-  const local = isWin ? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'NWSDB', 'wtpd', 'state.bin') : path.join(os.homedir(), '.cache', 'nwsdb-wtpd', 'state.bin');
+  const local = isWin
+    ? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'NWSDB', 'wtpd', 'state.bin')
+    : path.join(os.homedir(), '.cache', 'nwsdb-wtpd', 'state.bin');
   return { files: [path.join(userData, 'licence.dat'), local], keyFile: path.join(userData, 'licence.key') };
 }
 
 // ------------------------------------------------------------------ machine ID
 const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'; // Crockford
 function b32(buf) {
-  let bits = 0, val = 0, out = '';
-  for (const b of buf) { val = (val << 8) | b; bits += 8; while (bits >= 5) { out += B32[(val >>> (bits - 5)) & 31]; bits -= 5; } }
+  let bits = 0,
+    val = 0,
+    out = '';
+  for (const b of buf) {
+    val = (val << 8) | b;
+    bits += 8;
+    while (bits >= 5) {
+      out += B32[(val >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
   return out;
 }
 function machineId() {
   let guid = '';
   if (isWin) {
     try {
-      const out = execFileSync('reg', ['query', 'HKLM\\SOFTWARE\\Microsoft\\Cryptography', '/v', 'MachineGuid'], { encoding: 'utf8', windowsHide: true, timeout: 5000, stdio: ['ignore', 'pipe', 'ignore'] });
+      const out = execFileSync('reg', ['query', 'HKLM\\SOFTWARE\\Microsoft\\Cryptography', '/v', 'MachineGuid'], {
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 5000,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
       guid = (/MachineGuid\s+REG_SZ\s+(\S+)/.exec(out) || [])[1] || '';
-    } catch { /* fall back */ }
+    } catch {
+      /* fall back */
+    }
   } else guid = (readF('/etc/machine-id') || '').trim();
   const src = `nwsdb-wtp|${guid}|${os.hostname()}|${(os.userInfo().username || '').toLowerCase()}`;
   return b32(crypto.createHash('sha256').update(src).digest().subarray(0, 10)).match(/.{4}/g).join('-');
@@ -76,15 +122,21 @@ const pubKey = () => crypto.createPublicKey({ key: { kty: 'OKP', crv: 'Ed25519',
 function verifyKey(key, mid) {
   const k = String(key || '').replace(/\s+/g, '');
   const m = /^WTP1-([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]{80,90})$/.exec(k);
-  if (!m) return { ok: false, error: 'This is not a WTP Designer licence key. Copy the whole key, from WTP1- to the end.' };
+  if (!m)
+    return { ok: false, error: 'This is not a WTP Designer licence key. Copy the whole key, from WTP1- to the end.' };
   let lic;
   try {
-    if (!crypto.verify(null, Buffer.from(m[1]), pubKey(), Buffer.from(m[2], 'base64url'))) return { ok: false, error: 'The licence key is not valid (signature check failed).' };
+    if (!crypto.verify(null, Buffer.from(m[1]), pubKey(), Buffer.from(m[2], 'base64url')))
+      return { ok: false, error: 'The licence key is not valid (signature check failed).' };
     lic = JSON.parse(Buffer.from(m[1], 'base64url').toString('utf8'));
-  } catch { return { ok: false, error: 'The licence key is damaged. Copy it again.' }; }
-  if (lic.m !== mid) return { ok: false, error: `This key was issued for another computer (${lic.m}). This computer's ID is ${mid}.` };
+  } catch {
+    return { ok: false, error: 'The licence key is damaged. Copy it again.' };
+  }
+  if (lic.m !== mid)
+    return { ok: false, error: `This key was issued for another computer (${lic.m}). This computer's ID is ${mid}.` };
   if (!['full', 'ext'].includes(lic.t)) return { ok: false, error: 'Unknown licence type.' };
-  if (lic.t === 'ext' && !/^\d{4}-\d\d-\d\d$/.test(lic.u || '')) return { ok: false, error: 'The extension date in the key is missing.' };
+  if (lic.t === 'ext' && !/^\d{4}-\d\d-\d\d$/.test(lic.u || ''))
+    return { ok: false, error: 'The extension date in the key is missing.' };
   return { ok: true, lic, key: k };
 }
 
@@ -113,12 +165,32 @@ function trialStatus(userData, days, now = Date.now(), opts = {}) {
     if (v.ok && (!lic || v.lic.t === 'full' || (lic.t === 'ext' && v.lic.u > lic.u))) lic = v.lic;
   }
   const base = { trial: true, days, machineId: mid, started: new Date(first).toISOString().slice(0, 10) };
-  if (lic?.t === 'full') return { ...base, trial: false, licensed: true, mode: 'licensed', licensee: lic.n || '', issued: lic.i || '', expired: false, daysLeft: 0, ends: '' };
+  if (lic?.t === 'full')
+    return {
+      ...base,
+      trial: false,
+      licensed: true,
+      mode: 'licensed',
+      licensee: lic.n || '',
+      issued: lic.i || '',
+      expired: false,
+      daysLeft: 0,
+      ends: '',
+    };
   let end = first + days * DAY;
   if (lic?.t === 'ext') end = Math.max(end, Date.parse(lic.u + 'T23:59:59Z'));
   const left = end - clock;
   const expired = left <= 0 || (tampered && !good.length);
-  return { ...base, licensed: false, mode: expired ? 'restricted' : 'trial', extended: lic?.t === 'ext' ? lic.u : '', licensee: lic?.n || '', expired, daysLeft: expired ? 0 : Math.max(1, Math.ceil(left / DAY)), ends: new Date(end).toISOString().slice(0, 10) };
+  return {
+    ...base,
+    licensed: false,
+    mode: expired ? 'restricted' : 'trial',
+    extended: lic?.t === 'ext' ? lic.u : '',
+    licensee: lic?.n || '',
+    expired,
+    daysLeft: expired ? 0 : Math.max(1, Math.ceil(left / DAY)),
+    ends: new Date(end).toISOString().slice(0, 10),
+  };
 }
 
 /** store a key after checking it; returns { ok, error?, lic? } */

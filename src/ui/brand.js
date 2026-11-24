@@ -4,9 +4,11 @@ export const DEVELOPER = 'Eng. Imantha Dilshan';
 export const CREDIT = 'Developed by Eng. Imantha Dilshan';
 export { LOGO_BANNER, LOGO_EMBLEM };
 /** official NWSDB emblem (circular) as an <img> */
-export const emblemImg = (size = 24, cls = 'logo') => `<img class="${cls}" src="${LOGO_EMBLEM}" width="${size}" height="${size}" alt="NWSDB" style="width:${size}px;height:${size}px;object-fit:contain">`;
+export const emblemImg = (size = 24, cls = 'logo') =>
+  `<img class="${cls}" src="${LOGO_EMBLEM}" width="${size}" height="${size}" alt="NWSDB" style="width:${size}px;height:${size}px;object-fit:contain">`;
 /** official NWSDB banner (emblem + trilingual name) */
-export const bannerImg = (height = 48, cls = 'nwsdb-banner') => `<img class="${cls}" src="${LOGO_BANNER}" alt="National Water Supply & Drainage Board" style="height:${height}px;width:auto">`;
+export const bannerImg = (height = 48, cls = 'nwsdb-banner') =>
+  `<img class="${cls}" src="${LOGO_BANNER}" alt="National Water Supply & Drainage Board" style="height:${height}px;width:auto">`;
 
 // Legacy vector emblem (fallback)
 export function emblemSVG(size = 24, { mono = false } = {}) {

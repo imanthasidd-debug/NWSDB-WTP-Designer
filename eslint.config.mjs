@@ -4,11 +4,25 @@ import js from '@eslint/js';
 import globals from 'globals';
 
 export default [
-  { ignores: ['dist/**', 'release/**', 'node_modules/**', 'src/core/ratebook.data.js', 'src/core/ratebook2026.data.js', 'src/ui/icons.gen.js', 'src/ui/logo.js'] },
+  {
+    ignores: [
+      'dist/**',
+      'release/**',
+      'node_modules/**',
+      'src/core/ratebook.data.js',
+      'src/core/ratebook2026.data.js',
+      'src/ui/icons.gen.js',
+      'src/ui/logo.js',
+    ],
+  },
   js.configs.recommended,
   {
     files: ['src/**/*.js'],
-    languageOptions: { ecmaVersion: 2024, sourceType: 'module', globals: { ...globals.browser, __APP_VERSION__: 'readonly' } },
+    languageOptions: {
+      ecmaVersion: 2024,
+      sourceType: 'module',
+      globals: { ...globals.browser, __APP_VERSION__: 'readonly' },
+    },
   },
   { files: ['src/engine/worker.js'], languageOptions: { globals: { ...globals.worker } } },
   {
@@ -23,7 +37,10 @@ export default [
   },
   {
     rules: {
-      'no-unused-vars': ['error', { args: 'none', caughtErrors: 'none', ignoreRestSiblings: true, varsIgnorePattern: '^_' }],
+      'no-unused-vars': [
+        'error',
+        { args: 'none', caughtErrors: 'none', ignoreRestSiblings: true, varsIgnorePattern: '^_' },
+      ],
       'no-empty': ['error', { allowEmptyCatch: true }],
       'no-constant-condition': ['error', { checkLoops: false }],
       // initial values that every branch then overwrites are kept for readability

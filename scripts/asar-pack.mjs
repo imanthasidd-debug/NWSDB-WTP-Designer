@@ -4,7 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const [src, out] = process.argv.slice(2);
-if (!src || !out) { console.error('usage: asar-pack <srcDir> <out.asar>'); process.exit(2); }
+if (!src || !out) {
+  console.error('usage: asar-pack <srcDir> <out.asar>');
+  process.exit(2);
+}
 const files = [];
 let offset = 0;
 function walk(dir) {
@@ -33,7 +36,8 @@ const sizePickle = Buffer.alloc(8);
 sizePickle.writeUInt32LE(4, 0);
 sizePickle.writeUInt32LE(headerPickle.length, 4);
 const fd = fs.openSync(out, 'w');
-fs.writeSync(fd, sizePickle); fs.writeSync(fd, headerPickle);
+fs.writeSync(fd, sizePickle);
+fs.writeSync(fd, headerPickle);
 for (const f of files) fs.writeSync(fd, fs.readFileSync(f));
 fs.closeSync(fd);
 console.log(`asar: ${files.length} files, ${(fs.statSync(out).size / 1e6).toFixed(1)} MB → ${out}`);

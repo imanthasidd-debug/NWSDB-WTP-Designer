@@ -4,16 +4,16 @@ import { NON_DOMESTIC, UFW, communityOf, horizonFor, lpcdRange, peaking, ref } f
 import { ceilTo, num } from '../core/util.js';
 
 export const DEFAULTS = {
-  basis: 'forecast',         // forecast (D2 population method) | capacity (pre-determined plant capacity)
-  capacity: 25000,           // m3/d – specified plant capacity
+  basis: 'forecast', // forecast (D2 population method) | capacity (pre-determined plant capacity)
+  capacity: 25000, // m3/d – specified plant capacity
   capacityType: 'throughput', // throughput (= plant design flow) | output (treated-water output; losses added)
   areaType: 'mc',
   baseYear: 2026,
   designYear: 2046,
   stageYear: 2036,
-  method: 'geom',            // rate | arith | geom | incr
+  method: 'geom', // rate | arith | geom | incr
   basePop: 110700,
-  growthRate: 1.2,           // %/yr for 'rate'
+  growthRate: 1.2, // %/yr for 'rate'
   census: [
     { year: 2001, pop: 85000 },
     { year: 2012, pop: 95500 },
@@ -21,25 +21,25 @@ export const DEFAULTS = {
   ],
   coverageNow: 70,
   coverageDesign: 95,
-  demandBasis: 'lpcd',       // lpcd | d2  (D2 §3.2.1 house-connection / standpost split)
+  demandBasis: 'lpcd', // lpcd | d2  (D2 §3.2.1 house-connection / standpost split)
   lpcd: 140,
-  hcPct: 0,                  // % of served population on house connections (0 = D2 table mid-value)
-  hcLpcd: 0,                 // 0 = D2 (140 large rural, 185 urban)
-  spLpcd: 45,                // standpost consumption (D2 §3.2.1)
+  hcPct: 0, // % of served population on house connections (0 = D2 table mid-value)
+  hcLpcd: 0, // 0 = D2 (140 large rural, 185 urban)
+  spLpcd: 45, // standpost consumption (D2 §3.2.1)
   nonDomPct: 25,
-  nonDomItems: [],           // D2 §3.2.3 unit demands [{type, qty, rate}]
+  nonDomItems: [], // D2 §3.2.3 unit demands [{type, qty, rate}]
   floatPop: 6000,
   floatLpcd: 60,
-  bulk: 800,                 // m3/d special/bulk consumers (industry, BOI zones…)
-  systemState: 'rehab',      // new | rehab  (D2 §3.2.4 UFW guidance)
+  bulk: 800, // m3/d special/bulk consumers (industry, BOI zones…)
+  systemState: 'rehab', // new | rehab  (D2 §3.2.4 UFW guidance)
   nrw: 25,
-  mdf: 0,                    // 0 = D2 §3.2.5 (1.1 < 20,000 pop; 1.25 > 20,000)
-  phf: 0,                    // 0 = D2 §3.2.5 (2.5 smaller urban; 2.0 > 20,000)
-  ownUse: 5,                 // D2 §3.2.5 note – treatment losses 5–10 % of max day
+  mdf: 0, // 0 = D2 §3.2.5 (1.1 < 20,000 pop; 1.25 > 20,000)
+  phf: 0, // 0 = D2 §3.2.5 (2.5 smaller urban; 2.0 > 20,000)
+  ownUse: 5, // D2 §3.2.5 note – treatment losses 5–10 % of max day
   opHours: 24,
   roundStep: 1000,
-  overrideCap: 0,            // >0 to force adopted capacity (m3/d)
-  nTrains: 0,                // 0 = automatic: 2 streams up to 50,000 m³/d, then one pair per further 50,000 m³/d (D3 §4.3.8: ≥ 2)
+  overrideCap: 0, // >0 to force adopted capacity (m3/d)
+  nTrains: 0, // 0 = automatic: 2 streams up to 50,000 m³/d, then one pair per further 50,000 m³/d (D3 §4.3.8: ≥ 2)
 };
 /** automatic number of parallel treatment streams */
 export const autoTrains = (Q) => Math.max(2, 2 * Math.ceil(Q / 50000));
@@ -60,10 +60,17 @@ function fitMethods(census) {
   for (let i = 1; i < inc.length; i++) dif.push(inc[i] - inc[i - 1]);
   const ybar = dif.length ? dif.reduce((a, b) => a + b, 0) / dif.length : 0;
   return {
-    last, ka, r, xbar, ybar,
+    last,
+    ka,
+    r,
+    xbar,
+    ybar,
     arith: (y) => last.pop + ka * (y - last.year),
     geom: (y) => last.pop * (1 + r) ** (y - last.year),
-    incr: (y) => { const nn = (y - last.year) / 10; return last.pop + nn * xbar + (nn * (nn + 1) * ybar) / 2; },
+    incr: (y) => {
+      const nn = (y - last.year) / 10;
+      return last.pop + nn * xbar + (nn * (nn + 1) * ybar) / 2;
+    },
   };
 }
 
@@ -95,7 +102,9 @@ export function compute(inp, ctx) {
   const instQ = items.reduce((a, x) => a + x.q, 0);
   const covAt = (y) => {
     if (y >= d.designYear) return d.coverageDesign;
-    return d.coverageNow + ((d.coverageDesign - d.coverageNow) * (y - d.baseYear)) / Math.max(1, d.designYear - d.baseYear);
+    return (
+      d.coverageNow + ((d.coverageDesign - d.coverageNow) * (y - d.baseYear)) / Math.max(1, d.designYear - d.baseYear)
+    );
   };
   const row = (y) => {
     const P = popAt(y);
@@ -109,7 +118,22 @@ export function compute(inp, ctx) {
     const nrwQ = gross - net;
     const mdd = gross * mdf;
     const plant = (mdd * (1 + d.ownUse / 100) * 24) / d.opHours;
-    return { year: y, P, cov, served, dom, nonDom, flt, bulk: num(d.bulk), net, nrwQ, gross, mdd, phd: gross * phf, plant };
+    return {
+      year: y,
+      P,
+      cov,
+      served,
+      dom,
+      nonDom,
+      flt,
+      bulk: num(d.bulk),
+      net,
+      nrwQ,
+      gross,
+      mdd,
+      phd: gross * phf,
+      plant,
+    };
   };
   const table = years.map(row);
   const D = row(d.designYear);
@@ -122,107 +146,397 @@ export function compute(inp, ctx) {
     const Qp = d.capacityType === 'output' ? num(d.capacity) * (1 + d.ownUse / 100) : num(d.capacity);
     const mddC = (Qp / (1 + d.ownUse / 100)) * (d.opHours / 24);
     // population equivalent and D2 peaking (fixed point: peaking depends on population)
-    let mdfC = d.mdf > 0 ? d.mdf : 1.25, phfC = d.phf > 0 ? d.phf : 2.0, Peq = 0, pkC = peaking(1e6);
+    let mdfC = d.mdf > 0 ? d.mdf : 1.25,
+      phfC = d.phf > 0 ? d.phf : 2.0,
+      Peq = 0,
+      pkC = peaking(1e6);
     for (let i = 0; i < 4; i++) {
       const grossI = mddC / mdfC;
       const netI = grossI * (1 - d.nrw / 100);
       Peq = (netI * 1000) / (lpcd * (1 + d.nonDomPct / 100)) / Math.max(d.coverageDesign / 100, 0.01);
       pkC = peaking(Peq);
-      mdfC = d.mdf > 0 ? d.mdf : pkC.mdf; phfC = d.phf > 0 ? d.phf : pkC.phf;
+      mdfC = d.mdf > 0 ? d.mdf : pkC.mdf;
+      phfC = d.phf > 0 ? d.phf : pkC.phf;
     }
-    const gross = mddC / mdfC, net = gross * (1 - d.nrw / 100);
-    const served = Peq * d.coverageDesign / 100;
+    const gross = mddC / mdfC,
+      net = gross * (1 - d.nrw / 100);
+    const served = (Peq * d.coverageDesign) / 100;
     const domC = (served * lpcd) / 1000;
-    const Dc = { year: d.designYear, P: Peq, cov: d.coverageDesign, served, dom: domC, nonDom: net - domC, flt: 0, bulk: 0, net, nrwQ: gross - net, gross, mdd: mddC, phd: gross * phfC, plant: Qp };
+    const Dc = {
+      year: d.designYear,
+      P: Peq,
+      cov: d.coverageDesign,
+      served,
+      dom: domC,
+      nonDom: net - domC,
+      flt: 0,
+      bulk: 0,
+      net,
+      nrwQ: gross - net,
+      gross,
+      mdd: mddC,
+      phd: gross * phfC,
+      plant: Qp,
+    };
     c2.section('Specified plant capacity (pre-determined)');
-    c2.text(`The plant is designed for a specified capacity of ${Math.round(num(d.capacity)).toLocaleString('en-US')} m³/d ${d.capacityType === 'output' ? '(treated-water output; treatment losses added)' : '(plant design throughput)'}. Average-day, maximum-day and peak-hour flows and the population equivalent are back-calculated for pumping, storage, residuals and cost.`);
-    if (d.capacityType === 'output') c2.step('Plant design throughput (output + treatment losses)', 'Q_p = Q_{out}(1+w)', `${n(num(d.capacity), 0)}(1+${n(d.ownUse / 100, 3)})`, Qp, 'm³/d', ref('3.2.5'));
+    c2.text(
+      `The plant is designed for a specified capacity of ${Math.round(num(d.capacity)).toLocaleString('en-US')} m³/d ${d.capacityType === 'output' ? '(treated-water output; treatment losses added)' : '(plant design throughput)'}. Average-day, maximum-day and peak-hour flows and the population equivalent are back-calculated for pumping, storage, residuals and cost.`,
+    );
+    if (d.capacityType === 'output')
+      c2.step(
+        'Plant design throughput (output + treatment losses)',
+        'Q_p = Q_{out}(1+w)',
+        `${n(num(d.capacity), 0)}(1+${n(d.ownUse / 100, 3)})`,
+        Qp,
+        'm³/d',
+        ref('3.2.5'),
+      );
     else c2.step('Plant design throughput (specified)', 'Q_p', '\\text{specified}', Qp, 'm³/d');
-    c2.step('Maximum-day demand supplied', 'Q_{md} = \\frac{Q_p}{1+w}\\cdot\\frac{h_{op}}{24}', `\\frac{${n(Qp, 0)}}{1+${n(d.ownUse / 100, 3)}}\\cdot\\frac{${n(d.opHours, 0)}}{24}`, mddC, 'm³/d', ref('3.2.5'));
-    c2.step('Maximum-day factor', 'k_{md}', d.mdf > 0 ? '\\text{user value}' : `\\text{D2: } ${pkC.mdf}`, mdfC, '–', ref('3.2.5'));
+    c2.step(
+      'Maximum-day demand supplied',
+      'Q_{md} = \\frac{Q_p}{1+w}\\cdot\\frac{h_{op}}{24}',
+      `\\frac{${n(Qp, 0)}}{1+${n(d.ownUse / 100, 3)}}\\cdot\\frac{${n(d.opHours, 0)}}{24}`,
+      mddC,
+      'm³/d',
+      ref('3.2.5'),
+    );
+    c2.step(
+      'Maximum-day factor',
+      'k_{md}',
+      d.mdf > 0 ? '\\text{user value}' : `\\text{D2: } ${pkC.mdf}`,
+      mdfC,
+      '–',
+      ref('3.2.5'),
+    );
     c2.step('Average-day production', 'Q_{avg} = Q_{md}/k_{md}', `${n(mddC, 0)}/${n(mdfC, 2)}`, gross, 'm³/d');
-    c2.step('Peak-hour demand (distribution)', 'Q_{ph} = k_{ph}Q_{avg}', `${n(phfC, 2)}\\times${n(gross, 0)}`, gross * phfC, 'm³/d', ref('3.2.5'));
-    c2.step('Population equivalent served', 'P_{eq} = \\frac{Q_{avg}(1-NRW)\\,1000}{q(1+k_{nd})}', `\\frac{${n(gross, 0)}(1-${n(d.nrw / 100, 2)})\\times1000}{${n(lpcd, 0)}(1+${n(d.nonDomPct / 100, 2)})}`, served, 'persons');
+    c2.step(
+      'Peak-hour demand (distribution)',
+      'Q_{ph} = k_{ph}Q_{avg}',
+      `${n(phfC, 2)}\\times${n(gross, 0)}`,
+      gross * phfC,
+      'm³/d',
+      ref('3.2.5'),
+    );
+    c2.step(
+      'Population equivalent served',
+      'P_{eq} = \\frac{Q_{avg}(1-NRW)\\,1000}{q(1+k_{nd})}',
+      `\\frac{${n(gross, 0)}(1-${n(d.nrw / 100, 2)})\\times1000}{${n(lpcd, 0)}(1+${n(d.nonDomPct / 100, 2)})}`,
+      served,
+      'persons',
+    );
     c2.check('dem.mdf', mdfC);
     c2.check('dem.phf', phfC);
     c2.check('dem.own', d.ownUse);
-    c2.flag('Design basis', true, `specified ${Math.round(num(d.capacity)).toLocaleString('en-US')} m³/d`, 'pre-determined capacity', 'Demand forecast checks (D2 §2.4, §3.2.1) are not applied', 'info', ref('3.2'));
+    c2.flag(
+      'Design basis',
+      true,
+      `specified ${Math.round(num(d.capacity)).toLocaleString('en-US')} m³/d`,
+      'pre-determined capacity',
+      'Demand forecast checks (D2 §2.4, §3.2.1) are not applied',
+      'info',
+      ref('3.2'),
+    );
     const nTr = num(d.nTrains) > 0 ? Math.max(1, Math.round(d.nTrains)) : autoTrains(Qp);
-    if (nTr < 2) c2.note('warn', 'A single treatment stream gives no redundancy during maintenance – at least two parallel streams are recommended.');
+    if (nTr < 2)
+      c2.note(
+        'warn',
+        'A single treatment stream gives no redundancy during maintenance – at least two parallel streams are recommended.',
+      );
     const tableC = years.map((y) => ({ ...Dc, year: y }));
     const clsC = communityOf(Peq);
     return {
-      inputs: d, basis: 'capacity', method, table: tableC, years, design: Dc, stage: Dc, adopted: Qp, stageCap: Qp, methods: null,
-      d2: { cls: clsC, pk: pkC, mdf: mdfC, phf: phfC, lpcd, hcPct, hcLpcd, items, instQ, horizon: horizonFor(Peq), range: lpcdRange(clsC), Pdesign: Peq },
-      mdf: mdfC, phf: phfC, lpcd, census: d.census,
-      Qd: Qp, Qh: Qp / 24, Qs: Qp / 86400, nTrains: nTr, nTrainsAuto: !(num(d.nTrains) > 0),
+      inputs: d,
+      basis: 'capacity',
+      method,
+      table: tableC,
+      years,
+      design: Dc,
+      stage: Dc,
+      adopted: Qp,
+      stageCap: Qp,
+      methods: null,
+      d2: {
+        cls: clsC,
+        pk: pkC,
+        mdf: mdfC,
+        phf: phfC,
+        lpcd,
+        hcPct,
+        hcLpcd,
+        items,
+        instQ,
+        horizon: horizonFor(Peq),
+        range: lpcdRange(clsC),
+        Pdesign: Peq,
+      },
+      mdf: mdfC,
+      phf: phfC,
+      lpcd,
+      census: d.census,
+      Qd: Qp,
+      Qh: Qp / 24,
+      Qs: Qp / 86400,
+      nTrains: nTr,
+      nTrainsAuto: !(num(d.nTrains) > 0),
       ...c2.result(),
     };
   }
   calc.section('Population projection');
   if (method === 'rate') {
-    calc.step('Design-year population (geometric, given rate)', 'P_n = P_0\\,(1+r)^n', `P_{${d.designYear}} = ${n(d.basePop, 0)}\\,(1+${n(d.growthRate / 100, 4)})^{${d.designYear - d.baseYear}}`, D.P, 'persons');
+    calc.step(
+      'Design-year population (geometric, given rate)',
+      'P_n = P_0\\,(1+r)^n',
+      `P_{${d.designYear}} = ${n(d.basePop, 0)}\\,(1+${n(d.growthRate / 100, 4)})^{${d.designYear - d.baseYear}}`,
+      D.P,
+      'persons',
+    );
   } else {
-    if (method === 'arith') calc.step('Arithmetic increase rate from census', 'K_a = \\frac{P_2-P_1}{t_2-t_1}', `K_a = ${n(fit.ka, 1)}`, fit.ka, 'persons/yr', 'Census data');
-    if (method === 'geom') calc.step('Geometric growth rate from census', 'r = (P_2/P_1)^{1/(t_2-t_1)}-1', `r = ${n(fit.r * 100, 3)}\\,\\%`, fit.r * 100, '%/yr', 'Census data');
-    if (method === 'incr') calc.step('Incremental increase (per decade)', 'P_n = P + n\\bar{x} + \\tfrac{n(n+1)}{2}\\bar{y}', `\\bar{x}=${n(fit.xbar, 0)},\\ \\bar{y}=${n(fit.ybar, 0)}`, D.P, 'persons');
-    calc.step(`Design-year population (${method === 'arith' ? 'arithmetic' : method === 'geom' ? 'geometric' : 'incremental'})`, 'P_{design}', `P_{${d.designYear}}`, D.P, 'persons');
+    if (method === 'arith')
+      calc.step(
+        'Arithmetic increase rate from census',
+        'K_a = \\frac{P_2-P_1}{t_2-t_1}',
+        `K_a = ${n(fit.ka, 1)}`,
+        fit.ka,
+        'persons/yr',
+        'Census data',
+      );
+    if (method === 'geom')
+      calc.step(
+        'Geometric growth rate from census',
+        'r = (P_2/P_1)^{1/(t_2-t_1)}-1',
+        `r = ${n(fit.r * 100, 3)}\\,\\%`,
+        fit.r * 100,
+        '%/yr',
+        'Census data',
+      );
+    if (method === 'incr')
+      calc.step(
+        'Incremental increase (per decade)',
+        'P_n = P + n\\bar{x} + \\tfrac{n(n+1)}{2}\\bar{y}',
+        `\\bar{x}=${n(fit.xbar, 0)},\\ \\bar{y}=${n(fit.ybar, 0)}`,
+        D.P,
+        'persons',
+      );
+    calc.step(
+      `Design-year population (${method === 'arith' ? 'arithmetic' : method === 'geom' ? 'geometric' : 'incremental'})`,
+      'P_{design}',
+      `P_{${d.designYear}}`,
+      D.P,
+      'persons',
+    );
   }
   calc.section('NWSDB D2 design basis');
-  calc.text(`Design-year population ${Math.round(D.P).toLocaleString('en-US')} → D2 §3.2.1 community class: ${cls.label}; D2 §3.2.5 peaking for ${pk.cls}.`);
-  calc.step('Maximum-day factor', 'k_{md}', d.mdf > 0 ? '\\text{user value}' : `\\text{D2: } ${pk.mdf}`, mdf, '–', ref('3.2.5'));
-  calc.step('Peak-hour factor', 'k_{ph}', d.phf > 0 ? '\\text{user value}' : `\\text{D2: } ${pk.phf}`, phf, '–', ref('3.2.5'));
+  calc.text(
+    `Design-year population ${Math.round(D.P).toLocaleString('en-US')} → D2 §3.2.1 community class: ${cls.label}; D2 §3.2.5 peaking for ${pk.cls}.`,
+  );
+  calc.step(
+    'Maximum-day factor',
+    'k_{md}',
+    d.mdf > 0 ? '\\text{user value}' : `\\text{D2: } ${pk.mdf}`,
+    mdf,
+    '–',
+    ref('3.2.5'),
+  );
+  calc.step(
+    'Peak-hour factor',
+    'k_{ph}',
+    d.phf > 0 ? '\\text{user value}' : `\\text{D2: } ${pk.phf}`,
+    phf,
+    '–',
+    ref('3.2.5'),
+  );
   if (d.demandBasis === 'd2') {
-    calc.step('House-connection share of served population', 'f_{hc}', d.hcPct > 0 ? '\\text{user value}' : `\\text{D2 table mid-value}`, hcPct, '%', ref('3.2.1'));
-    calc.step('Blended domestic per-capita demand', 'q = f_{hc}q_{hc} + (1-f_{hc})q_{sp}', `${n(hcPct / 100, 2)}\\times${n(hcLpcd, 0)} + ${n(1 - hcPct / 100, 2)}\\times${n(d.spLpcd, 0)}`, lpcd, 'L/c/d', ref('3.2.1'));
+    calc.step(
+      'House-connection share of served population',
+      'f_{hc}',
+      d.hcPct > 0 ? '\\text{user value}' : `\\text{D2 table mid-value}`,
+      hcPct,
+      '%',
+      ref('3.2.1'),
+    );
+    calc.step(
+      'Blended domestic per-capita demand',
+      'q = f_{hc}q_{hc} + (1-f_{hc})q_{sp}',
+      `${n(hcPct / 100, 2)}\\times${n(hcLpcd, 0)} + ${n(1 - hcPct / 100, 2)}\\times${n(d.spLpcd, 0)}`,
+      lpcd,
+      'L/c/d',
+      ref('3.2.1'),
+    );
   }
   calc.section('Demand in design year ' + d.designYear);
   calc.step('Population served', 'P_s = P \\times C', `${n(D.P, 0)} \\times ${n(D.cov, 1)}\\%`, D.served, 'persons');
-  calc.step('Domestic demand', 'Q_{dom} = P_s \\, q / 1000', `${n(D.served, 0)} \\times ${n(lpcd, 0)} / 1000`, D.dom, 'm³/d');
-  if (instQ > 0) calc.step('Institutional & commercial demand (D2 unit demands)', 'Q_{inst} = \\sum N_i q_i / 1000', items.map((x) => `${n(x.qty, 0)}\\times${n(x.rate, 0)}`).join(' + ') + ' /1000', instQ, 'm³/d', ref('3.2.3'));
-  calc.step('Non-domestic demand', 'Q_{nd} = k_{nd} Q_{dom} + Q_{inst}', `${n(d.nonDomPct, 1)}\\% \\times ${n(D.dom, 0)} + ${n(instQ, 0)}`, D.nonDom, 'm³/d');
-  calc.step('Floating population & bulk users', 'Q_{f} + Q_{b}', `${n(D.flt, 0)} + ${n(D.bulk, 0)}`, D.flt + D.bulk, 'm³/d');
-  calc.step('Net (consumer) demand', 'Q_{net}', `${n(D.dom, 0)}+${n(D.nonDom, 0)}+${n(D.flt + D.bulk, 0)}`, D.net, 'm³/d');
-  calc.step('Average-day production (incl. NRW)', 'Q_{avg} = \\frac{Q_{net}}{1-NRW}', `\\frac{${n(D.net, 0)}}{1-${n(d.nrw / 100, 2)}}`, D.gross, 'm³/d');
-  calc.step('Maximum-day demand', 'Q_{md} = k_{md}\\,Q_{avg}', `${n(mdf, 2)} \\times ${n(D.gross, 0)}`, D.mdd, 'm³/d', ref('3.2.5'));
-  calc.step('Peak-hour demand (distribution)', 'Q_{ph} = k_{ph}\\,Q_{avg}', `${n(phf, 2)} \\times ${n(D.gross, 0)}`, D.phd, 'm³/d', ref('3.2.5'));
-  calc.step('Required plant throughput (incl. treatment losses)', 'Q_{p} = Q_{md}(1+w)\\frac{24}{h_{op}}', `${n(D.mdd, 0)}(1+${n(d.ownUse / 100, 3)})\\frac{24}{${n(d.opHours, 1)}}`, D.plant, 'm³/d', ref('3.2.5') + ' – 1.05–1.10 × max day');
+  calc.step(
+    'Domestic demand',
+    'Q_{dom} = P_s \\, q / 1000',
+    `${n(D.served, 0)} \\times ${n(lpcd, 0)} / 1000`,
+    D.dom,
+    'm³/d',
+  );
+  if (instQ > 0)
+    calc.step(
+      'Institutional & commercial demand (D2 unit demands)',
+      'Q_{inst} = \\sum N_i q_i / 1000',
+      items.map((x) => `${n(x.qty, 0)}\\times${n(x.rate, 0)}`).join(' + ') + ' /1000',
+      instQ,
+      'm³/d',
+      ref('3.2.3'),
+    );
+  calc.step(
+    'Non-domestic demand',
+    'Q_{nd} = k_{nd} Q_{dom} + Q_{inst}',
+    `${n(d.nonDomPct, 1)}\\% \\times ${n(D.dom, 0)} + ${n(instQ, 0)}`,
+    D.nonDom,
+    'm³/d',
+  );
+  calc.step(
+    'Floating population & bulk users',
+    'Q_{f} + Q_{b}',
+    `${n(D.flt, 0)} + ${n(D.bulk, 0)}`,
+    D.flt + D.bulk,
+    'm³/d',
+  );
+  calc.step(
+    'Net (consumer) demand',
+    'Q_{net}',
+    `${n(D.dom, 0)}+${n(D.nonDom, 0)}+${n(D.flt + D.bulk, 0)}`,
+    D.net,
+    'm³/d',
+  );
+  calc.step(
+    'Average-day production (incl. NRW)',
+    'Q_{avg} = \\frac{Q_{net}}{1-NRW}',
+    `\\frac{${n(D.net, 0)}}{1-${n(d.nrw / 100, 2)}}`,
+    D.gross,
+    'm³/d',
+  );
+  calc.step(
+    'Maximum-day demand',
+    'Q_{md} = k_{md}\\,Q_{avg}',
+    `${n(mdf, 2)} \\times ${n(D.gross, 0)}`,
+    D.mdd,
+    'm³/d',
+    ref('3.2.5'),
+  );
+  calc.step(
+    'Peak-hour demand (distribution)',
+    'Q_{ph} = k_{ph}\\,Q_{avg}',
+    `${n(phf, 2)} \\times ${n(D.gross, 0)}`,
+    D.phd,
+    'm³/d',
+    ref('3.2.5'),
+  );
+  calc.step(
+    'Required plant throughput (incl. treatment losses)',
+    'Q_{p} = Q_{md}(1+w)\\frac{24}{h_{op}}',
+    `${n(D.mdd, 0)}(1+${n(d.ownUse / 100, 3)})\\frac{24}{${n(d.opHours, 1)}}`,
+    D.plant,
+    'm³/d',
+    ref('3.2.5') + ' – 1.05–1.10 × max day',
+  );
   let adopted = d.overrideCap > 0 ? d.overrideCap : ceilTo(D.plant, d.roundStep || 1);
-  calc.step('Adopted plant design capacity', 'Q_{design}', d.overrideCap > 0 ? '\\text{user override}' : `\\lceil ${n(D.plant, 0)} \\rceil_{${n(d.roundStep, 0)}}`, adopted, 'm³/d');
+  calc.step(
+    'Adopted plant design capacity',
+    'Q_{design}',
+    d.overrideCap > 0 ? '\\text{user override}' : `\\lceil ${n(D.plant, 0)} \\rceil_{${n(d.roundStep, 0)}}`,
+    adopted,
+    'm³/d',
+  );
   let stageCap = ceilTo(S.plant, d.roundStep || 1);
   if (capMode) return capacityResult();
 
   calc.check('dem.lpcd', lpcd);
   const rng = lpcdRange(cls);
-  if (rng) calc.check('dem.lpcdD2', lpcd, `Per-capita within D2 range for ${cls.label.split(' (')[0].toLowerCase()}`, { crit: { min: rng[0] * 0.95, max: rng[1] * 1.05 }, range: `${Math.round(rng[0])} – ${Math.round(rng[1])}`, src: ref('3.2.1') + ` – ${cls.hc[0]}–${cls.hc[1]} % HC @ ${cls.hcLpcd}, standposts @ 45` });
-  else calc.check('dem.lpcdD2', lpcd, 'Per-capita demand – D2 table', { status: 'info', range: cls.id === 'largeUrban' ? 'assess individually' : 'see Manual D1', src: ref('3.2.1') });
+  if (rng)
+    calc.check('dem.lpcdD2', lpcd, `Per-capita within D2 range for ${cls.label.split(' (')[0].toLowerCase()}`, {
+      crit: { min: rng[0] * 0.95, max: rng[1] * 1.05 },
+      range: `${Math.round(rng[0])} – ${Math.round(rng[1])}`,
+      src: ref('3.2.1') + ` – ${cls.hc[0]}–${cls.hc[1]} % HC @ ${cls.hcLpcd}, standposts @ 45`,
+    });
+  else
+    calc.check('dem.lpcdD2', lpcd, 'Per-capita demand – D2 table', {
+      status: 'info',
+      range: cls.id === 'largeUrban' ? 'assess individually' : 'see Manual D1',
+      src: ref('3.2.1'),
+    });
   const hz = horizonFor(Pdesign);
-  calc.check('dem.horizon', d.designYear - d.baseYear, `Planning horizon (${hz.text})`, { crit: { min: hz.years, hardMin: Math.min(hz.years, 10) } });
-  if (hz.stage) calc.flag('Stage I at about 10 years (two 10-year stages)', Math.abs(d.stageYear - d.baseYear - hz.stage) <= 2, `${d.stageYear - d.baseYear} yr`, '≈ 10 yr', 'Stage pump sets, tanks & reservoirs; build intakes, mains & dams for the full 20 years', 'info', ref('2.4'));
+  calc.check('dem.horizon', d.designYear - d.baseYear, `Planning horizon (${hz.text})`, {
+    crit: { min: hz.years, hardMin: Math.min(hz.years, 10) },
+  });
+  if (hz.stage)
+    calc.flag(
+      'Stage I at about 10 years (two 10-year stages)',
+      Math.abs(d.stageYear - d.baseYear - hz.stage) <= 2,
+      `${d.stageYear - d.baseYear} yr`,
+      '≈ 10 yr',
+      'Stage pump sets, tanks & reservoirs; build intakes, mains & dams for the full 20 years',
+      'info',
+      ref('2.4'),
+    );
   const ufw = d.systemState === 'new' ? UFW.newSystem : UFW.rehab;
-  calc.check('dem.nrw', d.nrw, undefined, { crit: { min: ufw[0], max: ufw[1] }, range: `${ufw[0]} – ${ufw[1]} (${d.systemState === 'new' ? 'new, tight system' : 'rehabilitated system'})` });
-  calc.check('dem.mdf', mdf, undefined, { note: d.mdf > 0 && Math.abs(d.mdf - pk.mdf) > 1e-9 ? `D2 value for ${pk.cls}: ${pk.mdf}` : '' });
-  calc.check('dem.phf', phf, undefined, { note: d.phf > 0 && Math.abs(d.phf - pk.phf) > 1e-9 ? `D2 value for ${pk.cls}: ${pk.phf}` : '' });
+  calc.check('dem.nrw', d.nrw, undefined, {
+    crit: { min: ufw[0], max: ufw[1] },
+    range: `${ufw[0]} – ${ufw[1]} (${d.systemState === 'new' ? 'new, tight system' : 'rehabilitated system'})`,
+  });
+  calc.check('dem.mdf', mdf, undefined, {
+    note: d.mdf > 0 && Math.abs(d.mdf - pk.mdf) > 1e-9 ? `D2 value for ${pk.cls}: ${pk.mdf}` : '',
+  });
+  calc.check('dem.phf', phf, undefined, {
+    note: d.phf > 0 && Math.abs(d.phf - pk.phf) > 1e-9 ? `D2 value for ${pk.cls}: ${pk.phf}` : '',
+  });
   calc.check('dem.own', d.ownUse);
-  if (Pdesign < 10000 && Math.abs(d.nonDomPct - 10) > 5 && !items.length) calc.note('info', `D2 §3.2.3: for small urban and rural schemes non-domestic demand is usually about 10 % of domestic unless large consumers are identified (now ${d.nonDomPct} %).`);
-  if (d.mdf > 0 && Math.abs(d.mdf - pk.mdf) > 0.01) calc.note('info', `Maximum-day factor ${d.mdf} is a user value; D2 §3.2.5 gives ${pk.mdf} for ${pk.cls}. Clear the field to use the D2 value.`);
-  if (d.opHours < 24) calc.note('warn', 'D2 §9.2: schemes involving treatment normally require continuous 24-hour operation to optimise the process; slow sand filters must not be operated intermittently.');
-  if (adopted < D.plant * 0.98) calc.note('fail', 'Adopted capacity is lower than the computed requirement for the design year.');
+  if (Pdesign < 10000 && Math.abs(d.nonDomPct - 10) > 5 && !items.length)
+    calc.note(
+      'info',
+      `D2 §3.2.3: for small urban and rural schemes non-domestic demand is usually about 10 % of domestic unless large consumers are identified (now ${d.nonDomPct} %).`,
+    );
+  if (d.mdf > 0 && Math.abs(d.mdf - pk.mdf) > 0.01)
+    calc.note(
+      'info',
+      `Maximum-day factor ${d.mdf} is a user value; D2 §3.2.5 gives ${pk.mdf} for ${pk.cls}. Clear the field to use the D2 value.`,
+    );
+  if (d.opHours < 24)
+    calc.note(
+      'warn',
+      'D2 §9.2: schemes involving treatment normally require continuous 24-hour operation to optimise the process; slow sand filters must not be operated intermittently.',
+    );
+  if (adopted < D.plant * 0.98)
+    calc.note('fail', 'Adopted capacity is lower than the computed requirement for the design year.');
   const nTr = num(d.nTrains) > 0 ? Math.max(1, Math.round(d.nTrains)) : autoTrains(adopted);
-  if (nTr < 2) calc.note('warn', 'A single treatment stream gives no redundancy during maintenance – at least two parallel streams are recommended.');
+  if (nTr < 2)
+    calc.note(
+      'warn',
+      'A single treatment stream gives no redundancy during maintenance – at least two parallel streams are recommended.',
+    );
 
-  const methods = fit ? {
-    arith: years.map((y) => fit.arith(y)),
-    geom: years.map((y) => fit.geom(y)),
-    incr: years.map((y) => fit.incr(y)),
-  } : null;
+  const methods = fit
+    ? {
+        arith: years.map((y) => fit.arith(y)),
+        geom: years.map((y) => fit.geom(y)),
+        incr: years.map((y) => fit.incr(y)),
+      }
+    : null;
 
   return {
-    inputs: d, basis: 'forecast', method, table, years, design: D, stage: S, adopted, stageCap, methods,
+    inputs: d,
+    basis: 'forecast',
+    method,
+    table,
+    years,
+    design: D,
+    stage: S,
+    adopted,
+    stageCap,
+    methods,
     d2: { cls, pk, mdf, phf, lpcd, hcPct, hcLpcd, items, instQ, horizon: hz, range: rng, Pdesign },
-    mdf, phf, lpcd,
+    mdf,
+    phf,
+    lpcd,
     census: d.census,
-    Qd: adopted, Qh: adopted / 24, Qs: adopted / 86400, nTrains: nTr, nTrainsAuto: !(num(d.nTrains) > 0),
+    Qd: adopted,
+    Qh: adopted / 24,
+    Qs: adopted / 86400,
+    nTrains: nTr,
+    nTrainsAuto: !(num(d.nTrains) > 0),
     ...calc.result(),
   };
 }

@@ -2,26 +2,173 @@ import { computeAll, newProject } from '../src/engine/index.js';
 const p = newProject();
 const t0 = performance.now();
 const r = computeAll(p);
-console.log('ms', (performance.now()-t0).toFixed(1));
+console.log('ms', (performance.now() - t0).toFixed(1));
 console.log('errors', r.errors);
 console.log('summary', r.summary);
-const pick = (o, keys) => Object.fromEntries(keys.map(k => [k, typeof o?.[k]==='number' ? +o[k].toFixed(3) : o?.[k]]));
-console.log('demand', pick(r.demand, ['adopted','stageCap','Qd','nTrains']), pick(r.demand.design, ['P','served','net','gross','mdd','plant']));
-console.log('quality', pick(r.quality, ['T','zone','turbAvg','turbMax']), r.quality.monthly);
-console.log('process', r.process.route, r.process.aeration, r.process.rapidMix, r.process.floc, r.process.clarifier, r.process.filter, r.process.disinfectant, r.process.sludge);
-console.log('coag', pick(r.coag, ['Ddes','Davg','alkUsed','need','limeDose','alk1','pH1','al','kgDes','kgAvg','annualKg','storeArea','tankV','pumpMax','turndown']));
-console.log('rapidmix', pick(r.rapidmix, ['type','b','v1','Fr1','y2','hL','Lj','tAct','Gact','headloss']));
-console.log('floc', pick(r.floc, ['type','W','H','L','Gt','headloss','ttot']), r.floc.stages.map(s=>pick(s,['L','nInt','sp','v','hl','Ga'])));
-console.log('sed', pick(r.sed, ['type','N','A','W','L','sorAct','hrt','vh','Re','Fr','weirAct','weirLoadAct','nL','hNotch','h0','nPorts','settledPeak','settledAvg']), r.sed.rem);
-console.log('filt', pick(r.filt, ['type','N','Nrule','Af','B','Lb','rate','rateOne','h0','runAvg','runPeak','UFRV','Vmf','vb','expPct','bwPct','washVol','tdhBw','bwPumpKw','blowerKw','nTr','hTr','lipAbove','boxDepth','latDia','manDia','nO','nLat']), pick(r.filt.g,['d10','d60','d90','UC']));
-console.log('stab', pick(r.stab, ['apply','lime','pH1','pHafterCl','pHfinal','lsiText']), pick(r.stab.final,['LSI','RSI','alkF','caF']));
-console.log('dis', pick(r.dis, ['key','totDose','kgD','kgH','chlorinator','productKgD','cylPerMonth','V','T10','BF','LW','CTp','CTg','CTv','ratio','logG','logV','pHc','hocl']));
-console.log('sludge', pick(r.sludge, ['dsDes','annualT','sedVol','recTank','recRate','bedArea','nBeds','cakeT','trucks']), r.sludge.thick);
-console.log('hyd', pick(r.hyd, ['GL','inletWL','cwrTWL','cwrLWL','totalHead']), r.hyd.units.map(u=>u.key+':'+u.wl.toFixed(2)));
-console.log('storage', pick(r.storage, ['V','L','W','Qp','Hs','balancing','srV']), pick(r.storage.pumps,['dn','v','hf','H','motor','Qp','dH','PN','npsha']));
-console.log('intake', pick(r.intake, ['nPorts','subDepth','cdn','Dw','wellLWL','floor','Hs']), pick(r.intake.cs,['W','vClear','hClog','nBars']), pick(r.intake.fs,['W','vClear','hClog']), pick(r.intake.pumps,['dn','v','H','motor','npsha','PN']));
-console.log('layout', pick(r.layout, ['siteW','siteH','builtArea','landArea','ha','acres','perches']));
-console.log('energy', pick(r.energy, ['kwConnected','kwRunning','kva','tx','genKva','kwhD','spec','monthlyBill']));
-console.log('cost', pick(r.cost, ['civilTot','meTot','capex','perCap','omTot','omPerM3','fullPerM3']), r.cost.om);
-console.log('compliance', r.compliance.fails.map(f=>f.name+':'+f.v), r.compliance.logs);
-for (const c of r.checks.filter(c=>c.status!=='ok')) console.log('CHECK', c.module, c.status, c.label, c.value, c.range);
+const pick = (o, keys) =>
+  Object.fromEntries(keys.map((k) => [k, typeof o?.[k] === 'number' ? +o[k].toFixed(3) : o?.[k]]));
+console.log(
+  'demand',
+  pick(r.demand, ['adopted', 'stageCap', 'Qd', 'nTrains']),
+  pick(r.demand.design, ['P', 'served', 'net', 'gross', 'mdd', 'plant']),
+);
+console.log('quality', pick(r.quality, ['T', 'zone', 'turbAvg', 'turbMax']), r.quality.monthly);
+console.log(
+  'process',
+  r.process.route,
+  r.process.aeration,
+  r.process.rapidMix,
+  r.process.floc,
+  r.process.clarifier,
+  r.process.filter,
+  r.process.disinfectant,
+  r.process.sludge,
+);
+console.log(
+  'coag',
+  pick(r.coag, [
+    'Ddes',
+    'Davg',
+    'alkUsed',
+    'need',
+    'limeDose',
+    'alk1',
+    'pH1',
+    'al',
+    'kgDes',
+    'kgAvg',
+    'annualKg',
+    'storeArea',
+    'tankV',
+    'pumpMax',
+    'turndown',
+  ]),
+);
+console.log('rapidmix', pick(r.rapidmix, ['type', 'b', 'v1', 'Fr1', 'y2', 'hL', 'Lj', 'tAct', 'Gact', 'headloss']));
+console.log(
+  'floc',
+  pick(r.floc, ['type', 'W', 'H', 'L', 'Gt', 'headloss', 'ttot']),
+  r.floc.stages.map((s) => pick(s, ['L', 'nInt', 'sp', 'v', 'hl', 'Ga'])),
+);
+console.log(
+  'sed',
+  pick(r.sed, [
+    'type',
+    'N',
+    'A',
+    'W',
+    'L',
+    'sorAct',
+    'hrt',
+    'vh',
+    'Re',
+    'Fr',
+    'weirAct',
+    'weirLoadAct',
+    'nL',
+    'hNotch',
+    'h0',
+    'nPorts',
+    'settledPeak',
+    'settledAvg',
+  ]),
+  r.sed.rem,
+);
+console.log(
+  'filt',
+  pick(r.filt, [
+    'type',
+    'N',
+    'Nrule',
+    'Af',
+    'B',
+    'Lb',
+    'rate',
+    'rateOne',
+    'h0',
+    'runAvg',
+    'runPeak',
+    'UFRV',
+    'Vmf',
+    'vb',
+    'expPct',
+    'bwPct',
+    'washVol',
+    'tdhBw',
+    'bwPumpKw',
+    'blowerKw',
+    'nTr',
+    'hTr',
+    'lipAbove',
+    'boxDepth',
+    'latDia',
+    'manDia',
+    'nO',
+    'nLat',
+  ]),
+  pick(r.filt.g, ['d10', 'd60', 'd90', 'UC']),
+);
+console.log(
+  'stab',
+  pick(r.stab, ['apply', 'lime', 'pH1', 'pHafterCl', 'pHfinal', 'lsiText']),
+  pick(r.stab.final, ['LSI', 'RSI', 'alkF', 'caF']),
+);
+console.log(
+  'dis',
+  pick(r.dis, [
+    'key',
+    'totDose',
+    'kgD',
+    'kgH',
+    'chlorinator',
+    'productKgD',
+    'cylPerMonth',
+    'V',
+    'T10',
+    'BF',
+    'LW',
+    'CTp',
+    'CTg',
+    'CTv',
+    'ratio',
+    'logG',
+    'logV',
+    'pHc',
+    'hocl',
+  ]),
+);
+console.log(
+  'sludge',
+  pick(r.sludge, ['dsDes', 'annualT', 'sedVol', 'recTank', 'recRate', 'bedArea', 'nBeds', 'cakeT', 'trucks']),
+  r.sludge.thick,
+);
+console.log(
+  'hyd',
+  pick(r.hyd, ['GL', 'inletWL', 'cwrTWL', 'cwrLWL', 'totalHead']),
+  r.hyd.units.map((u) => u.key + ':' + u.wl.toFixed(2)),
+);
+console.log(
+  'storage',
+  pick(r.storage, ['V', 'L', 'W', 'Qp', 'Hs', 'balancing', 'srV']),
+  pick(r.storage.pumps, ['dn', 'v', 'hf', 'H', 'motor', 'Qp', 'dH', 'PN', 'npsha']),
+);
+console.log(
+  'intake',
+  pick(r.intake, ['nPorts', 'subDepth', 'cdn', 'Dw', 'wellLWL', 'floor', 'Hs']),
+  pick(r.intake.cs, ['W', 'vClear', 'hClog', 'nBars']),
+  pick(r.intake.fs, ['W', 'vClear', 'hClog']),
+  pick(r.intake.pumps, ['dn', 'v', 'H', 'motor', 'npsha', 'PN']),
+);
+console.log('layout', pick(r.layout, ['siteW', 'siteH', 'builtArea', 'landArea', 'ha', 'acres', 'perches']));
+console.log(
+  'energy',
+  pick(r.energy, ['kwConnected', 'kwRunning', 'kva', 'tx', 'genKva', 'kwhD', 'spec', 'monthlyBill']),
+);
+console.log('cost', pick(r.cost, ['civilTot', 'meTot', 'capex', 'perCap', 'omTot', 'omPerM3', 'fullPerM3']), r.cost.om);
+console.log(
+  'compliance',
+  r.compliance.fails.map((f) => f.name + ':' + f.v),
+  r.compliance.logs,
+);
+for (const c of r.checks.filter((c) => c.status !== 'ok'))
+  console.log('CHECK', c.module, c.status, c.label, c.value, c.range);

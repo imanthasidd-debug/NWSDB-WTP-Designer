@@ -16,7 +16,9 @@ export function logError(where, err, level = 'error') {
     recent.push({ t: new Date().toISOString(), level, where, msg });
     if (recent.length > 100) recent.shift();
     if (typeof window !== 'undefined') window.wtp?.log?.(level, where, msg);
-  } catch { /* logging must never break the program */ }
+  } catch {
+    /* logging must never break the program */
+  }
 }
 
 /** engine module errors from computeAll() (key → stack) */
@@ -34,8 +36,16 @@ export function installErrorLog() {
 export async function diagnosticsText(store, edition) {
   let d = {};
   let log = '';
-  try { d = (await window.wtp?.diagnostics?.()) || {}; } catch { /* browser version */ }
-  try { log = (await window.wtp?.readLog?.(80)) || ''; } catch { /* browser version */ }
+  try {
+    d = (await window.wtp?.diagnostics?.()) || {};
+  } catch {
+    /* browser version */
+  }
+  try {
+    log = (await window.wtp?.readLog?.(80)) || '';
+  } catch {
+    /* browser version */
+  }
   if (!log) log = recent.map((x) => `${x.t} [${x.level}] ${x.where}: ${x.msg.replace(/\n/g, '\n    ')}`).join('\n');
   const r = store.results || {};
   const s = store.project?.inputs?.setup || {};
@@ -50,9 +60,13 @@ export async function diagnosticsText(store, edition) {
     '',
     `Project: ${s.code || '–'} · ${s.district || '–'} · ${s.sourceType || '–'} · ${Math.round(r.demand?.Qd || 0).toLocaleString('en-US')} m³/d · route ${r.process?.route || '–'}`,
     `Checks: ${r.summary?.ok ?? '–'} pass · ${r.summary?.warn ?? '–'} review · ${r.summary?.fail ?? '–'} fail · calculation ${(store.calcMs || 0).toFixed(0)} ms (${store.calcThread === 'worker' ? 'background worker' : 'screen thread'})`,
-    errs.length ? `Calculation errors:\n${errs.map(([k, v]) => `  ${k}: ${String(v).split('\n').slice(0, 4).join('\n    ')}`).join('\n')}` : 'Calculation errors: none',
+    errs.length
+      ? `Calculation errors:\n${errs.map(([k, v]) => `  ${k}: ${String(v).split('\n').slice(0, 4).join('\n    ')}`).join('\n')}`
+      : 'Calculation errors: none',
     '',
     'Recent log:',
     log || '(empty)',
-  ].filter((x) => x !== null).join('\n');
+  ]
+    .filter((x) => x !== null)
+    .join('\n');
 }

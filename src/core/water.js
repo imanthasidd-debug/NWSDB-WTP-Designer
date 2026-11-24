@@ -119,8 +119,15 @@ export function alSpecies(pH) {
 }
 /** pH of minimum Al solubility */
 export function alMinPH() {
-  let best = 6, bv = Infinity;
-  for (let p = 5; p <= 8; p += 0.01) { const v = alSpecies(p).totalMgL; if (v < bv) { bv = v; best = p; } }
+  let best = 6,
+    bv = Infinity;
+  for (let p = 5; p <= 8; p += 0.01) {
+    const v = alSpecies(p).totalMgL;
+    if (v < bv) {
+      bv = v;
+      best = p;
+    }
+  }
   return { pH: best, mgL: bv };
 }
 
@@ -139,7 +146,10 @@ export function settlingVelocity(d, rhoP, T, phi = 1) {
     const Re = Math.max((rw * v * d) / m, 1e-9);
     const Cd = (24 / Re + 3 / Math.sqrt(Re) + 0.34) / phi;
     const vNew = Math.sqrt((4 * G0 * (rhoP - rw) * d) / (3 * Cd * rw));
-    if (Math.abs(vNew - v) < 1e-10) { v = vNew; break; }
+    if (Math.abs(vNew - v) < 1e-10) {
+      v = vNew;
+      break;
+    }
     v = 0.5 * (v + vNew);
   }
   return v;
@@ -157,9 +167,30 @@ export function ctGiardia(I, T, pH, C) {
 }
 // USEPA virus CT, free chlorine, pH 6–9 (mg·min/L)
 const VIRUS_CT = {
-  2: [[0.5, 6], [5, 4], [10, 3], [15, 2], [20, 1], [25, 1]],
-  3: [[0.5, 9], [5, 6], [10, 4], [15, 3], [20, 2], [25, 1]],
-  4: [[0.5, 12], [5, 8], [10, 6], [15, 4], [20, 3], [25, 2]],
+  2: [
+    [0.5, 6],
+    [5, 4],
+    [10, 3],
+    [15, 2],
+    [20, 1],
+    [25, 1],
+  ],
+  3: [
+    [0.5, 9],
+    [5, 6],
+    [10, 4],
+    [15, 3],
+    [20, 2],
+    [25, 1],
+  ],
+  4: [
+    [0.5, 12],
+    [5, 8],
+    [10, 6],
+    [15, 4],
+    [20, 3],
+    [25, 2],
+  ],
 };
 export function ctVirus(logs, T) {
   const L = clamp(Math.round(logs), 2, 4);

@@ -40,8 +40,8 @@ export const SETUP_DEFAULTS = {
   district: 'Gampaha',
   town: '',
   source: 'River (wet-zone)',
-  sourceType: 'river',        // river | reservoir | lake | groundwater
-  siteGL: 20,                 // m MSL
+  sourceType: 'river', // river | reservoir | lake | groundwater
+  siteGL: 20, // m MSL
   siteElevation: 20,
   landConstrained: false,
   designer: '',
@@ -50,9 +50,9 @@ export const SETUP_DEFAULTS = {
   date: new Date().toISOString().slice(0, 10),
   revision: 'A',
   drawnBy: '',
-  drawingStatus: 'Preliminary design',   // shown in the drawing title block
+  drawingStatus: 'Preliminary design', // shown in the drawing title block
   revDesc: 'Issued for design review',
-  revisions: [],                             // earlier revisions [{rev, date, desc}] listed in the title block
+  revisions: [], // earlier revisions [{rev, date, desc}] listed in the title block
   notes: '',
 };
 
@@ -60,10 +60,32 @@ export const SETUP_DEFAULTS = {
 /** design steps in calculation order – a step may only read the results of the steps before it */
 /** @type {Array<[string, EngineModule]>} */
 export const MODULES = [
-  ['demand', demand], ['quality', quality], ['source', source], ['process', process], ['coag', coag], ['aeration', aeration],
-  ['rapidmix', rapidmix], ['floc', floc], ['sed', sed], ['filt', filt], ['stab', stab], ['dis', dis],
-  ['special', special], ['buildings', buildings], ['sludge', sludge], ['hyd', hyd], ['storage', storage], ['intake', intake], ['layout', layout], ['structure', structure],
-  ['energy', energy], ['cost', cost], ['assess', assess], ['jartest', jartest], ['omplan', omplan], ['compliance', compliance],
+  ['demand', demand],
+  ['quality', quality],
+  ['source', source],
+  ['process', process],
+  ['coag', coag],
+  ['aeration', aeration],
+  ['rapidmix', rapidmix],
+  ['floc', floc],
+  ['sed', sed],
+  ['filt', filt],
+  ['stab', stab],
+  ['dis', dis],
+  ['special', special],
+  ['buildings', buildings],
+  ['sludge', sludge],
+  ['hyd', hyd],
+  ['storage', storage],
+  ['intake', intake],
+  ['layout', layout],
+  ['structure', structure],
+  ['energy', energy],
+  ['cost', cost],
+  ['assess', assess],
+  ['jartest', jartest],
+  ['omplan', omplan],
+  ['compliance', compliance],
 ];
 
 export const DEFAULT_INPUTS = () => ({
@@ -72,7 +94,15 @@ export const DEFAULT_INPUTS = () => ({
 });
 
 export function newProject() {
-  return { app: 'NWSDB WTP Designer', version: 1, rb2025: true, rb2026: true, created: new Date().toISOString(), inputs: DEFAULT_INPUTS(), criteria: {} };
+  return {
+    app: 'NWSDB WTP Designer',
+    version: 1,
+    rb2025: true,
+    rb2026: true,
+    created: new Date().toISOString(),
+    inputs: DEFAULT_INPUTS(),
+    criteria: {},
+  };
 }
 
 /** criteria with project overrides */
@@ -95,8 +125,15 @@ export function computeAll(project) {
         const T = res.quality?.T ?? 28;
         ctx.water = { T, rho: rho(T), mu: mu(T), nu: nu(T) };
       }
-      if (key === 'coag' && res.process && !res.process.has.coag) { res.coag = null; continue; }
-      if (key === 'aeration' && res.process && !res.process.has.aeration) { res.aeration = mod.compute(inp[key] || {}, ctx); res.aeration.enabled = false; continue; }
+      if (key === 'coag' && res.process && !res.process.has.coag) {
+        res.coag = null;
+        continue;
+      }
+      if (key === 'aeration' && res.process && !res.process.has.aeration) {
+        res.aeration = mod.compute(inp[key] || {}, ctx);
+        res.aeration.enabled = false;
+        continue;
+      }
       res[key] = mod.compute(inp[key] || {}, ctx);
     } catch (e) {
       errors[key] = String(e && e.stack ? e.stack : e);
@@ -119,11 +156,22 @@ export function computeAll(project) {
   // NWSDB Design Manual D2 / D3 compliance registers (every check that cites a clause of the manual)
   const register = (test, tag) => {
     const list = all.filter((c) => test(c.src)).map((c) => ({ ...c, clause: clauseOf(c.src, tag) || tag }));
-    return { checks: list, ok: list.filter((c) => c.status === 'ok').length, warn: list.filter((c) => c.status === 'warn').length, fail: list.filter((c) => c.status === 'fail').length, info: list.filter((c) => c.status === 'info').length, total: list.length };
+    return {
+      checks: list,
+      ok: list.filter((c) => c.status === 'ok').length,
+      warn: list.filter((c) => c.status === 'warn').length,
+      fail: list.filter((c) => c.status === 'fail').length,
+      info: list.filter((c) => c.status === 'info').length,
+      total: list.length,
+    };
   };
   const d2 = register(isD2, 'D2');
   const d3 = register(isD3, 'D3');
   let chain = { stages: [], profile: [] };
-  try { chain = designChain({ ...res, checks: all }); } catch (e) { errors.chain = String(e && e.stack ? e.stack : e); }
+  try {
+    chain = designChain({ ...res, checks: all });
+  } catch (e) {
+    errors.chain = String(e && e.stack ? e.stack : e);
+  }
   return { ...res, checks: all, summary, d2, d3, errors, water: ctx.water, chain };
 }

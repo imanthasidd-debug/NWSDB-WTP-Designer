@@ -49,7 +49,13 @@ export function bisect(f, a, b, tol = 1e-9, maxIt = 200) {
     const m = (a + b) / 2;
     const fm = f(m);
     if (Math.abs(fm) < tol || (b - a) / 2 < tol) return m;
-    if (fa * fm < 0) { b = m; fb = fm; } else { a = m; fa = fm; }
+    if (fa * fm < 0) {
+      b = m;
+      fb = fm;
+    } else {
+      a = m;
+      fa = fm;
+    }
   }
   return (a + b) / 2;
 }
@@ -61,10 +67,18 @@ export function nextStd(value, list) {
 }
 
 // Standard sizes ---------------------------------------------------------
-export const DN = [50, 65, 80, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1400, 1500, 1600, 1800, 2000, 2200];
-export const MOTOR_KW = [0.18, 0.25, 0.37, 0.55, 0.75, 1.1, 1.5, 2.2, 3, 4, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 110, 132, 160, 200, 250, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000, 1250, 1500];
+export const DN = [
+  50, 65, 80, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1400, 1500, 1600,
+  1800, 2000, 2200,
+];
+export const MOTOR_KW = [
+  0.18, 0.25, 0.37, 0.55, 0.75, 1.1, 1.5, 2.2, 3, 4, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 110, 132, 160,
+  200, 250, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000, 1250, 1500,
+];
 export const TRANSFORMER_KVA = [100, 160, 250, 400, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150];
-export const GENSET_KVA = [20, 30, 45, 60, 80, 100, 125, 150, 200, 250, 300, 350, 400, 500, 625, 750, 800, 1000, 1250, 1500, 2000];
+export const GENSET_KVA = [
+  20, 30, 45, 60, 80, 100, 125, 150, 200, 250, 300, 350, 400, 500, 625, 750, 800, 1000, 1250, 1500, 2000,
+];
 
 // Formatting --------------------------------------------------------------
 export function fmt(v, d = 2, opts = {}) {
@@ -97,7 +111,11 @@ export function fmtMoney(v) {
   if (a >= 1e6) return 'LKR ' + fmt(v / 1e6, 1) + ' Mn';
   return 'LKR ' + fmt(v, 0);
 }
-export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+export const esc = (s) =>
+  String(s ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+  );
 
 export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const deepClone = (o) => (o === undefined ? undefined : JSON.parse(JSON.stringify(o)));
@@ -106,7 +124,10 @@ export function deepMerge(base, over) {
   if (typeof base !== 'object' || base === null) return over !== undefined ? over : base;
   const out = { ...base };
   for (const k of Object.keys(over || {})) {
-    out[k] = typeof base[k] === 'object' && base[k] !== null && !Array.isArray(base[k]) ? deepMerge(base[k], over[k]) : deepClone(over[k]);
+    out[k] =
+      typeof base[k] === 'object' && base[k] !== null && !Array.isArray(base[k])
+        ? deepMerge(base[k], over[k])
+        : deepClone(over[k]);
   }
   return out;
 }
@@ -118,8 +139,12 @@ export const vel = (Q, D) => Q / pipeArea(D);
 /** choose DN (mm) so velocity is closest to target but <= vmax */
 /** DN whose velocity lies in [vMin, vMax] and is closest to vTarget (falls back to selectDN) */
 export function selectDNRange(Q, vMin, vMax, vTarget = (vMin + vMax) / 2, list = DN) {
-  const c = list.filter((dn) => { const v = vel(Q, dn / 1000); return v >= vMin && v <= vMax; });
-  if (c.length) return c.reduce((a, b) => (Math.abs(vel(Q, b / 1000) - vTarget) < Math.abs(vel(Q, a / 1000) - vTarget) ? b : a));
+  const c = list.filter((dn) => {
+    const v = vel(Q, dn / 1000);
+    return v >= vMin && v <= vMax;
+  });
+  if (c.length)
+    return c.reduce((a, b) => (Math.abs(vel(Q, b / 1000) - vTarget) < Math.abs(vel(Q, a / 1000) - vTarget) ? b : a));
   return selectDN(Q, vTarget, vMax, list);
 }
 export function selectDN(Q, vTarget, vMax = 99, list = DN) {

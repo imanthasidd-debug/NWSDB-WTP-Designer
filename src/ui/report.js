@@ -14,12 +14,22 @@ import { PAGES } from './pages/registry.js';
 import { bannerImg } from './brand.js';
 
 import { isTrial, trialLabel } from './edition.js';
-const f0 = (v) => fmt(v, 0), f1 = (v) => fmt(v, 1), f2 = (v) => fmt(v, 2);
+const f0 = (v) => fmt(v, 0),
+  f1 = (v) => fmt(v, 1),
+  f2 = (v) => fmt(v, 2);
 
 export const REPORT_SECTIONS = [
-  ['summary', 'Executive summary'], ['basis', 'Design basis (demand & raw water)'], ['process', 'Process selection'],
-  ['units', 'Treatment unit designs'], ['plant', 'Plant-wide design (storage, residuals, hydraulics, layout, power)'],
-  ['cost', 'Cost estimate'], ['compliance', 'Compliance & design checks'], ['d2', 'NWSDB Design Manual D2 compliance'], ['d3', 'NWSDB Design Manual D3 compliance'], ['calc', 'Include calculation sheets'], ['refs', 'References & assumptions'],
+  ['summary', 'Executive summary'],
+  ['basis', 'Design basis (demand & raw water)'],
+  ['process', 'Process selection'],
+  ['units', 'Treatment unit designs'],
+  ['plant', 'Plant-wide design (storage, residuals, hydraulics, layout, power)'],
+  ['cost', 'Cost estimate'],
+  ['compliance', 'Compliance & design checks'],
+  ['d2', 'NWSDB Design Manual D2 compliance'],
+  ['d3', 'NWSDB Design Manual D3 compliance'],
+  ['calc', 'Include calculation sheets'],
+  ['refs', 'References & assumptions'],
 ];
 
 export const REPORT_CSS = `
@@ -104,10 +114,27 @@ function staticize(nodes) {
   const out = [];
   for (const n of nodes.flat(Infinity)) {
     if (!n) continue;
-    if (n._spec) { out.push(`<div class="fig">${chartToSVG(n._spec, 660)}${figCap(n._title || '')}</div>`); continue; }
-    if (n._dws) { for (const v of n._dws.filter((x) => x.id !== 'ga' || n._dws.length === 1)) out.push(`<div class="fig">${drawingSVG(v.dw, { statik: true, idPrefix: 'r' + Math.random().toString(36).slice(2, 7) }).svg.replace('<svg ', '<svg width="660" ')}${figCap(v.dw.title, `<span class="dn">Drawing ${drawingNumber(store.project.inputs.setup, v.dw)} · full A3 sheet in the drawing pack</span>`)}</div>`); continue; }
-    if (n.classList?.contains('grid2')) { out.push(staticize([...n.children])); continue; }
-    if (n.classList?.contains('pfd') || n.classList?.contains('pfd2') || n.querySelector?.('.pfd, .pfd2')) { out.push(`<div class="fig pfd">${pfdSVG(store.results, { width: 1000, interactive: false, statik: true }).svg}${figCap('Process flow diagram – selected treatment train')}</div>`); continue; }
+    if (n._spec) {
+      out.push(`<div class="fig">${chartToSVG(n._spec, 660)}${figCap(n._title || '')}</div>`);
+      continue;
+    }
+    if (n._dws) {
+      for (const v of n._dws.filter((x) => x.id !== 'ga' || n._dws.length === 1))
+        out.push(
+          `<div class="fig">${drawingSVG(v.dw, { statik: true, idPrefix: 'r' + Math.random().toString(36).slice(2, 7) }).svg.replace('<svg ', '<svg width="660" ')}${figCap(v.dw.title, `<span class="dn">Drawing ${drawingNumber(store.project.inputs.setup, v.dw)} · full A3 sheet in the drawing pack</span>`)}</div>`,
+        );
+      continue;
+    }
+    if (n.classList?.contains('grid2')) {
+      out.push(staticize([...n.children]));
+      continue;
+    }
+    if (n.classList?.contains('pfd') || n.classList?.contains('pfd2') || n.querySelector?.('.pfd, .pfd2')) {
+      out.push(
+        `<div class="fig pfd">${pfdSVG(store.results, { width: 1000, interactive: false, statik: true }).svg}${figCap('Process flow diagram – selected treatment train')}</div>`,
+      );
+      continue;
+    }
     if (n.outerHTML) out.push(n.outerHTML);
   }
   return out.join('\n');
@@ -120,16 +147,29 @@ function inputsTable(page) {
   const rows = [];
   let secShow = null;
   for (const f of page.fields) {
-    if (f.sec !== undefined) { secShow = f.show || null; continue; }
+    if (f.sec !== undefined) {
+      secShow = f.show || null;
+      continue;
+    }
     if (!f.k || ['custom', 'help'].includes(f.t)) continue;
     if (secShow && !secShow(inp, store.results)) continue;
     if (f.show && !f.show(inp, store.results)) continue;
     if (rows.some((r) => r.startsWith(`<tr><td>${esc(f.l || f.k)}</td>`))) continue;
     let v = vals[f.k];
-    if (f.t === 'table') { v = (v || []).map((row) => f.cols.filter((c) => !c.ro).map((c) => row[c.k]).join(' / ')).join('; '); }
-    else if (f.t === 'array') v = (v || []).map((x) => fmt(x, 2)).join(', ');
-    else if (f.t === 'sel') { const o = typeof f.o === 'function' ? f.o(store.results, inp) : f.o; v = (o.find((x) => String(x[0]) === String(v)) || [v, v])[1]; }
-    else if (f.t === 'bool') v = v ? 'Yes' : 'No';
+    if (f.t === 'table') {
+      v = (v || [])
+        .map((row) =>
+          f.cols
+            .filter((c) => !c.ro)
+            .map((c) => row[c.k])
+            .join(' / '),
+        )
+        .join('; ');
+    } else if (f.t === 'array') v = (v || []).map((x) => fmt(x, 2)).join(', ');
+    else if (f.t === 'sel') {
+      const o = typeof f.o === 'function' ? f.o(store.results, inp) : f.o;
+      v = (o.find((x) => String(x[0]) === String(v)) || [v, v])[1];
+    } else if (f.t === 'bool') v = v ? 'Yes' : 'No';
     else if (f.auto && (!v || v === 0)) v = 'auto' + (f.autoVal ? ` (${fmt(f.autoVal(store.results), 2)})` : '');
     else if (typeof v === 'number') v = fmt(v, 4);
     if (v === undefined || v === '') continue;
@@ -150,7 +190,9 @@ function pageSection(page, r, opts, num) {
       const o = page.render(r);
       body = inputsTable(page) + '<h3>Results</h3>' + staticize([...(o.overview || []), ...(o.visuals || [])]);
     }
-  } catch (e) { body = `<p class="muted">Section could not be generated: ${esc(e.message)}</p>`; }
+  } catch (e) {
+    body = `<p class="muted">Section could not be generated: ${esc(e.message)}</p>`;
+  }
   if (res?.checks?.length && !page.renderFull) body += '<h3>Design checks</h3>' + checksTable(res.checks).outerHTML;
   if (opts.calc && res?.steps?.length) body += '<h3>Calculation sheet</h3>' + calcSheet(res.steps).outerHTML;
   return `<section class="page"><h1 class="sec">${num}. ${esc(page.title)}</h1><p class="muted">${esc(page.sub || '')}</p>${body}</section>`;
@@ -158,7 +200,20 @@ function pageSection(page, r, opts, num) {
 
 export function buildReport(opts = {}) {
   FIG = 0;
-  const o = { summary: true, basis: true, process: true, units: true, plant: true, cost: true, compliance: true, d2: true, d3: true, calc: true, refs: true, ...opts };
+  const o = {
+    summary: true,
+    basis: true,
+    process: true,
+    units: true,
+    plant: true,
+    cost: true,
+    compliance: true,
+    d2: true,
+    d3: true,
+    calc: true,
+    refs: true,
+    ...opts,
+  };
   const r = store.results;
   const s = store.project.inputs.setup;
   const d = r.demand;
@@ -181,7 +236,10 @@ export function buildReport(opts = {}) {
   </section>`);
   const toc = [];
   let n = 1;
-  const sec = (title) => { toc.push(`${n}. ${title}`); return n++; };
+  const sec = (title) => {
+    toc.push(`${n}. ${title}`);
+    return n++;
+  };
   const body = [];
   if (o.summary) {
     const k = sec('Executive summary');
@@ -190,27 +248,80 @@ export function buildReport(opts = {}) {
       <div class="fig pfd">${pfdSVG(r, { width: 1000, interactive: false, statik: true }).svg}${figCap('Process flow diagram')}</div>
       <table class="res"><thead><tr><th>Item</th><th class="num">Value</th></tr></thead><tbody>
       ${[
-        ['Design capacity', `${f0(d.Qd)} m³/d (${d.nTrains} streams)`], ['Population served (design year)', f0(d.design.served)], ['Average / maximum-day demand', `${f0(d.design.gross)} / ${f0(d.design.mdd)} m³/d`],
-        ['Coagulant dose (design / average)', r.coag ? `${f1(r.coag.Ddes)} / ${f1(r.coag.Davg)} mg/L` : '—'], ['Flocculation', `${r.floc?.ttot ?? '—'} min, Gt ${f0(r.floc?.Gt)}`],
-        ['Sedimentation', r.sed?.enabled ? `${r.sed.N} tanks, SOR ${f1(r.sed.sorAct)} m³/m²·d, θ ${f2(r.sed.hrt)} h` : '—'], ['Filtration', `${r.filt.N} × ${f1(r.filt.Af)} m² at ${f2(r.filt.rate)} m/h`],
-        ['Disinfection', `${f2(r.dis.totDose)} mg/L ${esc(r.dis.agent.label)}, CT ratio ${f2(r.dis.ratio)}`], ['Clear-water reservoir', `${f0(r.storage.V)} m³`], ['Land requirement', `${f2(r.layout.ha)} ha (${f0(r.layout.perches)} perches)`],
-        ['Maximum demand / transformer', `${f0(r.energy.kva)} kVA / ${r.energy.tx} kVA`], [r.cost.est.format === 'd2' ? 'Capital cost (incl. VAT)' : 'Total implementing cost – NWSDB Rates 2026 (incl. SSCL & VAT)', fmtMoney(r.cost.capex)], ['Production cost', `${f2(r.cost.fullPerM3)} LKR/m³ (O&M ${f2(r.cost.omPerM3)})`],
+        ['Design capacity', `${f0(d.Qd)} m³/d (${d.nTrains} streams)`],
+        ['Population served (design year)', f0(d.design.served)],
+        ['Average / maximum-day demand', `${f0(d.design.gross)} / ${f0(d.design.mdd)} m³/d`],
+        ['Coagulant dose (design / average)', r.coag ? `${f1(r.coag.Ddes)} / ${f1(r.coag.Davg)} mg/L` : '—'],
+        ['Flocculation', `${r.floc?.ttot ?? '—'} min, Gt ${f0(r.floc?.Gt)}`],
+        [
+          'Sedimentation',
+          r.sed?.enabled ? `${r.sed.N} tanks, SOR ${f1(r.sed.sorAct)} m³/m²·d, θ ${f2(r.sed.hrt)} h` : '—',
+        ],
+        ['Filtration', `${r.filt.N} × ${f1(r.filt.Af)} m² at ${f2(r.filt.rate)} m/h`],
+        ['Disinfection', `${f2(r.dis.totDose)} mg/L ${esc(r.dis.agent.label)}, CT ratio ${f2(r.dis.ratio)}`],
+        ['Clear-water reservoir', `${f0(r.storage.V)} m³`],
+        ['Land requirement', `${f2(r.layout.ha)} ha (${f0(r.layout.perches)} perches)`],
+        ['Maximum demand / transformer', `${f0(r.energy.kva)} kVA / ${r.energy.tx} kVA`],
+        [
+          r.cost.est.format === 'd2'
+            ? 'Capital cost (incl. VAT)'
+            : 'Total implementing cost – NWSDB Rates 2026 (incl. SSCL & VAT)',
+          fmtMoney(r.cost.capex),
+        ],
+        ['Production cost', `${f2(r.cost.fullPerM3)} LKR/m³ (O&M ${f2(r.cost.omPerM3)})`],
         ['Design checks', `${r.summary.ok} pass, ${r.summary.warn} to review, ${r.summary.fail} fail`],
         ['NWSDB Design Manual D2 (1989) clause checks', `${r.d2.ok} pass, ${r.d2.warn} to review, ${r.d2.fail} fail`],
-        ['NWSDB Design Manual D3 (2020) clause checks', `${r.d3.ok} pass, ${r.d3.warn} to review, ${r.d3.fail} fail, ${r.d3.info} advisory`],
-      ].map(([a, b]) => `<tr><td>${a}</td><td class="num">${b}</td></tr>`).join('')}</tbody></table></section>`);
+        [
+          'NWSDB Design Manual D3 (2020) clause checks',
+          `${r.d3.ok} pass, ${r.d3.warn} to review, ${r.d3.fail} fail, ${r.d3.info} advisory`,
+        ],
+      ]
+        .map(([a, b]) => `<tr><td>${a}</td><td class="num">${b}</td></tr>`)
+        .join('')}</tbody></table></section>`);
   }
   const byId = (id) => PAGES.find((p) => p.id === id);
   const group = (ids) => ids.map(byId).filter(Boolean);
-  if (o.basis) for (const p of group(['setup', 'demand', 'quality', 'source'])) body.push(pageSection(p, r, o, sec(p.title)));
-  if (o.process) { const p = byId('process'); body.push(pageSection(p, r, o, sec('Process selection (plant configuration)'))); const c = byId('chain'); if (c) body.push(pageSection(c, r, o, sec(c.title))); }
-  if (o.units) for (const p of group(['intake', 'aeration', 'coag', 'rapidmix', 'floc', 'sed', 'filt', 'special', 'dis', 'stab'])) { if (p.enabled && !p.enabled(r)) continue; body.push(pageSection(p, r, o, sec(p.title))); }
+  if (o.basis)
+    for (const p of group(['setup', 'demand', 'quality', 'source'])) body.push(pageSection(p, r, o, sec(p.title)));
+  if (o.process) {
+    const p = byId('process');
+    body.push(pageSection(p, r, o, sec('Process selection (plant configuration)')));
+    const c = byId('chain');
+    if (c) body.push(pageSection(c, r, o, sec(c.title)));
+  }
+  if (o.units)
+    for (const p of group([
+      'intake',
+      'aeration',
+      'coag',
+      'rapidmix',
+      'floc',
+      'sed',
+      'filt',
+      'special',
+      'dis',
+      'stab',
+    ])) {
+      if (p.enabled && !p.enabled(r)) continue;
+      body.push(pageSection(p, r, o, sec(p.title)));
+    }
   if (o.plant) {
-    for (const p of group(['storage', 'buildings', 'sludge', 'structure'])) body.push(pageSection(p, r, o, sec(p.title)));
+    for (const p of group(['storage', 'buildings', 'sludge', 'structure']))
+      body.push(pageSection(p, r, o, sec(p.title)));
     body.push(pageSection(byId('hyd'), r, o, sec('Hydraulic profile')));
     const kl = sec('Site layout');
-    body.push(`<section class="page"><h1 class="sec">${kl}. Site layout</h1>${groupViews(r, 'site').map((v, i) => `<div class="fig">${drawingSVG(v.dw, { statik: true, idPrefix: 'lp' + i }).svg.replace('<svg ', '<svg width="660" ')}${figCap(v.dw.title, `<span class="dn">Drawing ${drawingNumber(store.project.inputs.setup, v.dw)}</span>`)}</div>`).join('')}<p>Land requirement ${f2(r.layout.ha)} ha = ${f2(r.layout.acres)} acres = ${f0(r.layout.perches)} perches (including ${r.layout.inputs.expansion} % reserve).</p></section>`);
-    const pe = byId('energy'); body.push(pageSection(pe, r, o, sec(pe.title)));
+    body.push(
+      `<section class="page"><h1 class="sec">${kl}. Site layout</h1>${groupViews(r, 'site')
+        .map(
+          (v, i) =>
+            `<div class="fig">${drawingSVG(v.dw, { statik: true, idPrefix: 'lp' + i }).svg.replace('<svg ', '<svg width="660" ')}${figCap(v.dw.title, `<span class="dn">Drawing ${drawingNumber(store.project.inputs.setup, v.dw)}</span>`)}</div>`,
+        )
+        .join(
+          '',
+        )}<p>Land requirement ${f2(r.layout.ha)} ha = ${f2(r.layout.acres)} acres = ${f0(r.layout.perches)} perches (including ${r.layout.inputs.expansion} % reserve).</p></section>`,
+    );
+    const pe = byId('energy');
+    body.push(pageSection(pe, r, o, sec(pe.title)));
     const kd = sec('Drawing register');
     const dl = drawingList(r);
     body.push(`<section class="page"><h1 class="sec">${kd}. Drawing register</h1><p>Every structure is drawn in plan, longitudinal section (A–A), cross-section (B–B), a general-arrangement sheet (views in projection) and, where useful, a 3D isometric view. The drawings below are issued as NWSDB A3 landscape sheets (title block, notes, legend, graphic scale) in the drawing pack (PDF) and as AutoCAD DXF files with the same title block (layers per element). Concrete is shown in the NWSDB Design Manual D3 annex convention (red outline, cross-hatched).</p>
@@ -218,22 +329,44 @@ export function buildReport(opts = {}) {
       <tr><td>1</td><td>${esc(drawingNumber(store.project.inputs.setup, 'Process flow diagram'))}</td><td>Process flow diagram</td><td class="num">NTS</td></tr>
       ${dl.map((dw, i) => `<tr><td>${i + 2}</td><td>${esc(drawingNumber(store.project.inputs.setup, dw))}</td><td>${esc(dw.title)}</td><td class="num">${dw.nts ? 'NTS' : '1:' + chooseScale(dw)}</td></tr>`).join('')}</tbody></table></section>`);
   }
-  if (o.cost) { const p = byId('cost'); body.push(pageSection(p, r, o, sec(p.title))); }
-  if (r.assess?.enabled) { const p = byId('assess'); if (p) body.push(pageSection(p, r, o, sec(p.title))); }
-  if (o.compliance) for (const p of group(['compliance', 'checks'])) {
-    if (p.id === 'checks') { const k = sec('Design checks summary'); body.push(`<section class="page"><h1 class="sec">${k}. Design checks summary</h1>${checksTable(r.checks.map((c) => ({ ...c, moduleLabel: PAGES.find((pp) => pp.mod === c.module)?.title })), { showModule: true }).outerHTML}</section>`); }
-    else body.push(pageSection(p, r, o, sec(p.title)));
+  if (o.cost) {
+    const p = byId('cost');
+    body.push(pageSection(p, r, o, sec(p.title)));
   }
+  if (r.assess?.enabled) {
+    const p = byId('assess');
+    if (p) body.push(pageSection(p, r, o, sec(p.title)));
+  }
+  if (o.compliance)
+    for (const p of group(['compliance', 'checks'])) {
+      if (p.id === 'checks') {
+        const k = sec('Design checks summary');
+        body.push(
+          `<section class="page"><h1 class="sec">${k}. Design checks summary</h1>${
+            checksTable(
+              r.checks.map((c) => ({ ...c, moduleLabel: PAGES.find((pp) => pp.mod === c.module)?.title })),
+              { showModule: true },
+            ).outerHTML
+          }</section>`,
+        );
+      } else body.push(pageSection(p, r, o, sec(p.title)));
+    }
   if (o.d2) {
     const k = sec('Compliance with NWSDB Design Manual D2');
-    const rows = r.d2.checks.map((c) => ({ ...c, moduleLabel: `${PAGES.find((pp) => pp.mod === c.module)?.title || c.module} · ${c.clause}` }));
+    const rows = r.d2.checks.map((c) => ({
+      ...c,
+      moduleLabel: `${PAGES.find((pp) => pp.mod === c.module)?.title || c.module} · ${c.clause}`,
+    }));
     body.push(`<section class="page"><h1 class="sec">${k}. Compliance with NWSDB Design Manual D2</h1>
       <p>The demand forecast, source assessment, intake, pumping stations, transmission mains, service reservoirs, site planning and cost estimate have been checked against <b>NWSDB Design Manual D2 – Urban Water Supply and Distribution (March 1989)</b>. Treatment-process design is checked against companion manual D3 (next section). Result: <b>${r.d2.ok}</b> clause checks pass, <b>${r.d2.warn}</b> require review and <b>${r.d2.fail}</b> fail.</p>
       ${checksTable(rows, { showModule: true }).outerHTML}</section>`);
   }
   if (o.d3) {
     const k = sec('Compliance with NWSDB Design Manual D3');
-    const rows = r.d3.checks.map((c) => ({ ...c, moduleLabel: `${PAGES.find((pp) => pp.mod === c.module)?.title || c.module} · ${c.clause}` }));
+    const rows = r.d3.checks.map((c) => ({
+      ...c,
+      moduleLabel: `${PAGES.find((pp) => pp.mod === c.module)?.title || c.module} · ${c.clause}`,
+    }));
     const p = r.process;
     body.push(`<section class="page"><h1 class="sec">${k}. Compliance with NWSDB Design Manual D3</h1>
       <p>Raw- and treated-water quality, process selection, screens, aeration, coagulation and chemical feeding, rapid mixing, flocculation, clarification, filtration, disinfection, stabilisation, residuals and plant layout have been checked against <b>NWSDB Design Manual D3 – Water Quality &amp; Treatment Manual (Revision 01, November 2020)</b>. Result: <b>${r.d3.ok}</b> clause checks pass, <b>${r.d3.warn}</b> require review, <b>${r.d3.fail}</b> fail and <b>${r.d3.info}</b> are advisory.</p>
@@ -243,7 +376,12 @@ export function buildReport(opts = {}) {
   }
   if (o.refs) {
     const k = sec('References, assumptions & criteria');
-    const crit = Object.entries(r.checks.reduce((a, c) => { if (c.key && !a[c.key]) a[c.key] = c; return a; }, {}));
+    const crit = Object.entries(
+      r.checks.reduce((a, c) => {
+        if (c.key && !a[c.key]) a[c.key] = c;
+        return a;
+      }, {}),
+    );
     body.push(`<section class="page"><h1 class="sec">${k}. References, assumptions &amp; criteria</h1>
       <h3>References</h3><ol class="small">
       <li>Gunawardana, B. (2020). Lecture notes: Water quality standards & overview of treatment; Intake structures & screening; Aeration & air stripping; Coagulation & flocculation; Sedimentation; Filtration; Disinfection.</li>
@@ -272,6 +410,7 @@ export function buildReport(opts = {}) {
   }
   const tocHTML = `<section class="page"><h1 class="sec">Contents</h1><ol class="toc">${toc.map((t) => `<li>${esc(t.replace(/^\d+\.\s*/, ''))}</li>`).join('')}</ol>
     <h3>Abbreviations</h3><p class="small">ADD – average-day demand; D2 – NWSDB Design Manual D2 (1989); D3 – NWSDB Design Manual D3 (2020); EAC – equivalent annual cost; UFW – unaccounted-for water; BF – baffle factor; CT – concentration × time; CWR – clear-water reservoir; DS – dry solids; ES – effective size; HFL/LWL – highest flood / lowest water level; HRT – hydraulic retention time; LSI – Langelier saturation index; MDD – maximum-day demand; MLD – million litres per day; NRW – non-revenue water; SOR – surface overflow rate; TDH – total dynamic head; UC – uniformity coefficient; UFRV – unit filter run volume; WL – water level.</p></section>`;
-  void evaluate; void rangeText;
+  void evaluate;
+  void rangeText;
   return `<!doctype html><html><head><meta charset="utf-8"><base href="${base}"><title>${esc(s.name)} – Design Report</title><link rel="stylesheet" href="katex/katex.min.css"><style>${REPORT_CSS}</style></head><body>${isTrial() ? `<div class="trialmark">TRIAL VERSION<small>not for issue</small></div><div class="trialtag">${trialLabel()}</div>` : ''}${parts.join('')}${tocHTML}${body.join('\n')}</body></html>`;
 }

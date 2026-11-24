@@ -17,28 +17,85 @@ export const store = {
   future: [],
   calcMs: 0,
   calcThread: 'screen', // where the last calculation ran: 'screen' or 'worker'
-  impact: null,      // last input change and its ripple through the downstream units
+  impact: null, // last input change and its ripple through the downstream units
   settings: loadSettings(),
 };
-export const on = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
+export const on = (fn) => {
+  listeners.add(fn);
+  return () => listeners.delete(fn);
+};
 const emit = (what) => listeners.forEach((fn) => fn(what));
 
 function loadSettings() {
-  try { return { theme: 'light', designer: '', showRefs: true, ...(JSON.parse(localStorage.getItem('wtp.settings') || '{}')) }; } catch { return { theme: 'light', designer: '', showRefs: true }; }
+  try {
+    return {
+      theme: 'light',
+      designer: '',
+      showRefs: true,
+      ...JSON.parse(localStorage.getItem('wtp.settings') || '{}'),
+    };
+  } catch {
+    return { theme: 'light', designer: '', showRefs: true };
+  }
 }
-export function saveSettings() { delete store.settings.logo; try { localStorage.setItem('wtp.settings', JSON.stringify(store.settings)); } catch { /* storage unavailable */ } }
+export function saveSettings() {
+  delete store.settings.logo;
+  try {
+    localStorage.setItem('wtp.settings', JSON.stringify(store.settings));
+  } catch {
+    /* storage unavailable */
+  }
+}
 
 /** normalise a loaded project so every module has complete inputs */
 // prices / rates that v1.3 and earlier stored as indicative values – reset to the NWSDB Rate Book 2025 on opening
 const RB2025_RESET = {
-  cost: ['rExcavation', 'rConcrete', 'rSteel', 'rBuilding', 'rBeds', 'rBaffle', 'rSiteWorks', 'rSand', 'rGravel', 'rAnthracite', 'rPipePerMmM', 'pumpBase', 'pumpPerKw', 'drivePerKw', 'driveBase',
-    'txPerKva', 'genPerKva', 'elecPct', 'icaPct', 'rAirValve', 'rWashout', 'rIsoValvePerMm', 'surgeBase', 'surgePerKw', 'prelimPct', 'contPct', 'engPct', 'vatPct', 'steelPerM3', 'chemSystem', 'chlorGas', 'chlorHypo', 'screens', 'filterEquip'],
-  coag: ['priceCoag', 'priceLime', 'pricePoly', 'pricePac'], dis: ['price'], stab: ['price'], energy: ['energyRate', 'demandRate', 'fixedCharge', 'dieselPrice'],
+  cost: [
+    'rExcavation',
+    'rConcrete',
+    'rSteel',
+    'rBuilding',
+    'rBeds',
+    'rBaffle',
+    'rSiteWorks',
+    'rSand',
+    'rGravel',
+    'rAnthracite',
+    'rPipePerMmM',
+    'pumpBase',
+    'pumpPerKw',
+    'drivePerKw',
+    'driveBase',
+    'txPerKva',
+    'genPerKva',
+    'elecPct',
+    'icaPct',
+    'rAirValve',
+    'rWashout',
+    'rIsoValvePerMm',
+    'surgeBase',
+    'surgePerKw',
+    'prelimPct',
+    'contPct',
+    'engPct',
+    'vatPct',
+    'steelPerM3',
+    'chemSystem',
+    'chlorGas',
+    'chlorHypo',
+    'screens',
+    'filterEquip',
+  ],
+  coag: ['priceCoag', 'priceLime', 'pricePoly', 'pricePac'],
+  dis: ['price'],
+  stab: ['price'],
+  energy: ['energyRate', 'demandRate', 'fixedCharge', 'dieselPrice'],
 };
 export function normalise(p) {
   if (p && p.inputs && !p.rb2025) {
     p = JSON.parse(JSON.stringify(p));
-    for (const [mod, keys] of Object.entries(RB2025_RESET)) for (const k of keys) if (p.inputs[mod]) delete p.inputs[mod][k];
+    for (const [mod, keys] of Object.entries(RB2025_RESET))
+      for (const k of keys) if (p.inputs[mod]) delete p.inputs[mod][k];
     p.migratedRB2025 = true;
   }
   // NWSDB Rates 2026 (circular CQS/22/2026/98): values that v1.4–1.8 stored from the 2025 book are reset to 2026
@@ -55,7 +112,9 @@ export function normalise(p) {
   if (st && st.pattern && !st.patternMode) out.inputs.storage.patternMode = 'custom';
   if (p.inputs?.intake?.pumpKind === 'dryWell') out.inputs.intake.pumpKind = 'horizontal';
   if (p.version === 1 && !p.d2) {
-    for (const k of ['intake', 'storage']) if (typeof p.inputs?.[k]?.surgeProtect === 'boolean') out.inputs[k].surgeProtect = p.inputs[k].surgeProtect ? 'yes' : 'auto';
+    for (const k of ['intake', 'storage'])
+      if (typeof p.inputs?.[k]?.surgeProtect === 'boolean')
+        out.inputs[k].surgeProtect = p.inputs[k].surgeProtect ? 'yes' : 'auto';
   }
   out.d2 = true;
   out.rb2025 = true;
@@ -79,8 +138,8 @@ export function recompute() {
 // calculation simply runs on the screen thread as before.
 let worker = null;
 let workerState = 'off'; // off | starting | ready | failed
-let calcSeq = 0;         // id of the newest calculation – older replies are dropped
-const jobs = new Map();  // id → reply handler
+let calcSeq = 0; // id of the newest calculation – older replies are dropped
+const jobs = new Map(); // id → reply handler
 function startWorker() {
   if (workerState !== 'off' || typeof Worker === 'undefined' || typeof document === 'undefined') return;
   workerState = 'starting';
@@ -88,7 +147,11 @@ function startWorker() {
     const w = new Worker(new URL('engine.worker.js', document.baseURI));
     w.onmessage = (e) => {
       const m = e.data || {};
-      if (m.ready) { worker = w; workerState = 'ready'; return; }
+      if (m.ready) {
+        worker = w;
+        workerState = 'ready';
+        return;
+      }
       const done = jobs.get(m.id);
       jobs.delete(m.id);
       done?.(m);
@@ -96,7 +159,11 @@ function startWorker() {
     w.onerror = (e) => {
       e.preventDefault?.();
       logError('calculation worker', e.message || 'could not start – calculating on the screen thread', 'warn');
-      try { w.terminate(); } catch { /* already stopped */ }
+      try {
+        w.terminate();
+      } catch {
+        /* already stopped */
+      }
       worker = null;
       workerState = 'failed';
       for (const done of jobs.values()) done({ error: 'worker stopped' });
@@ -109,11 +176,20 @@ function startWorker() {
 }
 /** calculate in the worker when it is ready, else on the screen thread; then call done() with store.results set */
 function recomputeAsync(done) {
-  if (workerState !== 'ready') { recompute(); done(); return; }
+  if (workerState !== 'ready') {
+    recompute();
+    done();
+    return;
+  }
   const id = ++calcSeq;
   jobs.set(id, (m) => {
     if (id !== calcSeq) return; // a newer calculation has started since
-    if (m.error || !m.results) { if (m.error !== 'worker stopped') logError('calculation worker', m.error || 'no results'); recompute(); done(); return; }
+    if (m.error || !m.results) {
+      if (m.error !== 'worker stopped') logError('calculation worker', m.error || 'no results');
+      recompute();
+      done();
+      return;
+    }
     store.results = m.results;
     store.calcMs = m.ms || 0;
     store.calcThread = 'worker';
@@ -141,40 +217,68 @@ let lastSnapshot = null;
 function snapshot() {
   const s = JSON.stringify(store.project);
   if (s !== lastSnapshot) {
-    if (lastSnapshot) { store.history.push(lastSnapshot); if (store.history.length > 100) store.history.shift(); store.future = []; }
+    if (lastSnapshot) {
+      store.history.push(lastSnapshot);
+      if (store.history.length > 100) store.history.shift();
+      store.future = [];
+    }
     lastSnapshot = s;
   }
 }
 /** set value at path like ['sed','sor'] */
 export function setInput(path, value, { immediate = false, what = null } = {}) {
-  if (!canEdit()) { emit('inputs'); return; }
+  if (!canEdit()) {
+    emit('inputs');
+    return;
+  }
   if (!lastSnapshot) lastSnapshot = JSON.stringify(store.project);
   // impact tracking: consecutive edits of the same input share one baseline
   const pathKey = path.join('.');
   const now = Date.now();
   if (!store.impact || store.impact.pathKey !== pathKey || now - store.impact.t > 8000) {
     const old = getInput(path);
-    store.impact = { path: [...path], pathKey, from: old === undefined ? null : JSON.parse(JSON.stringify(old)), base: store.results ? kpiSnapshot(store.results) : null, t: now, diff: null, closed: false };
+    store.impact = {
+      path: [...path],
+      pathKey,
+      from: old === undefined ? null : JSON.parse(JSON.stringify(old)),
+      base: store.results ? kpiSnapshot(store.results) : null,
+      t: now,
+      diff: null,
+      closed: false,
+    };
   }
   store.impact.t = now;
   store.impact.to = value;
   store.impact.what = what;
   store.impact.closed = false;
   let o = store.project.inputs;
-  for (let i = 0; i < path.length - 1; i++) { if (o[path[i]] === undefined || o[path[i]] === null) o[path[i]] = {}; o = o[path[i]]; }
+  for (let i = 0; i < path.length - 1; i++) {
+    if (o[path[i]] === undefined || o[path[i]] === null) o[path[i]] = {};
+    o = o[path[i]];
+  }
   o[path[path.length - 1]] = value;
   store.dirty = true;
   clearTimeout(snapshotTimer);
   snapshotTimer = setTimeout(snapshot, 600);
   clearTimeout(pending);
-  const finish = () => { if (store.impact?.base) store.impact.diff = diffSnapshots(store.impact.base, kpiSnapshot(store.results)); emit('results'); autosave(); };
+  const finish = () => {
+    if (store.impact?.base) store.impact.diff = diffSnapshots(store.impact.base, kpiSnapshot(store.results));
+    emit('results');
+    autosave();
+  };
   // immediate changes (lists, buttons) are calculated at once – callers may read the results straight after;
   // typing waits 140 ms for the next key and is then calculated in the worker
-  if (immediate) { recompute(); finish(); } else pending = setTimeout(() => recomputeAsync(finish), 140);
+  if (immediate) {
+    recompute();
+    finish();
+  } else pending = setTimeout(() => recomputeAsync(finish), 140);
 }
 export function getInput(path) {
   let o = store.project.inputs;
-  for (const k of path) { if (o === undefined || o === null) return undefined; o = o[k]; }
+  for (const k of path) {
+    if (o === undefined || o === null) return undefined;
+    o = o[k];
+  }
   return o;
 }
 export function setCriteria(key, field, value) {
@@ -188,8 +292,12 @@ export function setCriteria(key, field, value) {
 }
 export function resetCriteria(key) {
   if (!canEdit()) return;
-  if (key) delete store.project.criteria[key]; else store.project.criteria = {};
-  store.dirty = true; recompute(); emit('results'); autosave();
+  if (key) delete store.project.criteria[key];
+  else store.project.criteria = {};
+  store.dirty = true;
+  recompute();
+  emit('results');
+  autosave();
 }
 export function resetModule(mod) {
   if (!canEdit()) return;
@@ -203,13 +311,18 @@ export function resetModule(mod) {
 }
 export function undo() {
   if (!canEdit()) return;
-  clearTimeout(snapshotTimer); snapshot();
+  clearTimeout(snapshotTimer);
+  snapshot();
   if (!store.history.length) return;
   store.future.push(JSON.stringify(store.project));
   const prev = store.history.pop();
   store.project = JSON.parse(prev);
   lastSnapshot = prev;
-  store.dirty = true; store.impact = null; recompute(); emit('project'); autosave();
+  store.dirty = true;
+  store.impact = null;
+  recompute();
+  emit('project');
+  autosave();
 }
 export function redo() {
   if (!canEdit()) return;
@@ -218,7 +331,11 @@ export function redo() {
   const nxt = store.future.pop();
   store.project = JSON.parse(nxt);
   lastSnapshot = nxt;
-  store.dirty = true; store.impact = null; recompute(); emit('project'); autosave();
+  store.dirty = true;
+  store.impact = null;
+  recompute();
+  emit('project');
+  autosave();
 }
 export function navigate(page) {
   store.page = page;
@@ -243,17 +360,40 @@ export function autosaveNow() {
   clearTimeout(autosaveTimer);
   if (!store.project) return;
   const rec = JSON.stringify({ when: Date.now(), path: store.filePath, dirty: store.dirty, project: store.project });
-  try { localStorage.setItem('wtp.autosave', rec); } catch { /* storage full or unavailable */ }
-  try { globalThis.window?.wtp?.autosave?.(rec); } catch { /* browser version */ }
+  try {
+    localStorage.setItem('wtp.autosave', rec);
+  } catch {
+    /* storage full or unavailable */
+  }
+  try {
+    globalThis.window?.wtp?.autosave?.(rec);
+  } catch {
+    /* browser version */
+  }
   if (store.dirty && Date.now() - lastBackup.t > BACKUP_EVERY) backupNow();
 }
 /** newest autosave record of the file (desktop) and browser storage, or null */
 export async function loadAutosave() {
-  const parse = (t) => { try { const a = JSON.parse(t || 'null'); return a && a.project && a.project.inputs ? a : null; } catch { return null; } };
+  const parse = (t) => {
+    try {
+      const a = JSON.parse(t || 'null');
+      return a && a.project && a.project.inputs ? a : null;
+    } catch {
+      return null;
+    }
+  };
   let fileRec = null;
-  try { fileRec = parse(await globalThis.window?.wtp?.readAutosave?.()); } catch { /* browser version */ }
+  try {
+    fileRec = parse(await globalThis.window?.wtp?.readAutosave?.());
+  } catch {
+    /* browser version */
+  }
   let lsRec = null;
-  try { lsRec = parse(localStorage.getItem('wtp.autosave')); } catch { /* storage unavailable */ }
+  try {
+    lsRec = parse(localStorage.getItem('wtp.autosave'));
+  } catch {
+    /* storage unavailable */
+  }
   if (fileRec && lsRec) return (lsRec.when || 0) > (fileRec.when || 0) ? lsRec : fileRec;
   return fileRec || lsRec;
 }
@@ -261,7 +401,10 @@ export async function loadAutosave() {
 // ---- backups: timestamped copies in <app data>/Backups/<project>/ – at every save and every 10 min while editing
 const BACKUP_EVERY = 10 * 60 * 1000;
 let lastBackup = { t: 0, json: '' };
-export const backupName = () => { const s = store.project?.inputs?.setup || {}; return [s.code, s.name].filter(Boolean).join(' – ') || 'Untitled project'; };
+export const backupName = () => {
+  const s = store.project?.inputs?.setup || {};
+  return [s.code, s.name].filter(Boolean).join(' – ') || 'Untitled project';
+};
 export function backupNow() {
   const w = globalThis.window?.wtp;
   if (!w?.backup || !store.project) return;

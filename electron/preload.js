@@ -11,14 +11,21 @@ const toTransferable = async (data) => {
 
 contextBridge.exposeInMainWorld('wtp', {
   platform: process.platform,
-  trial: (() => { try { return ipcRenderer.sendSync('trial-status'); } catch { return null; } })(),
+  trial: (() => {
+    try {
+      return ipcRenderer.sendSync('trial-status');
+    } catch {
+      return null;
+    }
+  })(),
   onTrialExpired: (cb) => ipcRenderer.on('trial-expired', (_e, t) => cb(t)),
   activateLicence: (key) => ipcRenderer.invoke('licence-activate', key),
   initialFile: () => ipcRenderer.invoke('initial-file'),
   openProject: () => ipcRenderer.invoke('open-project'),
   saveProject: (content, filePath, defaultName) => ipcRenderer.invoke('save-project', content, filePath, defaultName),
   saveFile: async (defaultName, data) => ipcRenderer.invoke('save-file', defaultName, await toTransferable(data)),
-  exportPDF: (html, defaultName, headerText, opts) => ipcRenderer.invoke('export-pdf', html, defaultName, headerText, opts || {}),
+  exportPDF: (html, defaultName, headerText, opts) =>
+    ipcRenderer.invoke('export-pdf', html, defaultName, headerText, opts || {}),
   setTitle: (title) => ipcRenderer.send('set-title', title),
   setTheme: (theme) => ipcRenderer.send('set-theme', theme),
   quit: () => ipcRenderer.send('quit'),
