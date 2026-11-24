@@ -69,6 +69,8 @@ function fieldLabel(path) {
   const p = pageOf(path[0]);
   return { label: path.slice(1).join(' › '), unit: '', page: p };
 }
+/** one-line description of a change: the caller's own wording, else "label: from → to unit" */
+const changeText = (im) => { if (im.what) return im.what; const fl = fieldLabel(im.path); return `${fl.label}: ${valText(im.from)} → ${valText(im.to)}${fl.unit ? ' ' + fl.unit : ''}`; };
 const valText = (v) => (v === null || v === undefined || v === '' ? 'auto' : typeof v === 'number' ? (v === 0 ? '0 (auto)' : fmtAuto(v)) : typeof v === 'boolean' ? (v ? 'yes' : 'no') : Array.isArray(v) || typeof v === 'object' ? 'table edited' : String(v));
 
 /** ripple chain of affected stages, in train order */
@@ -106,8 +108,7 @@ function diffList(diff, { max = 60 } = {}) {
 export function impactSummary() {
   const im = store.impact;
   if (!im?.diff) return null;
-  const fl = fieldLabel(im.path);
-  return h('div', null, h('div', { class: 'small', style: { marginBottom: '6px' } }, h('b', null, fl.label), `: ${valText(im.from)} → ${valText(im.to)}${fl.unit ? ' ' + fl.unit : ''}`),
+  return h('div', null, h('div', { class: 'small', style: { marginBottom: '6px' } }, changeText(im)),
     ripple(im.diff, im.path[0] === 'setup' ? 'demand' : im.path[0]), diffList({ items: im.diff.items.slice(0, 10), status: im.diff.status }));
 }
 
@@ -129,11 +130,10 @@ export function updateImpactDock() {
   const items = im?.diff ? im.diff.items.length + im.diff.status.length : 0;
   if (!im || !im.diff || im.closed || store.page === 'chain' || JSON.stringify(im.from) === JSON.stringify(im.to)) { dock.style.display = 'none'; return; }
   dock.style.display = '';
-  const fl = fieldLabel(im.path);
   const src = im.path[0] === 'setup' ? 'demand' : im.path[0];
   const head = h('div', { class: 'id-h', onclick: () => { dockOpen = !dockOpen; updateImpactDock(); } },
     h('span', { class: 'id-ic' }, icon('activity')),
-    h('div', { class: 'id-t' }, h('b', null, 'Impact of your last change'), h('span', null, `${fl.label}: ${valText(im.from)} → ${valText(im.to)}${fl.unit ? ' ' + fl.unit : ''}`)),
+    h('div', { class: 'id-t' }, h('b', null, 'Impact of your last change'), h('span', null, changeText(im))),
     h('span', { class: 'id-n' }, items ? `${items} result${items > 1 ? 's' : ''} changed` : 'no knock-on effect'),
     h('button', { class: 'id-x', title: dockOpen ? 'Collapse' : 'Expand', onclick: (e) => { e.stopPropagation(); dockOpen = !dockOpen; updateImpactDock(); } }, icon(dockOpen ? 'chevronDown' : 'chevronRight')),
     h('button', { class: 'id-x', title: 'Close', onclick: (e) => { e.stopPropagation(); im.closed = true; updateImpactDock(); } }, icon('x')));
@@ -263,7 +263,6 @@ export const chainPage = {
     const ch = r.chain || { stages: [], profile: [] };
     const prof = ch.profile.filter((p) => p.key !== 'raw' || true);
     const lastImpact = store.impact?.diff && (store.impact.diff.items.length || store.impact.diff.status.length);
-    const fl = store.impact ? fieldLabel(store.impact.path) : null;
     const loss = ch.stages.length ? ch.stages[1]?.out.Q - ch.product : 0;
     return [
       kpis([
@@ -274,7 +273,7 @@ export const chainPage = {
         { label: 'Turbidity removal', value: f((1 - (ch.stages.at(-1)?.out.turb || 0) / (ch.stages[0]?.out.turb || 1)) * 100, 2), unit: '%', sub: `${f(ch.stages[0]?.out.turb)} → ${f(ch.stages.at(-1)?.out.turb, 2)} NTU (peak)`, icon: 'filter' },
       ]),
       card('Water path through the plant', waterPath(r), { sub: 'click a unit to open it · values are the water leaving each unit', flush: true }),
-      lastImpact ? card(`Impact of your last change – ${fl.label}: ${valText(store.impact.from)} → ${valText(store.impact.to)}`, h('div', null, ripple(store.impact.diff, store.impact.path[0]), diffList(store.impact.diff)), { sub: 'compared with the design before the change' }) : null,
+      lastImpact ? card(`Impact of your last change – ${changeText(store.impact)}`, h('div', null, ripple(store.impact.diff, store.impact.path[0]), diffList(store.impact.diff)), { sub: 'compared with the design before the change' }) : null,
       whatIfCard(),
       h('div', { class: 'grid2' },
         chartCard('Turbidity through the train', { type: 'line', data: prof, x: { key: 'label', type: 'band' }, y: { label: 'Turbidity (NTU, log scale)', type: 'log' }, series: [{ key: 'turb', label: 'Design (peak)' }, { key: 'turbAvg', label: 'Average' }], refs: [{ value: 2, label: 'SLS 614: 2 NTU', kind: 'limit', legend: true }, { value: 0.3, label: 'D3 filtered < 0.3 NTU', kind: 'target', legend: true }], unit: 'NTU', height: 300 }),

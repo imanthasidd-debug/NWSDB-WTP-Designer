@@ -1,7 +1,7 @@
 // Source yield & hydrology – NWSDB Design Manual D2 §4 (river-basin data, dry-weather availability, reservoir
 // yield by mass diagram, sedimentation, evaporation & seepage, rational-formula flood estimate)
 import { Calc, n } from '../core/calc.js';
-import { EVAPORATION, SEDIMENT_YEARS, SEDIMENT_YIELD, SEEPAGE_MONTHLY_PCT, basinOf, kirpich, rational, ref, runoffCforCatchment, specificFloodEnvelope, tcVelocity } from '../core/d2.js';
+import { EVAPORATION, SEDIMENT_YEARS, SEDIMENT_YIELD, SEEPAGE_MONTHLY_PCT, basinOf, kirpich, ownBasin, rational, ref, runoffCforCatchment, specificFloodEnvelope, tcVelocity } from '../core/d2.js';
 import { num } from '../core/util.js';
 
 const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -13,8 +13,12 @@ const SHAPE = {
 };
 
 export const DEFAULTS = {
-  basin: 1,                 // D2 Table 4.1 code
+  basin: 1,                 // D2 Table 4.1 code; 0 = own source (not in Table 4.1, data below)
   catchment: 0,             // km² upstream of intake (0 = whole basin)
+  ownName: '',              // own source: name (blank = Project setup source name)
+  ownArea: 0,               // own source: catchment area, km²
+  ownRain: 0,               // own source: mean annual rainfall, mm (0 = typical of the climatic zone)
+  ownRunoff: 0,             // own source: mean annual runoff, mm (0 = from rainfall × Table 4.1 runoff ratio)
   dwf: 0,                   // dependable dry-weather flow at intake, m³/s (0 = screening estimate)
   dwfRP: 10,                // return period of the design drought (years)
   releases: 0,              // compensation / prior-right releases downstream, m³/s
@@ -47,19 +51,28 @@ export function compute(inp, ctx) {
   const zone = ctx.res.quality?.zone || 'wet';
   const isRes = ['reservoir', 'lake'].includes(setup.sourceType);
   const isGW = setup.sourceType === 'groundwater';
-  const b = basinOf(d.basin) || basinOf(1);
-  const A = d.catchment > 0 ? d.catchment : b.area;
+  const own = +d.basin === 0;
+  const b = own ? ownBasin({ ...d, ownName: d.ownName || setup.source }, zone) : basinOf(d.basin) || basinOf(1);
+  const A = own ? b.area : d.catchment > 0 ? d.catchment : b.area;
   const Qabs = dem.Qd; // raw-water abstraction (m³/d) at plant capacity
-  const out = { inputs: d, basin: b, A, Qabs, isRes, isGW, zone };
+  const out = { inputs: d, basin: b, own, A, Qabs, isRes, isGW, zone };
   if (isGW) {
     calc.note('info', 'Groundwater source – assess yield by pumping tests in accordance with NWSDB Manual D4 (Ground Water); D2 §6.2.6: pump capacity must not exceed the yield of a groundwater source.');
     return { ...out, ...calc.result() };
   }
-  calc.section(`River basin – ${b.name} (D2 Table 4.1, code ${b.code})`);
-  calc.step('Basin mean annual rainfall', 'R', '', b.rain, 'mm', ref('4.4, Table 4.1'));
-  calc.step('Basin mean annual runoff', 'Y', '', b.runoff, 'mm', ref('Table 4.1'));
+  if (own) {
+    calc.section(`Own source – ${b.name} (not in D2 Table 4.1)`);
+    calc.step('Catchment mean annual rainfall', 'R', b.rainEst ? `\\text{typical, ${zone} zone}` : '\\text{user value}', b.rain, 'mm', b.rainEst ? 'Indicative – enter the catchment rainfall (Dept. of Meteorology records; D2 §4.4)' : 'User data');
+    calc.step('Catchment mean annual runoff', 'Y = k_r R', b.runoffEst ? `${n(b.ratio, 2)}\\times${n(b.rain, 0)}` : '\\text{user value}', b.runoff, 'mm', b.runoffEst ? 'Runoff ratio k_r = area-weighted ratio of the 15 Table 4.1 basins with the nearest rainfall (D2 is silent on ungauged catchments)' : 'User data');
+    if (!(d.ownArea > 0)) calc.note('warn', `Own source "${b.name}": enter the catchment area at the intake – ${Math.round(b.area)} km² is used until then.`);
+    if (b.rainEst || b.runoffEst) calc.note('warn', `Own source "${b.name}": ${b.rainEst ? 'rainfall is the typical value for the ' + zone + ' zone' : ''}${b.rainEst && b.runoffEst ? ' and ' : ''}${b.runoffEst ? `runoff is estimated as ${Math.round(b.ratio * 100)} % of rainfall (area-weighted ratio of D2 Table 4.1 basins with similar rainfall)` : ''}. Enter gauged or published values for the catchment (D2 §4.4, §4.7).`);
+  } else {
+    calc.section(`River basin – ${b.name} (D2 Table 4.1, code ${b.code})`);
+    calc.step('Basin mean annual rainfall', 'R', '', b.rain, 'mm', ref('4.4, Table 4.1'));
+    calc.step('Basin mean annual runoff', 'Y', '', b.runoff, 'mm', ref('Table 4.1'));
+  }
   calc.step('Unit runoff', 'q_u = Y/365 \\times 1000', `${n(b.runoff, 0)}/365\\times1000`, b.unit, 'm³/d/km²');
-  calc.step('Catchment area upstream of intake', 'A', d.catchment > 0 ? '\\text{user value}' : '\\text{whole basin}', A, 'km²');
+  calc.step('Catchment area upstream of intake', 'A', d.catchment > 0 ? '\\text{user value}' : own ? '\\text{own source}' : '\\text{whole basin}', A, 'km²');
   const Qmean = b.unit * A; // m³/d
   calc.step('Mean annual flow at intake', 'Q_{mean} = q_u A', `${n(b.unit, 0)}\\times${n(A, 1)}`, Qmean, 'm³/d');
   calc.step('Raw-water abstraction (plant capacity)', 'Q_{abs}', '', Qabs, 'm³/d');

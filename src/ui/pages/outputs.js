@@ -1,4 +1,5 @@
 // Dashboard, compliance, design-checks summary
+import { APP, VERSION } from '../version.js';
 import { fmt, fmtMoney } from '../../core/util.js';
 import { worstStatus } from '../../core/calc.js';
 import { h, icon } from '../dom.js';
@@ -66,7 +67,7 @@ export const dashboard = {
     const d = r.demand;
     const sum = r.summary;
     const hero = h('div', { class: 'dash-hero' },
-      h('div', { class: 'dh-brand' }, h('div', { class: 'dh-logo', html: bannerImg(46) }), h('div', { class: 'dh-credit' }, h('b', null, 'WTP Designer v1.8'))),
+      h('div', { class: 'dh-brand' }, h('div', { class: 'dh-logo', html: bannerImg(46) }), h('div', { class: 'dh-credit' }, h('b', null, `WTP Designer v${VERSION}`))),
       h('div', { class: 'dh-main' },
         h('div', { class: 'dh-name' }, s.name || 'Untitled project'),
         h('div', { class: 'dh-meta' }, [s.code, s.district ? s.district + ' District' : '', s.source || s.sourceType, s.client].filter(Boolean).join(' · ')),
@@ -126,7 +127,7 @@ export const dashboard = {
         h('div', null,
           chartCard('Turbidity through the treatment train', turbidityTrainChart(r)),
           chartCard('Multi-barrier pathogen protection', logCreditChart(r), { sub: 'log credits vs USEPA requirement' }))),
-      h('div', { class: 'dash-foot' }, h('div', { html: bannerImg(26) }), h('span', null, 'NWSDB WTP Designer v1.8'), h('span', { class: 'muted' }, 'Conventional water treatment plant design suite')),
+      h('div', { class: 'dash-foot' }, h('div', { html: bannerImg(26) }), h('span', null, APP), h('span', { class: 'muted' }, 'Conventional water treatment plant design suite')),
     ];
   },
 };

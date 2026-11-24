@@ -23,7 +23,13 @@ export const auto = (title, items, extra = {}) => {
     if (it.t !== 'text' && it.t !== 'level') continue;
     const hgt = th * (it.size || 1) * (it.t === 'level' ? 0.85 : 1);
     const w = String(it.text).length * hgt * 0.56 + (it.t === 'level' ? hgt * 1.6 : 0);
-    if (it.rot) continue;
+    if (it.rot) {
+      if (Math.abs(Math.abs(it.rot) - 90) > 1) continue;
+      // vertical text: its height runs along x, its length along y
+      const xa = it.rot > 0 ? it.x - hgt : it.x, ya = it.anchor === 'middle' ? it.y - w / 2 : it.anchor === 'end' ? (it.rot > 0 ? it.y - w : it.y) : (it.rot > 0 ? it.y : it.y - w);
+      b.x0 = Math.min(b.x0, xa); b.x1 = Math.max(b.x1, xa + hgt); b.y0 = Math.min(b.y0, ya); b.y1 = Math.max(b.y1, ya + w);
+      continue;
+    }
     const a = it.anchor || 'start';
     const xa = a === 'start' ? it.x : a === 'middle' ? it.x - w / 2 : it.x - w;
     b.x0 = Math.min(b.x0, xa); b.x1 = Math.max(b.x1, xa + w);
@@ -430,11 +436,34 @@ export function hydraulicProfile(hyd) {
     if (z % 2 === 0) it.push(T(-3.4, Y(z) - 0.25 * VE / 2, `${z}`, { anchor: 'end', size: 0.75 }));
   }
   it.push(Ln(-2.6, Y(Math.ceil(zmin)), -2.6, Y(Math.floor(zmax)), 'thin'));
-  it.push(T(-3.4, Y(zmax) + 0.6, 'Elev. (m MSL)', { anchor: 'end', size: 0.75, bold: true }));
+  // axis title runs up the elevation scale so it never meets the unit labels
+  const thEst = (xspan + 8) / 36;
+  it.push(T(-3.4 - 1.5 * thEst, Y((zmin + zmax) / 2), 'Elevation (m MSL)', { anchor: 'middle', size: 0.75, bold: true, rot: 90 }));
   // ground
   it.push(Ln(-2, Y(hyd.GL), xspan + 2, Y(hyd.GL), 'ground'));
   it.push(T(xspan + 2.3, Y(hyd.GL), `GL ${f2(hyd.GL)}`, { size: 0.75, color: 'var(--dw-ground)' }));
   const hgl = [];
+  // label placement: tanks and water-level tags are obstacles; each unit name takes the lowest free row above its tank
+  const obst = [];
+  const lvW = (txt) => thEst * (0.9 + String(txt).length * 0.8 * 0.56);
+  us.forEach((u) => {
+    obst.push({ x0: u.x0 - 0.3, x1: u.x1 + 0.3, y0: Y(u.bottom), y1: Y(u.top) });
+    obst.push({ x0: u.x0 + 0.6 - 0.6 * thEst, x1: u.x0 + 0.6 + lvW(f2(u.wl)), y0: Y(u.wl) - 0.45 * thEst, y1: Y(u.wl) + 0.95 * thEst });
+  });
+  const free = (a) => !obst.some((o) => a.x0 < o.x1 && a.x1 > o.x0 && a.y0 < o.y1 && a.y1 > o.y0);
+  const lh = 0.7 * thEst;
+  const labels = us.map((u) => {
+    const cx = (u.x0 + u.x1) / 2;
+    const w = String(u.name).length * lh * 0.56;
+    const base = Y(u.top) + 0.45 * thEst;
+    let y = base;
+    for (let k = 0; k < 12; k++) {
+      y = base + k * 1.2 * lh;
+      if (free({ x0: cx - w / 2 - 0.25 * thEst, x1: cx + w / 2 + 0.25 * thEst, y0: y - 0.3 * lh, y1: y + lh })) break;
+    }
+    obst.push({ x0: cx - w / 2 - 0.25 * thEst, x1: cx + w / 2 + 0.25 * thEst, y0: y - 0.3 * lh, y1: y + lh });
+    return { cx, y };
+  });
   us.forEach((u, ui) => {
     const t = 0.3;
     it.push(R(u.x0, Y(u.bottom), u.x1 - u.x0, Y(u.wl) - Y(u.bottom), 'water'));
@@ -444,10 +473,13 @@ export function hydraulicProfile(hyd) {
     const wlOut = u.wlOut ?? u.wl;
     it.push(Ln(u.x0, Y(u.wl), u.x1, Y(wlOut), 'waterline'));
     hgl.push([u.x0, Y(u.wl)], [u.x1, Y(wlOut)]);
-    const thEst = (xspan + 8) / 36;
-    const lift = ui % 2 === 0 ? 0.5 * thEst : 1.6 * thEst;
-    it.push(Ln((u.x0 + u.x1) / 2, Y(u.top), (u.x0 + u.x1) / 2, Y(u.top) + lift - 0.2, 'thin'));
-    it.push(T((u.x0 + u.x1) / 2, Y(u.top) + lift, u.name, { anchor: 'middle', size: 0.7, bold: true }));
+    const lb = labels[ui];
+    // leader from the tank top (or above its own level tag) to the label, only when the label had to move up
+    const tagTop = Y(u.wl) + 0.95 * thEst;
+    const lx = lb.cx;
+    const fromY = lx > u.x0 + 0.6 - 0.6 * thEst && lx < u.x0 + 0.6 + lvW(f2(u.wl)) ? Math.max(Y(u.top), tagTop) : Y(u.top);
+    if (lb.y - 0.3 * lh - fromY > 0.35 * thEst) it.push(Ln(lx, fromY, lx, lb.y - 0.3 * lh, 'thin'));
+    it.push(T(lx, lb.y, u.name, { anchor: 'middle', size: 0.7, bold: true }));
     it.push(Lv(u.x0 + 0.6, Y(u.wl), f2(u.wl)));
   });
   it.push({ t: 'poly', pts: hgl, closed: false, cls: 'hgl' });

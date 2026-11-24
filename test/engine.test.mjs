@@ -101,6 +101,23 @@ near(D2.kirpich(3000, 60), 41.8, 0.2, 'D2 §4.8.2 Kirpich tc');
 near(D2.rational(0.4, 90, 500), 50, 1e-9, 'D2 §4.8.4 rational formula');
 ok(D2.BASINS.length === 103 && D2.basinOf(60).name === 'Mahaweli Ganga' && D2.basinOf(60).area === 10327, 'D2 Table 4.1 river basins');
 near(D2.basinOf(1).unit, 2445 * 1000 / 365, 1e-9, 'unit runoff from basin runoff');
+// own water source (not in D2 Table 4.1)
+{
+  const k = D2.runoffRatioFor(3800);
+  ok(k > 0.4 && k < 0.8, `runoff ratio of wet-zone basins from Table 4.1 (${k.toFixed(2)})`);
+  ok(D2.runoffRatioFor(1400) < D2.runoffRatioFor(3000), 'runoff ratio falls with rainfall (Table 4.1 trend)');
+  const pO = newProject(); pO.inputs.setup.sourceType = 'river';
+  Object.assign(pO.inputs.source, { basin: 0, ownName: 'Test Oya', ownArea: 120, ownRain: 2400, ownRunoff: 900 });
+  const sO = computeAll(pO).source;
+  ok(sO.own && sO.basin.name === 'Test Oya' && sO.A === 120, 'own source: name and catchment area used');
+  near(sO.Qmean, (900 * 1000 / 365) * 120, 1e-6, 'own source: mean flow = unit runoff × area');
+  ok(sO.steps.some((st) => st.kind === 'section' && /^Own source – Test Oya/.test(st.title)) && !sO.notes.some((x) => /runoff is estimated|enter the catchment area/.test(x.text)), 'own source: own section in the calculation sheet, no estimate warnings when data is entered');
+  const pE = newProject(); Object.assign(pE.inputs.source, { basin: 0, ownArea: 50, ownRain: 2000 });
+  const sE = computeAll(pE).source;
+  near(sE.basin.runoff, Math.round(2000 * D2.runoffRatioFor(2000)), 1e-9, 'own source: runoff estimated from rainfall × Table 4.1 ratio');
+  ok(sE.notes.some((x) => x.level === 'warn' && /runoff is estimated/.test(x.text)), 'own source: estimate flagged for replacement with gauged data');
+  ok(sE.basin.name === (pE.inputs.setup.source || 'Own source'), 'own source: name falls back to the Project setup source name');
+}
 const pd = newProject();
 const rd = computeAll(pd);
 ok(rd.d2.total >= 40 && rd.d2.fail === 0, `D2 register for default project (${rd.d2.total} checks, ${rd.d2.fail} fail)`);

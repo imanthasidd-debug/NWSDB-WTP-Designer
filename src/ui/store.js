@@ -89,7 +89,7 @@ function snapshot() {
   }
 }
 /** set value at path like ['sed','sor'] */
-export function setInput(path, value, { immediate = false } = {}) {
+export function setInput(path, value, { immediate = false, what = null } = {}) {
   if (!canEdit()) { emit('inputs'); return; }
   if (!lastSnapshot) lastSnapshot = JSON.stringify(store.project);
   // impact tracking: consecutive edits of the same input share one baseline
@@ -101,6 +101,7 @@ export function setInput(path, value, { immediate = false } = {}) {
   }
   store.impact.t = now;
   store.impact.to = value;
+  store.impact.what = what;
   store.impact.closed = false;
   let o = store.project.inputs;
   for (let i = 0; i < path.length - 1; i++) { if (o[path[i]] === undefined || o[path[i]] === null) o[path[i]] = {}; o = o[path[i]]; }

@@ -7,7 +7,7 @@ theme = sys.argv[3] if len(sys.argv) > 3 else 'light'
 tab = sys.argv[4] if len(sys.argv) > 4 else None
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch()
+        b = await p.chromium.launch(executable_path=__import__('os').environ.get('CHROMIUM_PATH') or None)
         pg = await b.new_page(viewport={'width': 1600, 'height': 1000}, device_scale_factor=1)
         errs = []
         pg.on('console', lambda m: errs.append(f'{m.type}: {m.text}') if m.type in ('error','warning') else None)

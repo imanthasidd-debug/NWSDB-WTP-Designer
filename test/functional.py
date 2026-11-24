@@ -1,9 +1,11 @@
-import pathlib
+import pathlib, os, tempfile
+OUT = os.environ.get('WTP_TEST_OUT', os.path.join(tempfile.gettempdir(), 'wtp-tests'))
+os.makedirs(OUT, exist_ok=True)
 import asyncio, json
 from playwright.async_api import async_playwright
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch()
+        b = await p.chromium.launch(executable_path=__import__('os').environ.get('CHROMIUM_PATH') or None)
         pg = await b.new_page(viewport={'width': 1500, 'height': 950})
         errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)))
@@ -42,7 +44,7 @@ async def main():
             bad = await pg.evaluate("[...document.querySelectorAll('.note.fail')].map(n=>n.innerText).filter(t=>t.includes('could not be rendered')||t.includes('Calculation error'))")
             if bad: print('PAGE ERROR', n, bad)
         await pg.evaluate("[...document.querySelectorAll('.nav')].find(x=>x.textContent.includes('Slow')||x.textContent.includes('Filtration')).click()"); await pg.wait_for_timeout(500)
-        await pg.screenshot(path='/tmp/claude-0/-home-claude/ab443502-a195-5238-a92b-65d538795bc7/scratchpad/shots/rural_filtration.png')
+        await pg.screenshot(path=os.path.join(OUT, 'rural_filtration.png'))
         print('ERRORS:', errs[:10])
         await b.close()
 asyncio.run(main())

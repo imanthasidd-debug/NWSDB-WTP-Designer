@@ -7,6 +7,28 @@ storage & pumping → residuals → hydraulic profile → site layout → power 
 
 *For the National Water Supply & Drainage Board, Sri Lanka.*
 
+**Version 1.8.3 – own water source, dark-mode fixes, clearer drawings**
+* **Own water source**: the river-basin list on *Source & hydrology* now starts with *★ Own source*. Enter the source
+  name, catchment area at the intake, mean annual rainfall and runoff for a stream that is not in D2 Table 4.1; the 103
+  Table 4.1 basins are still there. Left blank, rainfall is the typical value for the climatic zone and runoff is
+  rainfall × the area-weighted runoff ratio of the 15 Table 4.1 basins with the nearest rainfall (D2 is silent on
+  ungauged catchments) – both are flagged for replacement with gauged data. The calculation sheet, KPIs and the source
+  table show the own data.
+* **My sources**: *Save to My sources* keeps an own source on this computer; one click on its chip fills it into any
+  project. The source data is always saved in the project file, so the project opens the same on another PC.
+* **Dark mode**: drop-down lists are readable (the open list used to show light text on white); the capacity box on
+  the dashboard, date pickers, placeholders and the restricted-mode bar follow the theme.
+* **Hydraulic profile drawing**: unit names no longer overlap each other, the water-level tags or the axis title –
+  each label takes the lowest free row above its tank, with a leader when it has to move up; the elevation title runs
+  up the scale.
+* **About**: the developer credit is smaller and not bold; the Help & methods About card no longer squeezes its text
+  into a narrow strip, and the logo sits on white in dark mode. The program version shown in About, the dashboard,
+  reports, the O&M manual and drawing title blocks is read from the build (was fixed at "v1.8").
+* The impact panel describes a source chosen from *My sources* in words; run-of-river sources show the runoff ratio
+  instead of the reservoir sediment allowance.
+* Test scripts no longer write to a fixed folder: `WTP_TEST_OUT` sets the output folder and `CHROMIUM_PATH` an
+  existing Chromium.
+
 **Version 1.8.2 – neutral presentation, fixed logo**
 * The splash screen, dashboard and page headers no longer display the names of the design manuals and rate book;
   library pages are renamed *Supply-system clauses*, *Treatment clauses* and *Cost rates*. Clause citations stay in

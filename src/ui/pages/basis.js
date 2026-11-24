@@ -5,9 +5,9 @@ import { PROC as D3PROC } from '../../core/d3.js';
 import { AREA_PRESETS, DISTRICTS, ZONE_LABEL, elevationOf, provinceOf, waterTempOf } from '../../core/srilanka.js';
 import { MONTHS, esc, fmt, fmtAuto } from '../../core/util.js';
 import { LABELS } from '../../engine/process.js';
-import { h, icon } from '../dom.js';
+import { h, icon, toast } from '../dom.js';
 import { card, chartCard, kpis, notes, statusBadge, table } from '../results.js';
-import { navigate, setInput, store } from '../store.js';
+import { emitAll, navigate, saveSettings, setInput, store } from '../store.js';
 import { basisCards, capacityPresets } from '../widgets.js';
 
 const opt = (o) => Object.entries(o);
@@ -181,12 +181,56 @@ export const demand = {
 
 // ------------------------------------------------------------------ Source & hydrology (D2 §4)
 const MONTHS3 = MONTHS;
+const isOwn = (i) => +i.source?.basin === 0;
+/** saved own sources (kept in this computer's settings, so they can be reused in every project) */
+const mySources = () => (Array.isArray(store.settings.mySources) ? store.settings.mySources : []);
+function useSource(src) {
+  const cur = store.project.inputs.source || {};
+  setInput(['source'], { ...cur, basin: 0, ownName: src.name, ownArea: src.area, ownRain: src.rain || 0, ownRunoff: src.runoff || 0 }, { immediate: true, what: `Water source: ${src.name} (own source, ${fmt(src.area, 1)} km²)` });
+  toast(`Source "${src.name}" applied`);
+}
+function ownSourceBox(r, i) {
+  const list = mySources();
+  const own = isOwn(i);
+  const s = i.source || {};
+  const cur = r.source?.basin;
+  const save = () => {
+    const name = (s.ownName || i.setup?.source || '').trim();
+    if (!name) { toast('Enter a source name first', 'warn'); return; }
+    if (!(s.ownArea > 0)) { toast('Enter the catchment area first', 'warn'); return; }
+    const rec = { name, area: +s.ownArea, rain: +s.ownRain || 0, runoff: +s.ownRunoff || 0 };
+    store.settings.mySources = [...list.filter((x) => x.name.toLowerCase() !== name.toLowerCase()), rec].sort((a, b) => a.name.localeCompare(b.name));
+    saveSettings();
+    toast(`"${name}" saved to My sources`);
+    if (s.ownName !== name) setInput(['source', 'ownName'], name, { immediate: true }); else emitAll();
+  };
+  const remove = (ev, src) => {
+    ev.stopPropagation();
+    store.settings.mySources = list.filter((x) => x !== src);
+    saveSettings();
+    toast(`"${src.name}" removed from My sources`);
+    emitAll();
+  };
+  const chips = list.map((src) => h('button', { class: 'chip' + (own && cur?.name === src.name && cur?.area === src.area ? ' on' : ''), title: `${fmt(src.area, 1)} km²${src.rain ? ' · ' + fmt(src.rain, 0) + ' mm rain' : ''}${src.runoff ? ' · ' + fmt(src.runoff, 0) + ' mm runoff' : ''}`, onclick: () => useSource(src) },
+    src.name, h('span', { class: 'x', title: 'Remove from My sources', onclick: (ev) => remove(ev, src) }, icon('x'))));
+  return h('div', { class: 'own-src' },
+    h('div', { class: 'os-h' }, icon('droplets'), own ? 'Own source – the data is saved with the project. Save it to My sources to reuse it in other projects.' : 'Source not in the list? Choose “Own source” and enter its catchment data.'),
+    h('div', { class: 'chips' },
+      own ? h('button', { class: 'btn sm', onclick: save }, icon('plus'), 'Save to My sources') : h('button', { class: 'btn sm', onclick: () => setInput(['source', 'basin'], 0, { immediate: true }) }, icon('plus'), 'Add own source'),
+      list.length ? h('span', { class: 'muted small' }, 'My sources:') : null,
+      ...chips));
+}
 export const source = {
   id: 'source', title: 'Source & hydrology', sub: 'River-basin data, dry-weather availability, reservoir yield (Rippl) and flood estimate', icon: 'rain', group: 'Design basis', mod: 'source',
   fields: [
-    { sec: 'River basin (D2 Table 4.1)' },
-    { k: 'basin', l: 'River basin', t: 'sel', numeric: true, o: BASINS.map((b) => [b.code, `${b.code} – ${b.name} (${b.area.toLocaleString('en-US')} km²)`]) },
-    { k: 'catchment', l: 'Catchment area at intake', u: 'km²', auto: true, autoVal: (r) => r.source.basin?.area },
+    { sec: 'Water source' },
+    { k: 'basin', l: 'River basin / source', t: 'sel', numeric: true, o: [[0, '★ Own source – enter its data'], ...BASINS.map((b) => [b.code, `${b.code} – ${b.name} (${b.area.toLocaleString('en-US')} km²)`])], note: (r) => (r.source.own ? 'own catchment data below' : 'D2 Table 4.1 – 103 river basins') },
+    { k: 'ownName', l: 'Source name', t: 'text', ph: 'e.g. Kuda Oya at the intake', show: isOwn },
+    { k: 'ownArea', l: 'Catchment area at intake', u: 'km²', step: 1, auto: true, autoVal: (r) => r.source.basin?.area, show: isOwn, note: 'from 1:50,000 topo sheet / GIS' },
+    { k: 'ownRain', l: 'Mean annual rainfall', u: 'mm', step: 50, auto: true, autoVal: (r) => r.source.basin?.rain, show: isOwn, note: 'auto = typical of the climatic zone' },
+    { k: 'ownRunoff', l: 'Mean annual runoff', u: 'mm', step: 10, auto: true, autoVal: (r) => r.source.basin?.runoff, show: isOwn, note: 'auto = rainfall × runoff ratio of similar Table 4.1 basins' },
+    { k: '_mySources', t: 'custom', render: (r, i) => ownSourceBox(r, i) },
+    { k: 'catchment', l: 'Catchment area at intake', u: 'km²', auto: true, autoVal: (r) => r.source.basin?.area, show: (i) => !isOwn(i) },
     { sec: 'Dry-weather availability (D2 §4.7, §4.12)', show: (i) => !['reservoir', 'lake', 'groundwater'].includes(i.setup.sourceType) },
     { k: 'dwf', l: 'Dependable dry-weather flow', u: 'm³/s', step: 0.01, auto: true, autoVal: (r) => +(r.source.dwf / 86400).toFixed(3), note: 'gauged low-flow frequency analysis' },
     { k: 'dwfRP', l: 'Drought return period', u: 'years', step: 1 },
@@ -218,11 +262,11 @@ export const source = {
     return {
       overview: [
         kpis([
-          { label: 'River basin', value: s.basin.name, sub: `D2 code ${s.basin.code} · ${fmt(s.basin.area, 0)} km² · ${fmt(s.basin.rain, 0)} mm rain`, icon: 'rain', accent: true },
+          { label: s.own ? 'Own source' : 'River basin', value: s.basin.name, sub: `${s.own ? 'not in D2 Table 4.1' : 'D2 code ' + s.basin.code} · ${fmt(s.A, s.A < 100 ? 1 : 0)} km² · ${fmt(s.basin.rain, 0)} mm rain`, icon: 'rain', accent: true },
           { label: 'Mean flow at intake', value: fmt(s.Qmean / 86400, 2), unit: 'm³/s', sub: `${fmt(s.Qmean, 0)} m³/d · runoff ${s.basin.runoff} mm` },
           { label: 'Abstraction / mean flow', value: fmt(s.meanPct, 1), unit: '%', sub: `${fmt(s.Qabs, 0)} m³/d abstraction` },
           s.isRes ? { label: 'Live storage required', value: fmt(s.Kreq, 2), unit: 'Mm³', sub: s.inputs.liveStorage > 0 ? `available ${s.inputs.liveStorage} Mm³` : 'Rippl / sequent peak' } : { label: 'Dry-weather availability', value: fmt(s.avail / 86400, 3), unit: 'm³/s', sub: `abstraction ${fmt(s.dwPct, 0)} % of available` },
-          { label: 'Sediment allowance (50 yr)', value: fmt(s.sedVol, 2), unit: 'Mm³', sub: 'dead storage, D2 §4.9' },
+          s.isRes ? { label: 'Sediment allowance (50 yr)', value: fmt(s.sedVol, 2), unit: 'Mm³', sub: 'dead storage, D2 §4.9' } : { label: 'Runoff ratio', value: fmt(s.basin.factor ?? (s.basin.runoff / s.basin.rain) * 100, 0), unit: '%', sub: `${fmt(s.basin.runoff, 0)} mm runoff of ${fmt(s.basin.rain, 0)} mm rain` },
           s.A <= 50 ? { label: `Flood peak (${s.inputs.returnPeriod}-yr, rational)`, value: fmt(s.Qr, 0), unit: 'm³/s', sub: `C ${s.C} · I ${fmt(s.I, 0)} mm/h · tc ${fmt(s.tcK, 0)} min` } : { label: 'Flood envelope (1:10,000 yr)', value: fmt(s.env, 0), unit: 'm³/s', sub: 'D2 §4.8.5 · rational not valid > 50 km²' },
         ]),
         notes(s.notes),
@@ -230,7 +274,14 @@ export const source = {
           chartCard(s.isRes ? 'Critical-drought inflow vs gross demand' : 'Indicative monthly flow (critical-drought year)', { type: 'bar', data: monthly, x: { key: 'm', label: 'Month' }, y: { label: 'Mm³ per month' }, series: [{ key: 'I', label: 'Inflow' }, { key: 'D', label: 'Gross demand (incl. losses & releases)' }], unit: 'Mm³', height: 260 }),
           s.isRes ? chartCard('Mass diagram (Rippl)', { type: 'line', data: s.mass.map((m) => ({ m: m.m, I: m.I, D: m.D })), x: { key: 'm', label: 'Month' }, y: { label: 'Cumulative Mm³', min: 0 }, series: [{ key: 'I', label: 'Cumulative inflow' }, { key: 'D', label: 'Cumulative gross demand' }], unit: 'Mm³', height: 260 }, { sub: `live storage required ${fmt(s.Kreq, 2)} Mm³` })
           : chartCard('Abstraction vs flow', { type: 'hbar', data: [{ g: 'Mean annual flow', v: s.Qmean / 86400 }, { g: `Dry-weather flow (1 in ${s.inputs.dwfRP} yr)`, v: s.dwf / 86400 }, { g: 'Releases & other uses', v: s.rel / 86400 }, { g: 'Plant abstraction', v: s.Qabs / 86400 }], x: { key: 'g' }, y: { label: 'm³/s' }, series: [{ key: 'v', label: 'Flow' }], valueFormat: (v) => fmt(v, v < 1 ? 3 : 1) + ' m³/s', unit: 'm³/s', height: 200, marginLeft: 190 }, { sub: `abstraction ${fmt(s.dwPct, 0)} % of available dry-weather flow` })),
-        card('River basin characteristics (D2 Table 4.1)', table([
+        s.own ? card(`Own source – ${s.basin.name}`, table([
+          { k: 'l', l: 'Item' }, { k: 'v', l: 'Value', num: true }, { k: 'u', l: 'Unit' }, { k: 'src', l: 'Source' },
+        ], [
+          { l: 'Catchment area at intake', v: fmt(s.A, 1), u: 'km²', src: 'User data' },
+          { l: 'Mean annual rainfall', v: fmt(s.basin.rain, 0), u: 'mm', src: s.basin.rainEst ? `Typical of the ${s.zone} zone – enter catchment data` : 'User data' },
+          { l: 'Mean annual runoff', v: fmt(s.basin.runoff, 0), u: 'mm', src: s.basin.runoffEst ? `${fmt(s.basin.ratio * 100, 0)} % of rainfall (area-weighted ratio of Table 4.1 basins with similar rainfall)` : 'User data' },
+          { l: 'Unit runoff', v: fmt(s.basin.unit, 0), u: 'm³/d/km²', src: 'Y / 365 × 1000' },
+        ]), { flush: true, sub: 'not in D2 Table 4.1 · replace estimates with gauged data (D2 §4.4, §4.7)' }) : card('River basin characteristics (D2 Table 4.1)', table([
           { k: 'code', l: 'Code', num: true }, { k: 'name', l: 'River basin', v: (b) => (b.code === s.basin.code ? h('b', null, '▶ ' + b.name) : b.name) }, { k: 'area', l: 'Area km²', num: true, fmt: (v) => fmt(v, 0) },
           { k: 'rain', l: 'Rainfall mm', num: true, fmt: (v) => fmt(v, 0) }, { k: 'runoff', l: 'Runoff mm', num: true, fmt: (v) => fmt(v, 0) }, { k: 'factor', l: 'Runoff %', num: true }, { k: 'unit', l: 'm³/d/km²', num: true, fmt: (v) => fmt(v, 0) },
         ], BASINS.filter((b) => Math.abs(b.code - s.basin.code) <= 3)), { flush: true, sub: 'selected basin and neighbours · full table in Library → Supply-system clauses' }),

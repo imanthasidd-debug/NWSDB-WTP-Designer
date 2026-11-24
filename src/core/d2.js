@@ -111,6 +111,26 @@ export const BASINS = [
   [103, 'Attanagalu Oya', 727, 2544, 1017, 40],
 ].map(([code, name, area, rain, runoff, factor]) => ({ code, name, area, rain, runoff, factor, unit: (runoff * 1000) / 365 }));
 export const basinOf = (code) => BASINS.find((b) => b.code === +code) || null;
+/**
+ * Runoff ratio (runoff / rainfall) for a catchment that is not in Table 4.1: area-weighted ratio of the 15 Table 4.1
+ * basins whose mean annual rainfall is closest to `rainMm` (Σ runoff·A / Σ rainfall·A; ≈ 0.15 dry, 0.35 intermediate,
+ * 0.55 very wet). D2 is silent on ungauged catchments – a screening value to be replaced by gauged flows (D2 §4.4, §4.7).
+ */
+export function runoffRatioFor(rainMm) {
+  const r = Math.max(800, Math.min(5500, +rainMm || 0));
+  const near = BASINS.map((b) => ({ d: Math.abs(b.rain - r), b })).sort((a, b) => a.d - b.d).slice(0, 15).map((x) => x.b);
+  return near.reduce((a, b) => a + b.runoff * b.area, 0) / near.reduce((a, b) => a + b.rain * b.area, 0);
+}
+/** indicative mean annual rainfall by climatic zone (mm) – used only when an own source has no rainfall entered */
+export const ZONE_RAIN = { wet: 3000, intermediate: 2100, dry: 1450 };
+/** basin record for a user-defined source (code 0) built from the source inputs */
+export function ownBasin(d, zone = 'wet') {
+  const area = d.ownArea > 0 ? d.ownArea : d.catchment > 0 ? d.catchment : 10;
+  const rain = d.ownRain > 0 ? d.ownRain : ZONE_RAIN[zone] || ZONE_RAIN.wet;
+  const ratio = runoffRatioFor(rain);
+  const runoff = d.ownRunoff > 0 ? d.ownRunoff : Math.round(rain * ratio);
+  return { code: 0, own: true, name: (d.ownName || '').trim() || 'Own source', area, rain, runoff, factor: Math.round((runoff / rain) * 100), unit: (runoff * 1000) / 365, rainEst: !(d.ownRain > 0), runoffEst: !(d.ownRunoff > 0), ratio };
+}
 
 // Table 4.3 – typical runoff coefficients [type, ≤2 %, 2–10 %, >10 %]
 export const RUNOFF_AREAS = [

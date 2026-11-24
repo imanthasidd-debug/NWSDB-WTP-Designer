@@ -31,6 +31,8 @@ npm test                         # node test/engine.test.mjs – 311 engine chec
 ```
 Optional checks (need Playwright + Chromium, run `npm run build` first):
 ```
+# optional: WTP_TEST_OUT=<dir> (output folder), CHROMIUM_PATH=/opt/pw-browsers/chromium (when the Python Playwright
+# version does not match the installed browser)
 python3 test/functional.py       # drives the UI: samples, forms, navigation
 python3 test/exports.py          # report PDF, Excel, drawings ZIP, project save/reopen
 node test/dxf-export.mjs <dir> && python3 test/validate_dxf.py <dir>   # all drawings as DXF + SVG (needs ezdxf)
@@ -74,7 +76,9 @@ Each edition takes ~2 min; run them as separate commands. Release ZIPs (~160 MB)
   Table 1 format of Annex 13 (SSCL = Sub Total 3 / 97.5 × 2.5, VAT 18 % of Sub Total 4).
 - Projects (`.wtpd` JSON) are migrated in `store.js` `normalise()`; keep old files opening.
 - After changing engine behaviour, add checks to `test/engine.test.mjs` and keep all sample projects at 0 failing checks.
-- Bump `package.json` and `installer/install.ps1` versions together; add a README "Version x.y" section.
+- Bump `package.json` and `installer/install.ps1` versions together; add a README "Version x.y" section. The UI reads
+  the version from `src/ui/version.js` (`VERSION`, `APP`), injected from `package.json` by `build/build.mjs` – never
+  hard-code "v1.x" in the UI, reports or drawings.
 
 ## Reference notes
 `docs/` holds the extraction notes made from the NWSDB manuals and rate book (D2 rules, D3 rules, D3 extraction notes,

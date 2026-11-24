@@ -1,11 +1,12 @@
 import pathlib
 import asyncio, zipfile, json, openpyxl
 from playwright.async_api import async_playwright
-OUT = '/tmp/claude-0/-home-claude/ab443502-a195-5238-a92b-65d538795bc7/scratchpad/exports'
-import os; os.makedirs(OUT, exist_ok=True)
+import os, tempfile
+OUT = os.environ.get('WTP_TEST_OUT', os.path.join(tempfile.gettempdir(), 'wtp-tests', 'exports'))
+os.makedirs(OUT, exist_ok=True)
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch()
+        b = await p.chromium.launch(executable_path=__import__('os').environ.get('CHROMIUM_PATH') or None)
         ctx = await b.new_context(accept_downloads=True, viewport={'width': 1500, 'height': 950})
         pg = await ctx.new_page()
         errs = []

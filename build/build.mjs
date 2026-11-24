@@ -11,6 +11,7 @@ const resolveFrom = (name) => { for (const p of nodePaths) { const f = path.join
 const esbuild = await import(resolveFrom('esbuild/lib/main.js'));
 const dist = path.join(root, 'dist');
 fs.mkdirSync(dist, { recursive: true });
+const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const t0 = Date.now();
 await esbuild.build({
   entryPoints: [path.join(root, 'src/main.js')],
@@ -22,6 +23,7 @@ await esbuild.build({
   sourcemap: process.argv.includes('--dev'),
   nodePaths,
   legalComments: 'eof',
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   logLevel: 'warning',
 });
 fs.copyFileSync(path.join(root, 'src/index.html'), path.join(dist, 'index.html'));

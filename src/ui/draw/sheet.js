@@ -2,6 +2,7 @@
 // drawing number, scale, sheet, revision, designed / drawn / checked / approved), notes, legend, graphic scale bar,
 // north arrow for plans and a D3-style figure caption.  The drawing is placed at a true standard scale so the
 // printed A3 sheet can be measured.  Also produces the same sheet in DXF (model space, scaled frame).
+import { APP } from '../version.js';
 import { fmt } from '../../core/util.js';
 import { LOGO_BANNER, LOGO_BANNER_RATIO } from '../logo.js';
 import { drawingDXF, drawingSVG } from './render.js';
@@ -155,7 +156,7 @@ export function sheetSVG(dw, meta, { scale: forceScale, nts = false, inner } = {
   out.push(val(L + 17, TB.y0 + 59.6, `${meta.rev} – ${meta.date} – ${meta.revDesc || ''}`.slice(0, 70), 2.1));
   (meta.revisions || []).forEach((rv, i) => out.push(val(L + 17, TB.y0 + 62.4 + i * 2.5, `${rv.rev || ''} – ${rv.date || ''} – ${rv.desc || ''}`.slice(0, 70), 1.8)));
   out.push(`<rect x="${R - 52}" y="${TB.y0 + 57.3}" width="50" height="4.6" fill="none" stroke="#b3001b" stroke-width="0.4"/><text x="${R - 27}" y="${TB.y0 + 60.6}" font-size="2.6" font-weight="700" text-anchor="middle" fill="#b3001b">${esc(String(meta.status || '').toUpperCase())}</text>`);
-  out.push(`<text x="${R - 2}" y="${TB.y1 - 1.6}" font-size="2" text-anchor="end" fill="#0b4a92" font-weight="700">NWSDB WTP Designer v1.8</text>`);
+  out.push(`<text x="${R - 2}" y="${TB.y1 - 1.6}" font-size="2" text-anchor="end" fill="#0b4a92" font-weight="700">${APP}</text>`);
   if (isTrial()) out.push(`<text x="${(DA.x0 + DA.x1) / 2}" y="${(DA.y0 + DA.y1) / 2}" transform="rotate(-24 ${(DA.x0 + DA.x1) / 2} ${(DA.y0 + DA.y1) / 2})" font-size="19" font-weight="800" text-anchor="middle" fill="#b3001b" fill-opacity="0.13" font-family="Arial, sans-serif">${esc(trialLabel())}</text><text x="${FR.x0 + 3}" y="${FR.y0 + 4.2}" font-size="2.6" font-weight="700" fill="#b3001b">${esc(trialLabel())}</text>`);
   out.push('</svg>');
   return { svg: out.join(''), scale: isoNts ? null : scale, code: drawingCode(dw), number: drawingNumber({ code: meta.code }, dw) };
@@ -201,7 +202,7 @@ export function sheetDXFItems(dw, meta) {
   for (const [kk, v, w] of [['DRAWING No.', drawingNumber({ code: meta.code }, dw), 64], ['REV', meta.rev, 12], ['SCALE (A3)', dw.nts ? 'NTS' : `1:${scale}`, 24], ['SHEET', `${meta.sheet} of ${meta.sheets}`, 22], ['DATE', meta.date, W - 122]]) { tx(cx + 1.5, TB.y0 + 48.2, 1.9, kk); tx(cx + 1.5, TB.y0 + 53.6, 2.7, v); cx += w; }
   tx(L + 2, TB.y0 + 59.6, 2.1, `REVISION ${meta.rev} - ${meta.date} - ${meta.revDesc || ''}`.slice(0, 80));
   tx(TB.x1 - 27, TB.y0 + 60.6, 2.6, String(meta.status || '').toUpperCase(), 1);
-  tx(TB.x1 - 2, TB.y1 - 1.6, 2, 'NWSDB WTP Designer v1.8', 2);
+  tx(TB.x1 - 2, TB.y1 - 1.6, 2, APP, 2);
   if (isTrial()) { tx(FR.x0 + 3, FR.y0 + 4.2, 2.6, trialLabel()); tx((DA.x0 + DA.x1) / 2, (DA.y0 + DA.y1) / 2, 12, trialLabel(), 1); }
   tx(NB.x0 + 3, NB.y0 + 5, 3, 'NOTES');
   NOTES.forEach((n, i) => tx(NB.x0 + 3, NB.y0 + 10 + i * 7.5, 2.2, `${i + 1}. ${n.slice(0, 95)}`));
