@@ -5,7 +5,7 @@ import { Scene } from './iso.js';
 import * as U from './units.js';
 import { chemHousePlan, chlorPlan, rebarDetail, siteLevelsPlan } from './extra.js';
 import { aerator3D, beds3D, chemHouse3D, chlor3D, pumpHouse3D, rapidMix3D, thickener3D } from './views3d.js';
-import { Dm, Ln, Lv, R, T, auto } from './units.js';
+import { Dm, Ln, Lv, R, T, auto, mm } from './units.js';
 
 const f2 = (v) => fmt(v, 2),
   f1 = (v) => fmt(v, 1),
@@ -170,7 +170,7 @@ export function intakePlan(ik) {
     T(0, r + t + 1.0, 'Pump house over (shown dashed)', { anchor: 'middle', size: 0.7 }),
   );
   it.push(Ln(-(r + t + 1), 0, r + t + 1, 0, 'center'), Ln(0, -(r + t + 1), 0, r + t + 1, 'center'));
-  it.push(Dm(-r, -(r + t), r, -(r + t), -1.6, `Ø ${f2(ik.Dw)} m internal`));
+  it.push(Dm(-r, -(r + t), r, -(r + t), -1.6, `Ø ${mm(ik.Dw)} internal`));
   it.push(...cut(bankX - 12, -0.001, r + t + 4.5, -0.001, 'A', ik.Dw / 20));
   return auto('Intake well – plan', it);
 }
@@ -214,8 +214,8 @@ function intake3D(ik) {
   s.leader(0, 0, up + 6.2, 'Intake well & pump house', 1.5, { bold: true, size: 0.7 });
   s.label(-r - 10, 0, zr + 0.2, `River (NWL ${f2(d.NWL)})`, { size: 0.65 });
   s.label(r + 9, -2.5, 0.3, `Rising main DN${ik.pumps.dn}`, { size: 0.6 });
-  s.dim([-r, -r, 0], [r, -r, 0], [0, -3, 0], `Ø ${f2(ik.Dw + 1)} m outside`);
-  s.dim([r, -r, zr - 0.2], [r, -r, up], [2.5, -2.5, 0], `${f2(up - zr + 0.2)} m above river level`);
+  s.dim([-r, -r, 0], [r, -r, 0], [0, -3, 0], `Ø ${mm(ik.Dw + 1)} outside`);
+  s.dim([r, -r, zr - 0.2], [r, -r, up], [2.5, -2.5, 0], `${mm(up - zr + 0.2)} above river level`);
   s.dim([-r * 0.8, -r * 0.8, up], [-r * 0.8, -r * 0.8, up + 4], [-1.5, -1.5, 0]);
   return s.render('Intake well – 3D view');
 }
@@ -246,8 +246,8 @@ export function aeratorPlan(ae) {
     );
     it.push(Ln(-1.2, W / 2, L + 1.2, W / 2, 'waterline', { arrow: true }));
     it.push(
-      Dm(0, -0.3, L, -0.3, -1.0, `${n} steps × ${f2(tr)} = ${f2(L)} m`),
-      Dm(L + 1.9, 0, L + 1.9, W, -1.0, `W = ${f2(W)} m`),
+      Dm(0, -0.3, L, -0.3, -1.0, `${n} steps × ${mm(tr)} = ${mm(L)}`),
+      Dm(L + 1.9, 0, L + 1.9, W, -1.0, `W = ${mm(W)}`),
     );
     it.push(...cut(-2.6, W * 0.3, L + 2.9, W * 0.3, 'A', Math.max(L, W) / 30));
     return auto('Cascade aerator – plan', it);
@@ -267,7 +267,7 @@ export function aeratorPlan(ae) {
     );
     it.push(T(x0 + W / 2, W + 1.2, `Tower ${k + 1}`, { anchor: 'middle', size: 0.8, bold: true }));
   }
-  it.push(Dm(0, -0.7, W, -0.7, -0.9, `${f2(W)} m square trays`));
+  it.push(Dm(0, -0.7, W, -0.7, -0.9, `${mm(W)} square trays`));
   return auto('Multiple-tray aerator – plan', it);
 }
 export function rapidMixPlan(rm) {
@@ -307,7 +307,7 @@ export function rapidMixPlan(rm) {
       Ln(-2, B / 2, -t - 0.1, B / 2, 'pipe', { arrow: true }),
       Ln(Wt + t + 0.1, B / 2, Wt + 2, B / 2, 'pipe', { arrow: true }),
     );
-    it.push(Dm(0, -t, B, -t, -0.7, `${f2(B)} m`), Dm(Wt + t, 0, Wt + t, B, -0.7, `${f2(B)} m`));
+    it.push(Dm(0, -t, B, -t, -0.7, `${mm(B)}`), Dm(Wt + t, 0, Wt + t, B, -0.7, `${mm(B)}`));
     it.push(...cut(-1.2, B * 0.5, Wt + 1.2, B * 0.5, 'A', Math.max(Wt, B) / 26));
     return auto(`Flash mixers – plan (${n} basins, impeller Ø ${f2(rm.Di)} m)`, it);
   }
@@ -330,7 +330,7 @@ export function rapidMixPlan(rm) {
     Ln(L + 1.2, b / 2, L + 2.8, b / 2, 'waterline', { arrow: true }),
   );
   it.push(T(-0.1, -t - 0.55, 'Drop weir', { anchor: 'middle', size: 0.7 }));
-  it.push(Dm(0.6, -t, 0.6 + L, -t, -1.1, `Lⱼ = ${f2(L)} m`), Dm(L + 3.25, 0, L + 3.25, b, -0.8, `b = ${f2(b)} m`));
+  it.push(Dm(0.6, -t, 0.6 + L, -t, -1.1, `Lⱼ = ${mm(L)}`), Dm(L + 3.25, 0, L + 3.25, b, -0.8, `b = ${mm(b)}`));
   it.push(...cut(-3.6, b * 0.5, L + 3.4, b * 0.5, 'A', (L + 6) / 34));
   return auto('Hydraulic-jump mixer – plan', it);
 }
@@ -366,7 +366,7 @@ export function flocPlanV(fl) {
     R(-t, 0, t, Wt, 'concrete'),
     R(Lmax, 0, t, Wt, 'concrete'),
   );
-  it.push(Dm(0, -t, Lmax, -t, -0.9, `${f2(Lmax)} m`), Dm(-t, 0, -t, W, 0.8, `${f2(W)} m`));
+  it.push(Dm(0, -t, Lmax, -t, -0.9, `${mm(Lmax)}`), Dm(-t, 0, -t, W, 0.8, `${mm(W)}`));
   it.push(
     ...cut(-1.6, Wt - W / 2, Lmax + 1.2, Wt - W / 2, 'A', Lmax / 40),
     ...cut(Lmax * 0.3, -1.4, Lmax * 0.3, Wt + 1.0, 'B', Lmax / 40),
@@ -440,7 +440,7 @@ export function flocSection(fl) {
     }
   });
   it.push(Lv(Lt * 0.04 + 0.3, H, `WL +${f2(H)}`));
-  it.push(Dm(0, -t, Lt, -t, -0.9, `${f2(Lt)} m`), Dm(Lt + t, 0, Lt + t, H, -0.8, `${f2(H)} m`));
+  it.push(Dm(0, -t, Lt, -t, -0.9, `${mm(Lt)}`), Dm(Lt + t, 0, Lt + t, H, -0.8, `${mm(H)}`));
   return auto(`${fl.type === 'paddle' ? 'Paddle' : 'Horizontal baffled'} flocculator – longitudinal section A–A`, it);
 }
 export function flocCross(fl) {
@@ -459,13 +459,13 @@ export function flocCross(fl) {
       it.push(
         R(k % 2 ? x0 + s1.gap : x0, 0, W - s1.gap, H + 0.25, 'outline'),
         T(x0 + W / 2, H / 2, 'Baffle', { anchor: 'middle', size: 0.7 }),
-        Dm(k % 2 ? x0 : x0 + W - s1.gap, H * 0.25, k % 2 ? x0 + s1.gap : x0 + W, H * 0.25, 0.01, f2(s1.gap)),
+        Dm(k % 2 ? x0 : x0 + W - s1.gap, H * 0.25, k % 2 ? x0 + s1.gap : x0 + W, H * 0.25, 0.01, mm(s1.gap)),
       );
     else if (fl.type === 'vbaffle')
       it.push(
         R(x0, s1.gap, W, H + 0.3 - s1.gap, 'outline'),
         T(x0 + W / 2, H * 0.6, 'Baffle', { anchor: 'middle', size: 0.7 }),
-        Dm(x0 + W * 0.5, 0, x0 + W * 0.5, s1.gap, 0.01, f2(s1.gap)),
+        Dm(x0 + W * 0.5, 0, x0 + W * 0.5, s1.gap, 0.01, mm(s1.gap)),
       );
     else {
       const Rw = s1.R || H * 0.375,
@@ -486,9 +486,9 @@ export function flocCross(fl) {
   const Wt = n * W + (n - 1) * t;
   it.push(R(-t, -t, Wt + 2 * t, t, 'concrete'), R(-t, 0, t, H + fb, 'concrete'), R(Wt, 0, t, H + fb, 'concrete'));
   it.push(
-    Dm(0, -t, W, -t, -0.7, `${f2(W)} m`),
-    Dm(Wt + t, 0, Wt + t, H, -0.7, `${f2(H)} m`),
-    Dm(Wt + t, H, Wt + t, H + fb, -0.7, f2(fb)),
+    Dm(0, -t, W, -t, -0.7, `${mm(W)}`),
+    Dm(Wt + t, 0, Wt + t, H, -0.7, `${mm(H)}`),
+    Dm(Wt + t, H, Wt + t, H + fb, -0.7, mm(fb)),
   );
   return auto(`Flocculator – cross-section B–B (${fl.nT} trains${fl.nT > 4 ? ', 4 shown' : ''})`, it);
 }
@@ -613,9 +613,9 @@ export function sedCross(sd) {
   );
   it.push(Lv(W * 0.3, H, `WL +${f2(H)}`));
   it.push(
-    Dm(0, -sl - t, W, -sl - t, -0.9, `W = ${f2(W)} m`),
-    Dm(Wt + t, -sl, Wt + t, H, -0.9, `${f2(H + sl)} m`),
-    Dm(Wt + t, H, Wt + t, H + fb, -0.9, f2(fb)),
+    Dm(0, -sl - t, W, -sl - t, -0.9, `W = ${mm(W)}`),
+    Dm(Wt + t, -sl, Wt + t, H, -0.9, `${mm(H + sl)}`),
+    Dm(Wt + t, H, Wt + t, H + fb, -0.9, mm(fb)),
   );
   return auto(`Sedimentation tanks – cross-section B–B (${sd.N} tanks${sd.N > 4 ? ', 4 shown' : ''})`, it);
 }
@@ -691,8 +691,8 @@ export function clarifierSection(sd) {
   );
   it.push(Lv(-r * 0.6, H, `WL +${f2(H)}`));
   it.push(
-    Dm(-r, -slope - 1 - t, r, -slope - 1 - t, -1.2, `Ø ${f2(sd.D)} m`),
-    Dm(r + t, 0, r + t, H, -0.9, `SWD ${f2(H)} m`),
+    Dm(-r, -slope - 1 - t, r, -slope - 1 - t, -1.2, `Ø ${mm(sd.D)}`),
+    Dm(r + t, 0, r + t, H, -0.9, `SWD ${mm(H)}`),
   );
   return auto('Circular clarifier – section A–A', it);
 }
@@ -708,7 +708,7 @@ function sed3D(sd) {
       s.cyl(k * (sd.D + 3), 0, 0, r, sd.H + fb, { wl: sd.H, t, water: 'isoWaterMid' });
       s.box(k * (sd.D + 3) - r, -0.4, sd.H + fb, 2 * r, 0.8, 0.25, 'equip');
     }
-    s.dim([-r, -r, 0], [r, -r, 0], [0, -2, 0], `Ø ${f2(sd.D)} m`);
+    s.dim([-r, -r, 0], [r, -r, 0], [0, -2, 0], `Ø ${mm(sd.D)}`);
     s.dim([r, -r, 0], [r, -r, sd.H + fb], [1.5, -1.5, 0]);
     return s.render(`Circular clarifiers – 3D view (${n}${sd.N > n ? ' of ' + sd.N : ''})`);
   }
@@ -738,15 +738,15 @@ function sed3D(sd) {
     wl: H * 0.6 + t,
     water: 'isoWaterBrown',
   });
-  s.dim([0, 0, 0], [sd.L + 2 * t, 0, 0], [0, -3, 0], `L ${f2(sd.L)} m (internal)`);
-  s.dim([-2.1, 0, 0], [-2.1, sd.W + 2 * t, 0], [-3, 0, 0], `W ${f2(sd.W)} m per tank`);
+  s.dim([0, 0, 0], [sd.L + 2 * t, 0, 0], [0, -3, 0], `L ${mm(sd.L)} (internal)`);
+  s.dim([-2.1, 0, 0], [-2.1, sd.W + 2 * t, 0], [-3, 0, 0], `W ${mm(sd.W)} per tank`);
   s.dim([sd.L + 2 * t, 0, 0], [sd.L + 2 * t, 0, H + fb + t], [2, -2, 0]);
   if (n > 1)
     s.dim(
       [sd.L + 2 * t, 0, 0],
       [sd.L + 2 * t, n * (sd.W + 2 * t), 0],
       [3.5, 0, 0],
-      `${n} tanks – ${f2(n * (sd.W + 2 * t))} m`,
+      `${n} tanks – ${mm(n * (sd.W + 2 * t))}`,
     );
   return s.render(`Sedimentation tanks – 3D view (${n}${sd.N > n ? ' of ' + sd.N : ''} tanks)`);
 }
@@ -795,8 +795,8 @@ export function dafPlan(sd) {
     }),
   );
   it.push(
-    Dm(0, Wt + t, L, Wt + t, 1.6, `${f2(L)} m (contact ${f2(Lc)} + separation ${f2(sd.Ls)})`),
-    Dm(L + t + 1.2, 0, L + t + 1.2, W, -1.0, `W = ${f2(W)} m`),
+    Dm(0, Wt + t, L, Wt + t, 1.6, `${mm(L)} (contact ${mm(Lc)} + separation ${mm(sd.Ls)})`),
+    Dm(L + t + 1.2, 0, L + t + 1.2, W, -1.0, `W = ${mm(W)}`),
   );
   it.push(...cut(-3, W * 0.3, L + t + 2.4, W * 0.3, 'A', L / 30));
   return auto(`Dissolved air flotation – plan (${sd.N} units${sd.N > N ? ', ' + N + ' shown' : ''})`, it);
@@ -859,11 +859,7 @@ export function dafSection(sd) {
     }),
   );
   it.push(Lv(L * 0.55, H, `WL +${f2(H)}`));
-  it.push(
-    Dm(0, -t, Lc, -t, -0.6, f2(Lc)),
-    Dm(Lc, -t, L, -t, -0.6, `${f2(L - Lc)} m`),
-    Dm(-t, 0, -t, H, 0.8, `${f2(H)} m`),
-  );
+  it.push(Dm(0, -t, Lc, -t, -0.6, mm(Lc)), Dm(Lc, -t, L, -t, -0.6, `${mm(L - Lc)}`), Dm(-t, 0, -t, H, 0.8, `${mm(H)}`));
   return auto('Dissolved air flotation – longitudinal section A–A', it);
 }
 function daf3D(sd) {
@@ -888,7 +884,7 @@ function daf3D(sd) {
       [sd.L + 2 * t, 0, 0],
       [sd.L + 2 * t, n * (sd.W + 2 * t), 0],
       [2.5, 0, 0],
-      `${n} units – ${f2(n * (sd.W + 2 * t))} m`,
+      `${n} units – ${mm(n * (sd.W + 2 * t))}`,
     );
   return s.render(
     `Dissolved air flotation – 3D view (${n}${sd.N > n ? ' of ' + sd.N : ''} units, float layer on the surface)`,
@@ -932,7 +928,7 @@ export function hrfPlan(sd) {
     T(0.4, Wt + 0.6, 'Inlet', { anchor: 'middle', size: 0.7 }),
     T(L - 0.4, Wt + 0.6, 'Outlet weir', { anchor: 'middle', size: 0.7 }),
   );
-  it.push(Dm(0, -t, L, -t, -0.9, `${f2(L)} m (filter ${f2(sd.Lf)} m)`), Dm(L + t, 0, L + t, W, -2.4, `W = ${f2(W)} m`));
+  it.push(Dm(0, -t, L, -t, -0.9, `${mm(L)} (filter ${mm(sd.Lf)})`), Dm(L + t, 0, L + t, W, -2.4, `W = ${mm(W)}`));
   it.push(...cut(-2.6, W * 0.25, L + 2.4, W * 0.25, 'A', L / 30));
   return auto(`Horizontal-flow roughing filters – plan (${sd.N} units${sd.N > N ? ', ' + N + ' shown' : ''})`, it);
 }
@@ -969,7 +965,7 @@ export function hrfSection(sd) {
     T(L, H + 0.7, 'Outlet weir 0.3–0.4 m below the media top', { anchor: 'end', size: 0.65 }),
   );
   it.push(T(L / 2, -t - 0.9, 'Water level is kept below the media surface', { anchor: 'middle', size: 0.65 }));
-  it.push(Dm(0, -t, L, -t, -1.6, `${f2(L)} m`), Dm(L + t, 0, L + t, H, -2.2, `${f2(H)} m`));
+  it.push(Dm(0, -t, L, -t, -1.6, `${mm(L)}`), Dm(L + t, 0, L + t, H, -2.2, `${mm(H)}`));
   return auto('Horizontal-flow roughing filter – longitudinal section A–A', it);
 }
 function hrf3D(sd) {
@@ -997,7 +993,7 @@ function hrf3D(sd) {
       [sd.L + 2 * t, 0, 0],
       [sd.L + 2 * t, n * (sd.W + 2 * t), 0],
       [2.5, 0, 0],
-      `${n} units – ${f2(n * (sd.W + 2 * t))} m`,
+      `${n} units – ${mm(n * (sd.W + 2 * t))}`,
     );
   return s.render(`Roughing filters – 3D view (${n}${sd.N > n ? ' of ' + sd.N : ''} units, three gravel compartments)`);
 }
@@ -1056,7 +1052,7 @@ export function filterLong(fi, hyd) {
       ),
     );
   }
-  it.push(Dm(sp * 0.5, lip, sp * 1.5, lip, 0.35, `${f2(sp)} c/c`));
+  it.push(Dm(sp * 0.5, lip, sp * 1.5, lip, 0.35, `${mm(sp)} c/c`));
   it.push(
     T(Lb / 2, top + 0.45, `${fi.nTr} wash troughs · lip ${f2(fi.lipAbove)} m above media`, {
       anchor: 'middle',
@@ -1094,9 +1090,9 @@ export function filterLong(fi, hyd) {
     T(-t - 0.25, base + ud + gr + md / 2, 'Media', { anchor: 'end', size: 0.7 }),
   );
   it.push(
-    Dm(0, base - t, Lb, base - t, -0.8, `${f2(Lb)} m`),
-    Dm(gx, base - t, gx + gw, base - t, -0.8, `${f2(gw)} m`),
-    Dm(-t, base, -t, top, 1.9, `${f2(top - base)} m`),
+    Dm(0, base - t, Lb, base - t, -0.8, `${mm(Lb)}`),
+    Dm(gx, base - t, gx + gw, base - t, -0.8, `${mm(gw)}`),
+    Dm(-t, base, -t, top, 1.9, `${mm(top - base)}`),
   );
   return auto('Rapid gravity filter – longitudinal section B–B (bed and pipe gallery)', it, {
     scaleNote: 'levels in m MSL',
@@ -1172,9 +1168,9 @@ export function filterBatteryPlan(fi) {
     ),
   );
   it.push(
-    Dm(0, -t, bw, -t, -0.9, `${f2(bw)} m`),
-    Dm(-t, -t, Wr + t, -t, -2.0, `${f2(Wr + 2 * t)} m overall`),
-    Dm(Wr + t, 0, Wr + t, Lb, -0.9, `${f2(Lb)} m`),
+    Dm(0, -t, bw, -t, -0.9, `${mm(bw)}`),
+    Dm(-t, -t, Wr + t, -t, -2.0, `${mm(Wr + 2 * t)} overall`),
+    Dm(Wr + t, 0, Wr + t, Lb, -0.9, `${mm(Lb)}`),
   );
   it.push(
     ...cut(bw * 0.25, -1.4 - t, bw * 0.25, Lb + gal * 0.9, 'B', Wr / 36),
@@ -1224,7 +1220,7 @@ export function ssfSection(fi, hyd) {
     T(B + t + 0.2, base + ud / 2 - 0.05, 'Underdrains', { size: 0.75 }),
   );
   it.push(Lv(B * 0.1, wl, `WL ${f2(wl)}`), Lv(B * 0.55, zS, `Sand ${f2(zS)}`));
-  it.push(Dm(0, base - t, B, base - t, -0.8, `${f2(B)} m`), Dm(-t, base, -t, top, 0.9, `${f2(top - base)} m`));
+  it.push(Dm(0, base - t, B, base - t, -0.8, `${mm(B)}`), Dm(-t, base, -t, top, 0.9, `${mm(top - base)}`));
   return auto('Slow sand filter – cross-section A–A (one bed)', it, { scaleNote: 'levels in m MSL' });
 }
 function filter3D(fi) {
@@ -1237,7 +1233,7 @@ function filter3D(fi) {
     for (let k = 0; k < n; k++)
       s.tank(k * (fi.B + 2 * t), 0, 0, fi.B + 2 * t, fi.Lb + 2 * t, H, { t, wl: H - 0.4, water: 'isoWater' });
     s.dimsBox(0, 0, 0, fi.B + 2 * t, fi.Lb + 2 * t, H);
-    s.dim([0, 0, 0], [n * (fi.B + 2 * t), 0, 0], [0, -4, 0], `${n} beds – ${f2(n * (fi.B + 2 * t))} m`);
+    s.dim([0, 0, 0], [n * (fi.B + 2 * t), 0, 0], [0, -4, 0], `${n} beds – ${mm(n * (fi.B + 2 * t))}`);
     return s.render(`Slow sand filters – 3D view (${n}${fi.N > n ? ' of ' + fi.N : ''} beds)`);
   }
   const rows = fi.footprint?.rows || 1,
@@ -1276,11 +1272,11 @@ function filter3D(fi) {
   if (rows > 1) s.box(0, Lb + 2 * t, 0, Wr, gal, H + 0.2, 'concrete');
   else s.box(0, Lb + 2 * t, 0, Wr, gal, H + 0.2, 'concrete');
   s.building(Wr * 0.3, Lb + 2 * t + 0.3, H + 0.2, Wr * 0.4, gal - 0.6, 3);
-  s.dim([0, 0, 0], [bw + 2 * t, 0, 0], [0, -1.5, 0], `Filter ${f2(bw)} m`);
-  s.dim([0, 0, 0], [Wr, 0, 0], [0, -3.5, 0], `${perRow} filters – ${f2(Wr)} m`);
-  s.dim([0, 0, 0], [0, Lb + 2 * t, 0], [-2, 0, 0], `Bed ${f2(Lb)} m`);
-  s.dim([0, Lb + 2 * t, 0], [0, Lb + 2 * t + gal, 0], [-2, 0, 0], `Gallery ${f1(gal)} m`);
-  s.dim([Wr, 0, 0], [Wr, 0, H], [1.5, -1.5, 0], `Box ${f2(H)} m`);
+  s.dim([0, 0, 0], [bw + 2 * t, 0, 0], [0, -1.5, 0], `Filter ${mm(bw)}`);
+  s.dim([0, 0, 0], [Wr, 0, 0], [0, -3.5, 0], `${perRow} filters – ${mm(Wr)}`);
+  s.dim([0, 0, 0], [0, Lb + 2 * t, 0], [-2, 0, 0], `Bed ${mm(Lb)}`);
+  s.dim([0, Lb + 2 * t, 0], [0, Lb + 2 * t + gal, 0], [-2, 0, 0], `Gallery ${mm(gal)}`);
+  s.dim([Wr, 0, 0], [Wr, 0, H], [1.5, -1.5, 0], `Box ${mm(H)}`);
   return s.render(`Rapid gravity filters – 3D view (${fi.N} filters with pipe gallery and control room)`);
 }
 
@@ -1313,9 +1309,9 @@ export function contactSection(dis) {
     }),
   );
   it.push(
-    Dm(0, -0.3, w, -0.3, -0.7, `${f2(w)} m`),
-    Dm(Wt + 0.3, 0, Wt + 0.3, dep, -0.8, `${f2(dep)} m`),
-    Dm(0, -0.3, Wt, -0.3, -1.7, `${f2(Wt)} m`),
+    Dm(0, -0.3, w, -0.3, -0.7, `${mm(w)}`),
+    Dm(Wt + 0.3, 0, Wt + 0.3, dep, -0.8, `${mm(dep)}`),
+    Dm(0, -0.3, Wt, -0.3, -1.7, `${mm(Wt)}`),
   );
   return auto(`Chlorine contact tank – cross-section B–B (${n} passes)`, it);
 }
@@ -1345,7 +1341,7 @@ export function contactLong(dis) {
   );
   it.push(Ln(1.5, dep / 2, L - 2, dep / 2, 'waterline', { arrow: true }));
   it.push(Lv(L * 0.3, dep, `WL +${f2(dep)}`));
-  it.push(Dm(0, -0.3, L, -0.3, -0.8, `${f2(L)} m`), Dm(L + 0.3, 0, L + 0.3, dep, -0.8, `${f2(dep)} m`));
+  it.push(Dm(0, -0.3, L, -0.3, -0.8, `${mm(L)}`), Dm(L + 0.3, 0, L + 0.3, dep, -0.8, `${mm(dep)}`));
   return auto('Chlorine contact tank – longitudinal section A–A (one pass)', it);
 }
 function contact3D(dis) {
@@ -1362,7 +1358,7 @@ function contact3D(dis) {
     inner.push({ x: k % 2 === 0 ? 0 : 1.2, y: (k + 1) * w + k * t, z: 0.3, w: L - 1.2, d: t, h: dep + 0.3 });
   s.tank(0, 0, 0, L + 0.6, n * w + (n - 1) * t + 0.6, H, { t: 0.3, wl: dep + 0.3, inner });
   s.dimsBox(0, 0, 0, L + 0.6, n * w + (n - 1) * t + 0.6, H);
-  s.dim([L + 0.6, 0.3, H], [L + 0.6, 0.3 + w, H], [1.2, 0, 0], `Pass ${f2(w)} m`);
+  s.dim([L + 0.6, 0.3, H], [L + 0.6, 0.3 + w, H], [1.2, 0, 0], `Pass ${mm(w)}`);
   return s.render(`Chlorine contact tank – 3D view (${n} serpentine passes)`);
 }
 export function cwrSection(st, hyd) {
@@ -1437,8 +1433,8 @@ export function cwrSection(st, hyd) {
     Lv(n > 1 ? L + t + L * 0.35 : L * 0.75, floor, `Floor ${f2(floor)}`),
   );
   it.push(
-    Dm(0, floor - t - 1.2, L, floor - t - 1.2, -th * 1.2, `${f2(L)} m`),
-    Dm(n > 1 ? L + t + L * 0.75 : L * 0.9, floor, n > 1 ? L + t + L * 0.75 : L * 0.9, twl, 0.01, `${f2(dep)} m`),
+    Dm(0, floor - t - 1.2, L, floor - t - 1.2, -th * 1.2, `${mm(L)}`),
+    Dm(n > 1 ? L + t + L * 0.75 : L * 0.9, floor, n > 1 ? L + t + L * 0.75 : L * 0.9, twl, 0.01, `${mm(dep)}`),
   );
   return auto(`Clear water reservoir – longitudinal section A–A (${n} compartments, ${f0(st.V)} m³)`, it, {
     scaleNote: 'levels in m MSL',
@@ -1480,10 +1476,7 @@ export function cwrCross(st, hyd) {
   const nc = Math.max(1, Math.round(W / 5) - 1);
   for (let j = 1; j <= nc; j++) it.push(Ln((W * j) / (nc + 1), floor, (W * j) / (nc + 1), roof, 'center'));
   it.push(Lv(W * 0.75, twl, `TWL ${f2(twl)}`), Lv(-t - 4.5, GL, `GL ${f2(GL)}`));
-  it.push(
-    Dm(0, floor - t, W, floor - t, -1.2, `${f2(W)} m`),
-    Dm(W + t, floor, W + t, roof, -5.5, `${f2(roof - floor)} m`),
-  );
+  it.push(Dm(0, floor - t, W, floor - t, -1.2, `${mm(W)}`), Dm(W + t, floor, W + t, roof, -5.5, `${mm(roof - floor)}`));
   return auto('Clear water reservoir – cross-section B–B', it, { scaleNote: 'levels in m MSL' });
 }
 function cwr3D(st, hyd) {
@@ -1496,7 +1489,7 @@ function cwr3D(st, hyd) {
     W = st.W + 2 * t;
   s.ground(-4, -4, Lt + 8, W + 8);
   s.box(0, 0, 0, Lt, W, above);
-  s.dimsBox(0, 0, 0, Lt, W, above, { labels: { H: `${f2(above)} m above GL` } });
+  s.dimsBox(0, 0, 0, Lt, W, above, { labels: { H: `${mm(above)} above GL` } });
   for (let k = 0; k < n; k++) {
     const x0 = t + k * (st.L + t);
     s.box(x0 + st.L * 0.5 - 0.5, W * 0.15, above, 1, 1, 0.3, 'equip');
@@ -1563,7 +1556,7 @@ export function pumpHousePlan(st) {
     T(Lh / 2, Wh / 2 + 2.6, 'Overhead travelling crane', { anchor: 'middle', size: 0.65 }),
   );
   it.push(R(Lh / 2 - 1, -t, 2, t, 'outline'), T(Lh / 2, -t - 0.6, 'Door', { anchor: 'middle', size: 0.65 }));
-  it.push(Dm(0, -t, Lh, -t, -1.5, `${f2(Lh)} m`), Dm(Lh + t, 0, Lh + t, Wh, -5.5, `${f2(Wh)} m`));
+  it.push(Dm(0, -t, Lh, -t, -1.5, `${mm(Lh)}`), Dm(Lh + t, 0, Lh + t, Wh, -5.5, `${mm(Wh)}`));
   void dn;
   return auto(
     `Treated-water pump house – plan (${st.inputs.nDuty || 2} duty + ${nP - (st.inputs.nDuty || 2)} standby, ${st.pumps.motor} kW each)`,
@@ -1653,7 +1646,7 @@ export function thickenerSection(sl) {
   );
   it.push(T(-r * 0.5, 2.6, 'Picket-fence scraper', { anchor: 'middle', size: 0.72 }));
   it.push(Lv(-r * 0.6, H, `WL +${f2(H)}`));
-  it.push(Dm(-r, -hop - t, r, -hop - t, -1.8, `Ø ${f2(th.D)} m`), Dm(-r - t, 0, -r - t, H, 0.9, `SWD ${f2(H)} m`));
+  it.push(Dm(-r, -hop - t, r, -hop - t, -1.8, `Ø ${mm(th.D)}`), Dm(-r - t, 0, -r - t, H, 0.9, `SWD ${mm(H)}`));
   return auto(`Gravity sludge thickener – section A–A (${th.n} unit${th.n > 1 ? 's' : ''})`, it);
 }
 export function thickenerPlan(sl) {
@@ -1676,7 +1669,7 @@ export function thickenerPlan(sl) {
     it.push(Ln(cx - r - t - 0.6, 0, cx + r + t + 0.6, 0, 'center'), Ln(cx, -r - t - 0.6, cx, r + t + 0.6, 'center'));
     it.push(T(cx, r + t + 1.0, `Thickener ${k + 1}`, { anchor: 'middle', size: 0.85, bold: true }));
   }
-  it.push(Dm(-r, -r - t, r, -r - t, -1.4, `Ø ${f2(th.D)} m`));
+  it.push(Dm(-r, -r - t, r, -r - t, -1.4, `Ø ${mm(th.D)}`));
   it.push(...cut(-r - t - 2.2, -0.001, r + t + 1.6, -0.001, 'A', th.D / 24));
   return auto('Gravity sludge thickeners – plan', it);
 }
@@ -1713,7 +1706,7 @@ export function bedsPlan(sl) {
     Ln(-t - 2, -t - 0.8, Wt + t, -t - 0.8, 'pipe'),
     T(-t - 2, -t - 1.5, 'Filtrate collector → recovery / drain', { size: 0.72 }),
   );
-  it.push(Dm(0, -t, w, -t, -2.2, `${f2(w)} m`), Dm(Wt + t, 0, Wt + t, L, -1.0, `${f2(L)} m`));
+  it.push(Dm(0, -t, w, -t, -2.2, `${mm(w)}`), Dm(Wt + t, 0, Wt + t, L, -1.0, `${mm(L)}`));
   it.push(...cut(-t - 1.2, L * 0.35, Math.min(Wt, 2 * w + t) + 0.8, L * 0.35, 'A', Math.max(Wt, L) / 34));
   return auto(
     `Sludge drying beds – plan (${sl.nBeds} beds${sl.nBeds > n ? ', ' + n + ' shown' : ''}, ${f0(a)} m² each)`,
@@ -1775,7 +1768,7 @@ export function bedsSection(sl) {
     const ty = 1.6 - i * tb * 1.6;
     it.push(Ln(Wt - 0.4, yy, Wt + t + 0.8, ty + tb * 0.3, 'thin'), T(Wt + t + 1.0, ty, txt, { size: 0.9 }));
   });
-  it.push(Dm(0, -0.55, w, -0.55, -0.5, `${f2(w)} m`), Dm(-t, 0, -t, 1.2, 0.5, '1.20 m'));
+  it.push(Dm(0, -0.55, w, -0.55, -0.5, `${mm(w)}`), Dm(-t, 0, -t, 1.2, 0.5, '1200'));
   return auto('Sludge drying beds – section A–A (two beds)', it, { textH: Wt / 70 });
 }
 
@@ -1875,8 +1868,8 @@ export function plant3D(r) {
       { size: 0.7, bold: true },
     );
   }
-  s.dim([0, 0, 0], [lay.siteW, 0, 0], [0, -8, 0], `Site ${f0(lay.siteW)} m`);
-  s.dim([0, 0, 0], [0, H, 0], [-8, 0, 0], `${f0(H)} m`);
+  s.dim([0, 0, 0], [lay.siteW, 0, 0], [0, -8, 0], `Site ${mm(lay.siteW)}`);
+  s.dim([0, 0, 0], [0, H, 0], [-8, 0, 0], `${mm(H)}`);
   // north arrow on the ground plane
   s.pipe(
     [

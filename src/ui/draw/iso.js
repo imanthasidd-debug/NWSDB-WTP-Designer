@@ -4,7 +4,6 @@
 //       A3 sheets, PDF / DXF / SVG export and the report, and
 //   (b) a 3D mesh (faces, lines, labels, dimensions) for the interactive orbit viewer (view3d.js).
 import { auto } from './units.js';
-import { fmt } from '../../core/util.js';
 
 const C = Math.cos(Math.PI / 6),
   S = 0.5;
@@ -477,7 +476,7 @@ export class Scene {
    */
   dim(a, b, off = [0, 0, 0], text = null) {
     const len = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
-    const txt = text || `${fmt(len, len < 10 ? 2 : 1)} m`;
+    const txt = text || String(Math.round(len * 1000)); // millimetres (NWSDB practice)
     const a2 = [a[0] + off[0], a[1] + off[1], a[2] + off[2]],
       b2 = [b[0] + off[0], b[1] + off[1], b[2] + off[2]];
     this.dims.push({ a, b, a2, b2, text: txt });

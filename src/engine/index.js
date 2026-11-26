@@ -53,6 +53,16 @@ export const SETUP_DEFAULTS = {
   drawingStatus: 'Preliminary design', // shown in the drawing title block
   revDesc: 'Issued for design review',
   revisions: [], // earlier revisions [{rev, date, desc}] listed in the title block
+  // signature boxes of the drawing title block – the posts of the NWSDB sample drawing; {R} = province code
+  tbPosts: [
+    { title: 'DRAWN', name: '' },
+    { title: 'D.O.A.', name: '' },
+    { title: 'Q.S / E.A', name: '' },
+    { title: 'ENGINEER (D)', name: '' },
+    { title: 'C.E. (P&D)', name: '' },
+    { title: 'A.G.M. ({R})', name: '' },
+    { title: 'D.G.M. ({R})', name: '' },
+  ],
   notes: '',
 };
 
@@ -89,7 +99,7 @@ export const MODULES = [
 ];
 
 export const DEFAULT_INPUTS = () => ({
-  setup: { ...SETUP_DEFAULTS },
+  setup: { ...SETUP_DEFAULTS, tbPosts: SETUP_DEFAULTS.tbPosts.map((p) => ({ ...p })) },
   ...Object.fromEntries(MODULES.filter(([, m]) => m.DEFAULTS).map(([k, m]) => [k, deepClone(m.DEFAULTS)])),
 });
 

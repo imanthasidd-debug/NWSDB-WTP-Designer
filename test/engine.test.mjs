@@ -276,6 +276,48 @@ ok(
     );
   }
 }
+// ---- v1.9: NWSDB CAD practice – DXF (AutoCAD 2007, mm, layers with line weights), mm dimensions, title strip
+{
+  const { drawingDXF } = await import('../src/ui/draw/dxf.js');
+  const { mm } = await import('../src/ui/draw/units.js');
+  const { sheetDXF, sheetMeta, provinceCode } = await import('../src/ui/draw/sheet.js');
+  const { drawingGroups } = await import('../src/ui/draw/views.js');
+  ok(mm(12.5) === '12500' && mm(0.105) === '105', 'dimension text in whole millimetres');
+  const pX = newProject();
+  const g = drawingGroups(computeAll(pX));
+  const dw = g.find((x) => x.key === 'sed').views[0].dw;
+  const dxf = drawingDXF(dw);
+  const val = (name, code) => {
+    const i = dxf.indexOf(`\n${name}\n`);
+    return i < 0 ? null : dxf.slice(i).split('\n')[3];
+  };
+  ok(dxf.includes('AC1021') && val('$INSUNITS') === '4', 'DXF: AutoCAD 2007 format, model space in millimetres');
+  ok(/\nCENTER2\n/.test(dxf) && /\nHIDDEN2\n/.test(dxf), 'DXF: CENTER2 and HIDDEN2 linetypes');
+  const layer = (n) => {
+    const i = dxf.indexOf(`AcDbLayerTableRecord\n2\n${n}\n`);
+    return i < 0 ? null : dxf.slice(i, i + 400);
+  };
+  ok(
+    /\n370\n25\n/.test(layer('wall') || '') && /\n370\n50\n/.test(layer('pipe') || ''),
+    'DXF: layer line weights (wall 0.25, pipe 0.50)',
+  );
+  ok(/\n290\n0\b/.test(layer('NPRINT') || ''), 'DXF: NPRINT layer does not plot');
+  ok(!/\n1\n[^\n]*\d+\.\d\d m\n/.test(dxf.split('ENTITIES')[1] || ''), 'DXF: no dimension written in metres');
+  const sh = sheetDXF(dw, sheetMeta(pX));
+  ok(
+    sh.includes('DRG NO.') && sh.includes('REV.') && sh.includes('NATIONAL WATER SUPPLY') && sh.includes('ජාතික ජල'),
+    'DXF sheet: NWSDB title strip with the trilingual name',
+  );
+  ok(provinceCode('Polonnaruwa') === 'NC' && provinceCode('Gampaha') === 'W', 'province code for the post titles');
+  const pp = newProject();
+  pp.inputs.setup.district = 'Anuradhapura';
+  pp.inputs.setup.designer = 'A. Designer';
+  const m = sheetMeta(pp);
+  ok(
+    m.posts.length === 7 && m.posts[5].title === 'A.G.M. (NC)' && m.posts[3].name === 'A. Designer',
+    'signature posts: {R} and name fall-backs',
+  );
+}
 // ---- v1.8.5: every structure and building has a 3D view (static isometric + mesh for the interactive viewer)
 {
   const { drawingGroups } = await import('../src/ui/draw/views.js');

@@ -77,6 +77,8 @@ export const auto = (title, items, extra = {}) => {
 export const R = (x, y, w, h, cls, extra = {}) => ({ t: 'rect', x, y, w, h, cls, ...extra });
 export const Ln = (x1, y1, x2, y2, cls = 'outline', extra = {}) => ({ t: 'line', x1, y1, x2, y2, cls, ...extra });
 export const T = (x, y, text, extra = {}) => ({ t: 'text', x, y, text, ...extra });
+/** dimension text: millimetres, whole numbers, no unit (NWSDB practice – "all dimensions in mm, levels in m") */
+export const mm = (v) => String(Math.round((+v || 0) * 1000));
 export const Dm = (x1, y1, x2, y2, off, text) => ({ t: 'dim', x1, y1, x2, y2, off, text });
 export const Lv = (x, y, text) => ({ t: 'level', x, y, text });
 
@@ -188,8 +190,8 @@ export function intakeSection(ik) {
   // levels & dims
   it.push(Lv(xw + Dw + 2 * t + 1, deck + 0.35, `Deck ${f2(deck + 0.35)}`));
   it.push(Lv(xw + t + 0.2, floor, `Sump floor ${f2(floor)}`));
-  it.push(Dm(xw + t, floor - 0.8, xw + t + Dw, floor - 0.8, -1.2, `Ø ${f2(Dw)} m (internal)`));
-  it.push(Dm(xw + Dw + 2 * t + 0.3, floor, xw + Dw + 2 * t + 0.3, deck + 0.35, -1.6, `${f2(deck + 0.35 - floor)} m`));
+  it.push(Dm(xw + t, floor - 0.8, xw + t + Dw, floor - 0.8, -1.2, `Ø ${mm(Dw)} (internal)`));
+  it.push(Dm(xw + Dw + 2 * t + 0.3, floor, xw + Dw + 2 * t + 0.3, deck + 0.35, -1.6, `${mm(deck + 0.35 - floor)}`));
   return auto('Intake well – section', it, { scaleNote: 'levels in m MSL' });
 }
 
@@ -226,9 +228,9 @@ export function aeratorSection(ae) {
     it.push(R(x, -0.9, 1.6, 0.9, 'concrete'));
     it.push(R(x, -0.8, 1.4, 0.6, 'water'));
     it.push(T(x + 0.8, -1.4, 'Collection channel', { anchor: 'middle', size: 0.8 }));
-    it.push(Dm(0, n * h, L, n * h, 1.3, `${n} steps × ${f2(tread)} m = ${f2(L)} m`));
-    it.push(Dm(0, 0, 0, h, -0.9, `${f2(h)}`));
-    it.push(Dm(L + 1.8, 0, L + 1.8, n * h, -0.4, `Total fall ${f2(n * h)} m`));
+    it.push(Dm(0, n * h, L, n * h, 1.3, `${n} steps × ${mm(tread)} = ${mm(L)}`));
+    it.push(Dm(0, 0, 0, h, -0.9, `${mm(h)}`));
+    it.push(Dm(L + 1.8, 0, L + 1.8, n * h, -0.4, `Total fall ${mm(n * h)}`));
     it.push(
       T(L / 2, -2.2, `Cascade width ${f2(ae.W)} m · DO ${f2(ae.C0)} → ${f2(ae.Ce)} mg/L`, {
         anchor: 'middle',
@@ -251,8 +253,8 @@ export function aeratorSection(ae) {
   it.push(Ln(-0.3, 0, W + 0.3, 0, 'thick'));
   it.push(Ln(W / 2, n * s + 0.6, W / 2, n * s + 1.4, 'pipe'));
   it.push(T(W / 2 + 0.2, n * s + 1.2, 'Inlet distributor', { size: 0.8 }));
-  it.push(Dm(W + 0.4, 0.6, W + 0.4, 0.6 + s, -0.6, `${f2(s)} m`));
-  it.push(Dm(0, -0.2, W, -0.2, -0.6, `${f2(W)} m`));
+  it.push(Dm(W + 0.4, 0.6, W + 0.4, 0.6 + s, -0.6, `${mm(s)}`));
+  it.push(Dm(0, -0.2, W, -0.2, -0.6, `${mm(W)}`));
   return auto(`Multiple-tray aerator – ${ae.nUnits} tower(s)`, it);
 }
 
@@ -274,8 +276,8 @@ export function rapidMixDrawing(rm) {
     it.push(R(B / 2 - rm.Di / 2, H * 0.3 - 0.06, rm.Di, 0.12, 'equipFill'));
     it.push(R(B / 2 - 0.35, H + 1.0, 0.7, 0.6, 'equipFill'));
     it.push(T(B / 2 + 0.5, H + 1.3, `Motor ${rm.motor} kW · ${fmt(rm.rpm, 0)} rpm`, { size: 0.8 }));
-    it.push(Dm(0, -t, B, -t, -0.5, `${f2(B)} m`), Dm(B + t, 0, B + t, H, -0.5, `H ${f2(H)} m`));
-    it.push(Dm(B / 2 - rm.Di / 2, H * 0.3 - 0.06, B / 2 + rm.Di / 2, H * 0.3 - 0.06, -0.35, `Dᵢ ${f2(rm.Di)}`));
+    it.push(Dm(0, -t, B, -t, -0.5, `${mm(B)}`), Dm(B + t, 0, B + t, H, -0.5, `H ${mm(H)}`));
+    it.push(Dm(B / 2 - rm.Di / 2, H * 0.3 - 0.06, B / 2 + rm.Di / 2, H * 0.3 - 0.06, -0.35, `Dᵢ ${mm(rm.Di)}`));
     it.push(T(B / 2, -1.2, `${rm.imp.label}`, { anchor: 'middle', size: 0.8 }));
     return auto(`Flash mixer – section (${rm.nBasins} basin)`, it);
   }
@@ -319,8 +321,8 @@ export function rapidMixDrawing(rm) {
   });
   it.push(T(-1.5, drop + rm.Hw + 1.0, 'Drop weir', { anchor: 'middle', size: 0.85 }));
   it.push(T(1.2, y1 + 0.1, `y₁ = ${f2(y1)} m`, { size: 0.75 }));
-  it.push(Dm(0.6, -0.3, 0.6 + L, -0.3, -0.5, `Lⱼ = ${f2(L)} m`));
-  it.push(Dm(L + 3.3, 0, L + 3.3, y2, -0.5, `y₂ ${f2(y2)} m`));
+  it.push(Dm(0.6, -0.3, 0.6 + L, -0.3, -0.5, `Lⱼ = ${mm(L)}`));
+  it.push(Dm(L + 3.3, 0, L + 3.3, y2, -0.5, `y₂ ${mm(y2)}`));
   it.push(
     T(
       L / 2,
@@ -370,7 +372,7 @@ export function flocDrawing(fl) {
       }
     });
     it.push(R(x, 0, t, W, 'concrete'));
-    it.push(Dm(0, -t, x, -t, -0.9, `${f2(x)} m`), Dm(x + t, 0, x + t, W, -0.8, `${f2(W)} m`));
+    it.push(Dm(0, -t, x, -t, -0.9, `${mm(x)}`), Dm(x + t, 0, x + t, W, -0.8, `${mm(W)}`));
     it.push(
       Ln(-2.5, W / 2, -0.3, W / 2, 'pipe', { arrow: true }),
       Ln(x + 0.3, 0.5, x + 2.5, 0.5, 'pipe', { arrow: true }),
@@ -404,11 +406,11 @@ export function flocDrawing(fl) {
           { anchor: 'middle', size: 0.8, bold: true },
         ),
       );
-      it.push(Dm(s.L + t, y, s.L + t, y + H, -0.7, `${f2(H)}`));
+      it.push(Dm(s.L + t, y, s.L + t, y + H, -0.7, `${mm(H)}`));
       y -= H + 2.6;
     });
     const Lmax = Math.max(...fl.stages.map((s) => s.L));
-    it.push(Dm(0, y + H + 2.6 - t, Lmax, y + H + 2.6 - t, -0.8, `Channel length ${f2(Lmax)} m · width ${f2(fl.W)} m`));
+    it.push(Dm(0, y + H + 2.6 - t, Lmax, y + H + 2.6 - t, -0.8, `Channel length ${mm(Lmax)} · width ${mm(fl.W)}`));
     return auto(`Over-and-under baffled flocculator – channel sections (1 of ${fl.nT} trains)`, it);
   }
   // paddle: plan of compartments
@@ -438,7 +440,7 @@ export function flocDrawing(fl) {
     it.push(R(x, 0.6, t, W - 1.2, 'concrete'));
     x += t;
   });
-  it.push(Dm(0, -t, x - t, -t, -0.9, `${f2(x - t)} m`), Dm(x, 0, x, W, -0.8, `${f2(W)} m`));
+  it.push(Dm(0, -t, x - t, -t, -0.9, `${mm(x - t)}`), Dm(x, 0, x, W, -0.8, `${mm(W)}`));
   return auto(`Paddle flocculator – plan (1 of ${fl.nT} trains, depth ${f2(fl.H)} m)`, it);
 }
 
@@ -458,7 +460,7 @@ export function sedPlan(sd) {
     it.push({ t: 'circle', cx: 0, cy: 0, r: sd.centerWell / 2, cls: 'outline' });
     it.push(Ln(-r, 0, r, 0, 'center'), Ln(0, -r, 0, r, 'center'));
     it.push(Ln(0, 0, r * 0.95, r * 0.15, 'equip'), Ln(0, 0, -r * 0.95, -r * 0.15, 'equip'));
-    it.push(Dm(-r, -r - t, r, -r - t, -1.2, `Ø ${f2(sd.D)} m`));
+    it.push(Dm(-r, -r - t, r, -r - t, -1.2, `Ø ${mm(sd.D)}`));
     it.push(
       T(0, r + 1.4, `${sd.N} clarifiers · SOR ${f2(sd.sorAct)} m/d · weir ${fmt(sd.weirLoadAct, 0)} m³/m·d`, {
         anchor: 'middle',
@@ -493,7 +495,7 @@ export function sedPlan(sd) {
     T(L - sd.Llaund, -1.1, `${sd.nL} finger launders × ${f2(sd.Llaund)} m (V-notch)`, { size: 0.75 }),
   );
   it.push(T(1.0, W * 0.5, 'Hopper', { size: 0.7 }));
-  it.push(Dm(0, Wt + t, L, Wt + t, 1.2, `L = ${f2(L)} m`), Dm(L + t, 0, L + t, W, -1.2, `W = ${f2(W)} m`));
+  it.push(Dm(0, Wt + t, L, Wt + t, 1.2, `L = ${mm(L)}`), Dm(L + t, 0, L + t, W, -1.2, `W = ${mm(W)}`));
   {
     const th = (L + 3) / 36;
     const a = th * 1.6;
@@ -613,10 +615,7 @@ export function sedSection(sd) {
     ),
   );
   it.push(Lv(L * 0.3, H, `WL ${f2(H)} (rel.)`));
-  it.push(
-    Dm(L + t, -sl, L + t, H, -1.0, `${f2(H + sl)} m`),
-    Dm(0, -sl - t - 1.0, L, -sl - t - 1.0, -0.9, `${f2(L)} m`),
-  );
+  it.push(Dm(L + t, -sl, L + t, H, -1.0, `${mm(H + sl)}`), Dm(0, -sl - t - 1.0, L, -sl - t - 1.0, -0.9, `${mm(L)}`));
   it.push(
     T(
       L / 2,
@@ -647,7 +646,7 @@ export function filterPlan(fi) {
       );
       if (k < n - 1) it.push(R(x0 + fi.B, 0, t, fi.Lb, 'concrete'));
     }
-    it.push(Dm(0, -0.2, fi.B, -0.2, -0.8, `${f2(fi.B)} m`), Dm(-0.2, 0, -0.2, fi.Lb, 0.8, `${f2(fi.Lb)} m`));
+    it.push(Dm(0, -0.2, fi.B, -0.2, -0.8, `${mm(fi.B)}`), Dm(-0.2, 0, -0.2, fi.Lb, 0.8, `${mm(fi.Lb)}`));
     return auto(`Slow sand filters – plan (${fi.N} beds)`, it);
   }
   const B = fi.B,
@@ -676,9 +675,9 @@ export function filterPlan(fi) {
     R(Wt, 0, t, Lb, 'concrete'),
   );
   it.push(
-    Dm(0, Lb + t, B, Lb + t, 0.9, `B = ${f2(B)} m`),
-    Dm(-t, 0, -t, Lb, 0.9, `${f2(Lb)} m`),
-    Dm(-t, -t, Wt + t, -t, -1.0, `${f2(Wt + 2 * t)} m overall`),
+    Dm(0, Lb + t, B, Lb + t, 0.9, `B = ${mm(B)}`),
+    Dm(-t, 0, -t, Lb, 0.9, `${mm(Lb)}`),
+    Dm(-t, -t, Wt + t, -t, -1.0, `${mm(Wt + 2 * t)} overall`),
   );
   it.push(
     T(
@@ -743,8 +742,8 @@ export function filterSection(fi, hyd) {
     ),
   );
   it.push(T(W * 0.5, lip + 0.25, 'Wash trough', { anchor: 'middle', size: 0.7 }));
-  it.push(Dm(-t, base, -t, wtop + fb, 1.1, `${f2(wtop + fb - base)} m`));
-  it.push(Dm(0, base - t, W, base - t, -0.7, `${f2(W)} m`));
+  it.push(Dm(-t, base, -t, wtop + fb, 1.1, `${mm(wtop + fb - base)}`));
+  it.push(Dm(0, base - t, W, base - t, -0.7, `${mm(W)}`));
   return auto('Rapid gravity filter – cross-section (one bed)', it, { scaleNote: 'levels in m MSL' });
 }
 
@@ -773,7 +772,7 @@ export function contactPlan(dis) {
     R(-0.3, 0, 0.3, Wt, 'concrete'),
     R(L, 0, 0.3, Wt, 'concrete'),
   );
-  it.push(Dm(0, Wt + 0.3, L, Wt + 0.3, 0.9, `${f2(L)} m`), Dm(L + 0.3, 0, L + 0.3, Wt, -0.9, `${f2(Wt)} m`));
+  it.push(Dm(0, Wt + 0.3, L, Wt + 0.3, 0.9, `${mm(L)}`), Dm(L + 0.3, 0, L + 0.3, Wt, -0.9, `${mm(Wt)}`));
   it.push(
     T(
       L / 2,
@@ -812,7 +811,7 @@ export function cwrPlan(st) {
     Ln(Lt + 0.4, W * 0.85, Lt + 4, W * 0.85, 'pipe', { arrow: true }),
     T(Lt + 0.6, W * 0.85 + 0.8, 'To pumps', { size: 0.75 }),
   );
-  it.push(Dm(0, -t, L, -t, -1.4, `${f2(L)} m`), Dm(Lt + t, 0, Lt + t, W, -1.6, `${f2(W)} m`));
+  it.push(Dm(0, -t, L, -t, -1.4, `${mm(L)}`), Dm(Lt + t, 0, Lt + t, W, -1.6, `${mm(W)}`));
   it.push(
     T(
       Lt / 2,
@@ -982,7 +981,7 @@ export function layoutPlan(lay, opts = {}) {
   it.push(T(nx, ny + 7.5, 'N', { anchor: 'middle', bold: true }));
   it.push(R(0, -6, 50, 1, 'baffle'), R(10, -6, 10, 1, 'outline'), R(30, -6, 10, 1, 'outline'));
   it.push(T(0, -8.5, '0', { size: 0.7 }), T(50, -8.5, '50 m', { size: 0.7, anchor: 'middle' }));
-  it.push(Dm(0, H, lay.siteW, H, 4, `${fmt(lay.siteW, 0)} m`), Dm(0, 0, 0, H, 4, `${fmt(H, 0)} m`));
+  it.push(Dm(0, H, lay.siteW, H, 4, `${mm(lay.siteW)}`), Dm(0, 0, 0, H, 4, `${mm(H)}`));
   it.push(
     T(
       lay.siteW / 2,

@@ -5,6 +5,7 @@
 // as faint lines – so the equipment inside can be seen.
 import { fmt } from '../../core/util.js';
 import { Scene } from './iso.js';
+import { mm } from './units.js';
 
 const f2 = (v) => fmt(v, 2),
   f1 = (v) => fmt(v, 1),
@@ -37,9 +38,9 @@ export function aerator3D(ae) {
       s.box(x, W, 0, tr, t, top + 0.3);
     }
     s.tank(L, -t, 0, 1.9, W + 2 * t, base + fall + 0.5, { t, wl: base + fall + 0.3 });
-    s.dim([0, -t, 0], [L, -t, 0], [0, -1.4, 0], `${n} steps × ${f2(tr)} m = ${f2(L)} m`);
-    s.dim([-1.9, 0, 0], [-1.9, W, 0], [-1.2, 0, 0], `W ${f2(W)} m`);
-    s.dim([L + 1.9, -t, base], [L + 1.9, -t, base + fall], [1, -1, 0], `fall ${f2(fall)} m`);
+    s.dim([0, -t, 0], [L, -t, 0], [0, -1.4, 0], `${n} steps × ${mm(tr)} = ${mm(L)}`);
+    s.dim([-1.9, 0, 0], [-1.9, W, 0], [-1.2, 0, 0], `W ${mm(W)}`);
+    s.dim([L + 1.9, -t, base], [L + 1.9, -t, base + fall], [1, -1, 0], `fall ${mm(fall)}`);
     s.leader(L + 0.95, W / 2, base + fall + 0.5, 'Inlet chamber', 2.5, { size: 0.6 });
     s.leader(-0.95, W * 0.15, base, 'Collection channel', 1.0, { size: 0.6 });
     return s.render(
@@ -68,8 +69,8 @@ export function aerator3D(ae) {
     s.box(x0 + W * 0.15, W * 0.45, zTop + 0.12, W * 0.7, 0.12, 0.12, 'equip'); // perforated distributor
     s.box(x0 + W / 2 - 0.08, W * 0.45, zTop + 0.24, 0.16, 0.12, 0.9, 'equip'); // inlet riser
   }
-  s.dim([0, 0, z0], [W, 0, z0], [0, -1.2, 0], `${f2(W)} m square trays`);
-  s.dim([W, 0, z0], [W, 0, zTop], [0.9, -0.9, 0], `${n} trays at ${f2(sp)} m`);
+  s.dim([0, 0, z0], [W, 0, z0], [0, -1.2, 0], `${mm(W)} square trays`);
+  s.dim([W, 0, z0], [W, 0, zTop], [0.9, -0.9, 0], `${n} trays at ${mm(sp)}`);
   s.leader(W / 2, W / 2, zTop + 1.14, `Inlet distributor`, 1.5, { size: 0.6 });
   return s.render(
     `Multiple-tray aerator – 3D view (${ae.nUnits} tower${ae.nUnits > 1 ? 's' : ''}${ae.nUnits > nU ? ', ' + nU + ' shown' : ''}, DO ${f1(ae.C0)} → ${f1(ae.Ce)} mg/L)`,
@@ -95,7 +96,7 @@ export function rapidMix3D(rm) {
       s.box(x0 + Bo / 2 - 0.4, Bo / 2 - 0.4, Ht + 0.25, 0.8, 0.8, 0.6, 'equip'); // gearbox
       s.cyl(x0 + Bo / 2, Bo / 2, Ht + 0.85, 0.28, 0.6, { kind: 'equip' }); // motor
     }
-    s.dimsBox(0, 0, 0, Bo, Bo, Ht, { labels: { L: `${f2(B)} m inside`, W: `${f2(B)} m`, H: `${f2(Ht)} m` } });
+    s.dimsBox(0, 0, 0, Bo, Bo, Ht, { labels: { L: `${mm(B)} inside`, W: `${mm(B)}`, H: `${mm(Ht)}` } });
     s.leader(Bo / 2, Bo / 2, Ht + 1.45, `${rm.motor} kW · ${f0(rm.rpm)} rpm · impeller Ø ${f2(rm.Di)} m`, 2, {
       size: 0.6,
     });
@@ -115,9 +116,9 @@ export function rapidMix3D(rm) {
   s.tank(-3.2, 0, drop, 3.2, Wo, Hw + 0.6, { t, wl: Hw + 0.2, water: 'isoWaterBrown' });
   s.tank(0, 0, 0, L + 3.5, Wo, Math.min(top, y2 + 0.5), { t, wl: y2, water: 'isoWaterBrown' });
   s.box(-0.75, -0.4, top, 0.12, Wo + 0.8, 0.12, 'equip'); // coagulant diffuser across the weir
-  s.dim([0.6, 0, 0], [0.6 + L, 0, 0], [0, -1.4, 0], `Lⱼ = ${f2(L)} m`);
-  s.dim([-3.2, 0, 0], [-3.2, Wo, 0], [-1.1, 0, 0], `b = ${f2(b)} m`);
-  s.dim([L + 3.5, 0, 0], [L + 3.5, 0, drop], [1, -1, 0], `drop ${f2(drop)} m`);
+  s.dim([0.6, 0, 0], [0.6 + L, 0, 0], [0, -1.4, 0], `Lⱼ = ${mm(L)}`);
+  s.dim([-3.2, 0, 0], [-3.2, Wo, 0], [-1.1, 0, 0], `b = ${mm(b)}`);
+  s.dim([L + 3.5, 0, 0], [L + 3.5, 0, drop], [1, -1, 0], `drop ${mm(drop)}`);
   s.leader(-0.7, Wo / 2, top + 0.12, 'Drop weir · coagulant diffuser', 2.2, { size: 0.6 });
   s.leader(0.6 + L / 2, Wo / 2, y2, 'Hydraulic jump', top - y2 + 1.0, { size: 0.6 });
   return s.render(
@@ -149,8 +150,8 @@ export function thickener3D(sl) {
     ]); // underflow to the dewatering units
   }
   const cxL = (n - 1) * (2 * R + gap);
-  s.dim([-R, -R, 0], [R, -R, 0], [0, -1.5, 0], `Ø ${f2(th.D)} m`);
-  s.dim([cxL + R, 0, 0], [cxL + R, 0, H], [1.2, 0, 0], `SWD ${f2(th.swd)} + ${f2(fb)} m`);
+  s.dim([-R, -R, 0], [R, -R, 0], [0, -1.5, 0], `Ø ${mm(th.D)}`);
+  s.dim([cxL + R, 0, 0], [cxL + R, 0, H], [1.2, 0, 0], `SWD ${mm(th.swd)} + ${mm(fb)}`);
   s.leader(0, 0, H + 0.95, 'Scraper drive', 2, { size: 0.6 });
   s.leader(-R - 3, 0, 0.3, `Thickened sludge ≈ ${f0(th.underflow)} m³/d`, 1.6, { size: 0.6 });
   return s.render(
@@ -187,9 +188,9 @@ export function beds3D(sl) {
     [-2, -0.9, 0.05],
     [Wt + 1, -0.9, 0.05],
   ]); // filtrate collector
-  s.dim([0, 0, 0], [w + 2 * t, 0, 0], [0, -1.6, 0], `${f2(w)} m`);
-  s.dim([0, 0, 0], [0, L + 2 * t, 0], [-1.2, 0, 0], `${f2(L)} m`);
-  s.dim([Wt, 0, 0], [Wt, 0, Hw], [1, -1, 0], `${f2(Hw)} m`);
+  s.dim([0, 0, 0], [w + 2 * t, 0, 0], [0, -1.6, 0], `${mm(w)}`);
+  s.dim([0, 0, 0], [0, L + 2 * t, 0], [-1.2, 0, 0], `${mm(L)}`);
+  s.dim([Wt, 0, 0], [Wt, 0, Hw], [1, -1, 0], `${mm(Hw)}`);
   if (n > 1) s.leader(pitch + (w + 2 * t) / 2, (L + 2 * t) * 0.8, 0.85, 'Drying – sludge 0.30 m', 2.2, { size: 0.6 });
   s.leader((w + 2 * t) / 2, (L + 2 * t) * 0.2, 0.55, 'Cleaned – sand 0.25 m on gravel', 2.2, { size: 0.6 });
   return s.render(
@@ -255,8 +256,8 @@ export function pumpHouse3D(st) {
   }
   s.box(Lh - 2.6, 0.3, 0, 2.3, 0.8, 2.1, 'inner'); // MCC / panels
   s.box(Lh * 0.45, 0, H - 1.2, 0.4, Wh, 0.45, 'equip'); // overhead travelling crane girder
-  s.dim([0, -0.25, 0], [Lh, -0.25, 0], [0, -1.6, 0], `${f2(Lh)} m`);
-  s.dim([-0.25, 0, 0], [-0.25, Wh, 0], [-1.3, 0, 0], `${f2(Wh)} m`);
+  s.dim([0, -0.25, 0], [Lh, -0.25, 0], [0, -1.6, 0], `${mm(Lh)}`);
+  s.dim([-0.25, 0, 0], [-0.25, Wh, 0], [-1.3, 0, 0], `${mm(Wh)}`);
   s.leader(Lh * 0.45 + 0.2, Wh / 2, H - 0.75, 'Overhead travelling crane', 1.6, { size: 0.6 });
   s.leader(Lh - 1.45, 0.7, 2.1, 'MCC / panels', 1.6, { size: 0.6 });
   s.leader(Lh + 3, Wh - 1.4, 1.6, `Delivery DN${st.pumps.dn} → service reservoir`, 2.2, { size: 0.6 });
@@ -334,9 +335,9 @@ export function chemHouse3D(bl) {
     }
   }
   s.box(0, -2.2, 0, L, 1.8, CUT); // raised loading platform along the front
-  s.dim([0, -2.2, 0], [L, -2.2, 0], [0, -1.4, 0], `${f2(L)} m`);
-  s.dim([-0.23, 0, 0], [-0.23, W, 0], [-1.3, 0, 0], `${f2(W)} m`);
-  s.dim([-0.23, -0.23, 0], [-0.23, -0.23, H], [-1, -1, 0], `${f1(H)} m clear`);
+  s.dim([0, -2.2, 0], [L, -2.2, 0], [0, -1.4, 0], `${mm(L)}`);
+  s.dim([-0.23, 0, 0], [-0.23, W, 0], [-1.3, 0, 0], `${mm(W)}`);
+  s.dim([-0.23, -0.23, 0], [-0.23, -0.23, H], [-1, -1, 0], `${mm(H)} clear`);
   roomLabels(s, b.rooms, W, H);
   s.leader(L * 0.5, -1.3, CUT, 'Raised loading platform', 1.2, { size: 0.55 });
   return s.render(`Chemical house – 3D view (${f0(b.area)} m², clear height ${f1(H)} m; front walls cut away)`);
@@ -394,8 +395,8 @@ export function chlor3D(bl) {
       s.box(rm.x + 1.2, W - 0.9, 0, 0.5, 0.5, 0.6, 'equip');
     }
   }
-  s.dim([-0.23, -0.23, 0], [L + 0.23, -0.23, 0], [0, -1.4, 0], `${f2(L)} m`);
-  s.dim([-0.23, 0, 0], [-0.23, W, 0], [-1.3, 0, 0], `${f2(W)} m`);
+  s.dim([-0.23, -0.23, 0], [L + 0.23, -0.23, 0], [0, -1.4, 0], `${mm(L)}`);
+  s.dim([-0.23, 0, 0], [-0.23, W, 0], [-1.3, 0, 0], `${mm(W)}`);
   roomLabels(s, b.rooms, W, H);
   return s.render(
     `Chlorination building – 3D view (${b.gas ? 'gas chlorination' : 'hypochlorite'}, ${f0(b.area)} m²; front walls cut away)`,

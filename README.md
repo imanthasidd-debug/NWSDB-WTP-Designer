@@ -7,6 +7,27 @@ storage & pumping → residuals → hydraulic profile → site layout → power 
 
 *For the National Water Supply & Drainage Board, Sri Lanka.*
 
+**Version 1.9 – NWSDB CAD practice for drawings and DXF**
+Set up from an NWSDB working drawing (RSC sample "Intake", AutoCAD 2016, plotted with monochrome.ctb):
+* **Dimensions in millimetres, levels in metres** on every drawing – on screen, in PDF, DXF and SVG (e.g. 66500,
+  Ø 11500; WL 23.3). The sheet note says so.
+* **NWSDB title strip** along the bottom of every A3 sheet, with the sample's layout and proportions: logo and the
+  Board's name in English, Sinhala and Tamil | project, drawing title and scale | revision table (REV. DESCRIPTION
+  DATE SIGN.) | 3 × 3 signature grid with the drawing number and date (dd-mm-yyyy). Notes and legend sit in a band
+  above it.
+* **Signature boxes** editable in *Project setup → Drawing title block*: by default the sample's posts – DRAWN,
+  D.O.A., Q.S / E.A, ENGINEER (D), C.E. (P&D), A.G.M. ({R}), D.G.M. ({R}) – where {R} becomes the province code
+  (e.g. NC). A box without a name uses Drawn by / Designed by / Checked by / Approved by.
+* **DXF in AutoCAD 2007 format** (was R12), drawn in millimetres:
+  * layers with line weights, so monochrome plotting gives the right pens – names, colours and weights as in the
+    sample where it has the layer: wall 0.25, OL 0.18, LINES 0.15, HID (HIDDEN2), CL (CENTER2), DIM 0.15, TEXT,
+    TEXT TITLE, HATCH, HATCH2, pipe 0.50, GL 0.35, road, PLANNING, title block 0.50 / 0.25 / 0.00, LOGO, NPRINT
+    (sheet edge, not plotted), plus EQUIP, WATER, HGL and ISO;
+  * text style SANS (Sans Serif), SANS BOLD for titles and NIRMALA (Nirmala UI) for the Sinhala and Tamil names;
+  * dimensions exploded on DIM with filled arrowheads, as in the sample, and an ST<scale> dimension style set
+    current for further dimensioning; concrete, media and soil hatched; no solid fills that would print black;
+  * the A3 sheet DXF has the same frame, notes, legend, scale bar and title strip as the PDF.
+
 **Version 1.8.5 – 3D views of every structure and building**
 * New 3D views (static isometric for A3 sheets, PDF, DXF and SVG, and the interactive viewer – rotate, zoom, top /
   front / side views, dimensions and labels) for the units that had plans and sections only:

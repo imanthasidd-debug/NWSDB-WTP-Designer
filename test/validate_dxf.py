@@ -1,35 +1,48 @@
+# Validates exported drawings: every DXF opens in ezdxf with a clean audit and follows the NWSDB CAD set-up of the
+# exporter (AutoCAD 2007 DXF, millimetres, layers with line weights, known text styles); every SVG is well-formed XML.
+#   python3 test/validate_dxf.py <dir>        (needs: pip install ezdxf)
 import sys, glob, xml.dom.minidom
-KNOWN = {'LINE','POLYLINE','VERTEX','SEQEND','CIRCLE','TEXT'}
+import ezdxf
+
+STYLES = {'Standard', 'SANS', 'SANS BOLD', 'NIRMALA'}
+WEIGHTED = {'wall': 25, 'OL': 18, 'DIM': 15, 'TEXT': 25, 'pipe': 50, 'CL': 15, 'HID': 25}
+
+
 def check(fn):
-    lines = open(fn, newline='').read().split('\r\n')
-    if lines[-1] == '': lines = lines[:-1]
-    assert len(lines) % 2 == 0, 'odd number of lines'
-    pairs = [(int(lines[i].strip()), lines[i+1]) for i in range(0, len(lines), 2)]
-    assert pairs[-1] == (0, 'EOF'), 'missing EOF'
-    layers = set(); used = set(); depth = 0; ents = {}; in_poly = False; sec = None
-    for i,(c,v) in enumerate(pairs):
-        if c == 0 and v == 'SECTION': depth += 1; sec = pairs[i+1][1]
-        elif c == 0 and v == 'ENDSEC': depth -= 1; sec = None
-        elif c == 0 and sec == 'ENTITIES':
-            assert v in KNOWN, f'unknown entity {v}'
-            ents[v] = ents.get(v, 0) + 1
-            if v == 'POLYLINE': assert not in_poly; in_poly = True
-            if v == 'SEQEND': assert in_poly; in_poly = False
-            if v == 'VERTEX': assert in_poly
-        if c == 2 and sec == 'TABLES' and pairs[i-1] == (0, 'LAYER'): layers.add(v)
-        if c == 8: used.add(v)
-        if c in (10,20,30,11,21,31,40,50): float(v)
-        if c in (62,66,70,72,73): int(v)
-        if c == 1: assert all(32 <= ord(ch) < 127 for ch in v), f'non-ascii text {v!r}'
-    assert depth == 0 and not in_poly
-    missing = used - layers
-    assert not missing, f'layers not in table: {missing}'
-    return ents
+    doc = ezdxf.readfile(fn)
+    audit = doc.audit()
+    assert not audit.errors, f'audit errors: {[e.message for e in audit.errors[:3]]}'
+    assert doc.dxfversion >= 'AC1021', f'DXF version {doc.dxfversion}'
+    assert doc.header.get('$INSUNITS') == 4, 'model space must be in millimetres ($INSUNITS 4)'
+    layers = {l.dxf.name: l for l in doc.layers}
+    for name, lw in WEIGHTED.items():
+        assert name in layers and layers[name].dxf.get('lineweight') == lw, f'layer {name} line weight'
+    assert layers['NPRINT'].dxf.get('plot', 1) == 0, 'NPRINT must not plot'
+    assert layers['CL'].dxf.linetype == 'CENTER2' and layers['HID'].dxf.linetype == 'HIDDEN2', 'linetypes'
+    msp = doc.modelspace()
+    n = 0
+    for e in msp:
+        n += 1
+        assert e.dxf.layer in layers, f'layer {e.dxf.layer} not in table'
+        if e.dxftype() == 'TEXT':
+            assert e.dxf.style in STYLES, f'text style {e.dxf.style}'
+            assert ' m' not in e.dxf.text or e.dxf.layer != 'DIM' or 'm³' in e.dxf.text, f'dimension in metres: {e.dxf.text!r}'
+    assert n > 0, 'empty drawing'
+    return n
+
+
 bad = 0
 for fn in sorted(glob.glob(sys.argv[1] + '/*.dxf')):
-    try: e = check(fn)
-    except Exception as ex: bad += 1; print('FAIL', fn, ex)
+    try:
+        check(fn)
+    except Exception as ex:
+        bad += 1
+        print('FAIL', fn, ex)
 for fn in sorted(glob.glob(sys.argv[1] + '/*.svg')):
-    try: xml.dom.minidom.parse(fn)
-    except Exception as ex: bad += 1; print('SVG FAIL', fn, ex)
+    try:
+        xml.dom.minidom.parse(fn)
+    except Exception as ex:
+        bad += 1
+        print('SVG FAIL', fn, ex)
 print('checked', len(glob.glob(sys.argv[1] + '/*.dxf')), 'dxf +', len(glob.glob(sys.argv[1] + '/*.svg')), 'svg; failures:', bad)
+sys.exit(1 if bad else 0)

@@ -1,7 +1,7 @@
 # NWSDB WTP Designer - per-user installer (no administrator rights required)
 $ErrorActionPreference = 'Stop'
 $AppName  = 'NWSDB WTP Designer'
-$Version  = '1.8.5'
+$Version  = '1.9.0'
 $Src      = Join-Path $PSScriptRoot $AppName
 $Dest     = Join-Path $env:LOCALAPPDATA "Programs\$AppName"
 $Exe      = Join-Path $Dest "$AppName.exe"

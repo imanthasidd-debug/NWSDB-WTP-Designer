@@ -116,6 +116,20 @@ export const setup = {
       add: { rev: '', date: '', desc: '' },
       minRows: 0,
     },
+    {
+      k: 'tbPosts',
+      t: 'table',
+      l: 'Signature boxes on drawings',
+      cols: [
+        { k: 'title', l: 'Post (box title)', text: true, w: '46%' },
+        { k: 'name', l: 'Name', text: true },
+      ],
+      fixed: true,
+    },
+    {
+      t: 'help',
+      html: 'The 3 × 3 signature grid of every A3 drawing: these seven posts, then the drawing number and the date. <b>{R}</b> is replaced by the province code (e.g. NC). A box without a name uses Drawn by, Designed by, Checked by or Approved by.',
+    },
     { k: 'notes', l: 'Project notes', t: 'area', ph: 'Scope, assumptions, data sources…' },
   ],
   render(r) {

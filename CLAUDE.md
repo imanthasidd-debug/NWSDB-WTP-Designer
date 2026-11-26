@@ -33,7 +33,7 @@ npm run typecheck                # TypeScript checkJs of src/core and src/engine
 npm run format                   # Prettier (format:check in CI); data tables, CSS, HTML and Markdown are not formatted
 npm run check                    # lint + typecheck + format:check + test – what the GitHub "Checks" workflow runs first
 ```
-Test suites (`npm test` runs all four): `test/engine.test.mjs` (360 checks without the licence key),
+Test suites (`npm test` runs all four): `test/engine.test.mjs` (369 checks without the licence key),
 `test/fixtures.test.mjs` (38 projects saved by v1.1.0–v1.8.2 must open, calculate without errors and match
 `test/fixtures/golden.json` – after an intended engine change review the printed differences, then run
 `node test/fixtures.test.mjs --update`), `test/scaling.test.mjs` (every sample at 500–200,000 m³/d: no errors, totals
@@ -71,7 +71,8 @@ Each edition takes ~2 min; run them as separate commands. Release ZIPs (~160 MB)
   `layout: 'full'` + `renderFull()`), store/undo/autosave (`store.js`), report (`report.js`), Excel (`xlsx.js`),
   O&M manual (`ommanual.js`), drawings in `src/ui/draw/` (`units.js` primitives, `views.js` `drawingGroups(r)`,
   `iso.js`/`view3d.js` 3D, `views3d.js` 3D views of aerator, rapid mixer, thickener, drying beds, pump house and the
-  buildings (cut away), `sheet.js` A3 title block, `render.js` SVG + DXF). Every structure's drawing set ends with
+  buildings (cut away), `sheet.js` A3 sheet with the NWSDB title strip (one layout for SVG and DXF), `render.js`
+  SVG, `dxf.js` DXF). Every structure's drawing set ends with
   its 3D view (`V('iso', …)`); append new views at the end so existing drawing numbers do not change.
 - `src/engine/worker.js` – calculation worker (built to `dist/engine.worker.js`). `store.js` sends delayed (typing)
   recalculations there and drops stale replies; immediate changes, undo/redo and project loads calculate on the
@@ -93,6 +94,12 @@ Each edition takes ~2 min; run them as separate commands. Release ZIPs (~160 MB)
   the scaling test enforces it. Read raw-water values with `qGet(q, key, i)` / `qWorst(q, key)` from
   `engine/quality.js`.
 - Use `n()` from `calc.js` only inside LaTeX; plain text uses `fmt()`.
+- NWSDB CAD practice (from an RSC working drawing): dimension labels in whole millimetres without a unit – write them
+  with `mm()` from `draw/units.js`; levels stay in metres (`Lv`). DXF (`dxf.js`, `@tarikjabiri/dxf` pinned): AutoCAD
+  2007, `$INSUNITS` 4, layer table `DXF_LAYERS` with line weights (monochrome.ctb plotting), CENTER2 / HIDDEN2,
+  styles SANS / SANS BOLD / NIRMALA, dimensions exploded on DIM, material hatching as clipped line work (the
+  library's built-in patterns are simplified and rotate shared data – use only SOLID from it). `test/validate_dxf.py`
+  audits every DXF with ezdxf.
 - Rate Book: replaced tables come from `scripts/ratebook/rb2026.py`; all other sections are the 2025 data × the
   circular's factors (`ADJ` in `ratebook.js`); every reference string says "(2025 × f)". Cost estimate follows the
   Table 1 format of Annex 13 (SSCL = Sub Total 3 / 97.5 × 2.5, VAT 18 % of Sub Total 4).
@@ -110,7 +117,7 @@ Rate Book 2025 summary). Use them to cite clauses; confirm against the printed m
 Test on real Windows PCs; validate against 2–3 built NWSDB plants (harness ready in `test/plants/`, needs as-built
 figures); decide whether auto route selection should avoid direct filtration when its own filter checks fail (rural
 sample above 2,500 m³/d: D3 §5.9.11 allows it at 18 NTU but runs are 5.5 h at monsoon peak); code signing; user guide; rate-update import
-without rebuilding; Excel sheets for the O&M tools; pipe & valve schedules and filter pipe gallery; DXF dimensions
-and NWSDB layer names (needs NWSDB CAD standard); in-plant booster pumps (D3 p 6-43); surge analysis; licence
+without rebuilding; Excel sheets for the O&M tools; pipe & valve schedules and filter pipe gallery; more NWSDB sample drawings to confirm the CAD
+set-up (taken from one RSC sample; associative DIMENSION entities if wanted); in-plant booster pumps (D3 p 6-43); surge analysis; licence
 register / expiring keys; Sinhala / Tamil UI. To confirm: Annex 13 "Sub Total 2" wording, escalation base 2026,
 CEB tariff (June 2025 still used).

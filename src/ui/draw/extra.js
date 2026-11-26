@@ -2,7 +2,7 @@
 // from the structural pre-design, and the site levels & drainage plan.
 import { fmt } from '../../core/util.js';
 import * as U from './units.js';
-import { Dm, Ln, Lv, R, T, auto } from './units.js';
+import { Dm, Ln, Lv, R, T, auto, mm } from './units.js';
 
 const f2 = (v) => fmt(v, 2),
   f1 = (v) => fmt(v, 1),
@@ -46,10 +46,10 @@ function buildingPlan(b, title, furnish, extras) {
     );
     furnish(rm, it, W);
   });
-  it.push(Dm(0, W + t, L, W + t, 0.9, `${f2(L)} m`), Dm(L + t, 0, L + t, W, -0.9, `${f2(W)} m`));
+  it.push(Dm(0, W + t, L, W + t, 0.9, `${mm(L)}`), Dm(L + t, 0, L + t, W, -0.9, `${mm(W)}`));
   let x = 0;
   for (const rm of b.rooms) {
-    it.push(Dm(x, -t, x + rm.w, -t, -2.2, f1(rm.w)));
+    it.push(Dm(x, -t, x + rm.w, -t, -2.2, mm(rm.w)));
     x += rm.w;
   }
   if (extras) extras(it, L, W, t);
@@ -317,7 +317,7 @@ export function rebarDetail(s, inputs) {
   it.push(T(-toe - 1.15, -tb - 0.3, '75 mm blinding on compacted formation', { size: 0.7 }));
   it.push(
     Dm(0, h, t, h, s.roof ? 0.8 : 0.5, `${f0(t * 1000)}`),
-    Dm(0, 0, 0, h, toe + 0.5, `${f2(h)} m`),
+    Dm(0, 0, 0, h, toe + 0.5, `${mm(h)}`),
     Dm(-toe, -tb, -toe, 0, 0.5, `${f0(tb * 1000)}`),
   );
   it.push(T(t + 1.2, h * 0.9 - 0.5, 'Water face', { anchor: 'middle', size: 0.75 }));

@@ -1,18 +1,27 @@
-// NWSDB drawing sheets: A3 landscape frame with zone marks, title block (NWSDB logo, project, drawing title,
-// drawing number, scale, sheet, revision, designed / drawn / checked / approved), notes, legend, graphic scale bar,
-// north arrow for plans and a D3-style figure caption.  The drawing is placed at a true standard scale so the
-// printed A3 sheet can be measured.  Also produces the same sheet in DXF (model space, scaled frame).
+// NWSDB drawing sheets: A3 landscape frame with zone marks, the drawing at a true standard scale, notes and legend,
+// graphic scale bar, north arrow for plans and a D3-style caption, and the NWSDB title strip along the bottom as in
+// NWSDB drawings (RSC sample "Intake", 2016): logo and the Board's name in English, Sinhala and Tamil | project,
+// drawing title and scale | revision table (REV. DESCRIPTION DATE SIGN.) | 3 × 3 signature grid with the drawing
+// number and date. The strip keeps the sample's proportions, scaled to A3. One layout description (paper mm, y
+// down) draws both the SVG / PDF sheet and the DXF sheet.
 import { APP } from '../version.js';
 import { fmt } from '../../core/util.js';
+import { provinceOf } from '../../core/srilanka.js';
+import { SETUP_DEFAULTS } from '../../engine/index.js';
 import { LOGO_BANNER, LOGO_BANNER_RATIO } from '../logo.js';
-import { drawingDXF, drawingSVG } from './render.js';
+import { drawingSVG } from './render.js';
+import { drawingDXF } from './dxf.js';
 
 import { isTrial, trialLabel } from '../edition.js';
 export const A3 = { w: 420, h: 297 };
 const FR = { x0: 20, y0: 10, x1: 410, y1: 287 }; // frame (20 mm binding margin)
-const DA = { x0: 24, y0: 14, x1: 406, y1: 214 }; // drawing area (above the title strip)
-const TB = { x0: 230, y0: 218, x1: 406, y1: 283 }; // title block
-const NB = { x0: 24, y0: 218, x1: 226, y1: 283 }; // notes + legend
+const DA = { x0: 24, y0: 14, x1: 406, y1: 215 }; // drawing area
+const NB = { x0: 24, y0: 219, x1: 406, y1: 254 }; // notes + legend band
+const TS = { x0: 20, y0: 257, x1: 410, y1: 287 }; // title strip (bottom of the frame, full width)
+// title-strip columns (sample proportions 51 : 124 : 225 : 182 : 3 × 70 of 792 mm, scaled to 390 mm)
+const CX = { logo: 20, title: 106, rev: 216, sig: 306, end: 410 };
+const REVC = [216, 225, 282, 296, 306]; // REV. | DESCRIPTION | DATE | SIGN.
+const SIGW = (CX.end - CX.sig) / 3;
 export const SCALES = [
   5, 10, 20, 25, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 750, 1000, 1250, 1500, 2000, 2500, 5000,
 ];
@@ -52,10 +61,31 @@ const esc = (s) =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
+// ------------------------------------------------------------------ signature posts
+/** province code used in post titles ({R}), e.g. North Central → NC */
+const PROV = {
+  Western: 'W',
+  Central: 'C',
+  Southern: 'S',
+  Northern: 'N',
+  Eastern: 'E',
+  'North Western': 'NW',
+  'North Central': 'NC',
+  Uva: 'U',
+  Sabaragamuwa: 'SAB',
+};
+export const provinceCode = (district) => PROV[provinceOf(district)] || '';
+/** default signature boxes – the posts of the NWSDB sample drawing; {R} = province code */
+export const DEFAULT_POSTS = SETUP_DEFAULTS.tbPosts;
+// names used when a box has no name of its own: Drawn ← drawn by, Engineer ← designed by, C.E. ← checked by,
+// D.G.M. ← approved by (Project setup → Design team)
+const POST_FALLBACK = ['drawn', null, null, 'designer', 'checker', null, 'approver'];
+
 /** metadata for the title block from the project */
 export function sheetMeta(project, extra = {}) {
   const s = project?.inputs?.setup || {};
-  return {
+  const prov = provinceCode(s.district);
+  const meta = {
     project: s.name || 'Water Treatment Plant',
     code: s.code || 'WTP',
     client: s.client || 'National Water Supply & Drainage Board',
@@ -69,20 +99,187 @@ export function sheetMeta(project, extra = {}) {
     drawn: s.drawnBy || '',
     status: s.drawingStatus || 'Preliminary design',
     revDesc: s.revDesc || 'Issued for design review',
-    revisions: (s.revisions || []).filter((x) => x && (x.rev || x.desc)).slice(-1),
+    revisions: (s.revisions || []).filter((x) => x && (x.rev || x.desc)),
     sheet: 1,
     sheets: 1,
     ...extra,
   };
+  const posts = Array.isArray(s.tbPosts) && s.tbPosts.length ? s.tbPosts : DEFAULT_POSTS;
+  meta.posts = DEFAULT_POSTS.map((d, i) => {
+    const p = posts[i] || {};
+    const title = String(p.title || d.title)
+      .replace(/\s*\(\{R\}\)/, prov ? ` (${prov})` : '')
+      .replace('{R}', prov);
+    return { title, name: p.name || (POST_FALLBACK[i] ? meta[POST_FALLBACK[i]] : '') || '' };
+  });
+  return meta;
 }
+const dmy = (iso) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : String(iso || '');
+};
 
 const NOTES = [
-  'All dimensions are in metres and all levels in metres above MSL unless otherwise stated.',
+  'All dimensions are in millimetres and levels are in metres above MSL unless otherwise stated.',
   'Hydraulic / process sizing to NWSDB Design Manuals D2 (1989) and D3 (2020); structural design, reinforcement and joint details by others.',
   'Water-retaining reinforced concrete (C25/30 min., BS EN 1992-3 / BS 8007), cover 40 mm, with water-bars at all construction joints.',
   'Indicative design drawing generated from the design calculations – verify on site before construction.',
 ];
+const wrap = (s, n) => {
+  const out = [];
+  let cur = '';
+  for (const w of String(s).split(' ')) {
+    if ((cur + ' ' + w).length > n && cur) {
+      out.push(cur);
+      cur = w;
+    } else cur = cur ? cur + ' ' + w : w;
+  }
+  if (cur) out.push(cur);
+  return out;
+};
+/** font size that fits text into a width (Arial ≈ 0.55 em per character) */
+const fit = (s, w, max) => Math.max(1.3, Math.min(max, w / (Math.max(1, String(s).length) * 0.62)));
 
+/**
+ * Sheet layout in paper millimetres (y down): lines [x1, y1, x2, y2, weight mm, layer],
+ * texts [x, y, size, text, { anchor, bold, underline, color, layer }].
+ */
+function sheetLayout(dw, meta, scale, isoNts) {
+  const L = [],
+    T = [];
+  const line = (x1, y1, x2, y2, w = 0.25, layer = '0.25') => L.push([x1, y1, x2, y2, w, layer]);
+  const rect = (x0, y0, x1, y1, w, layer) => {
+    line(x0, y0, x1, y0, w, layer);
+    line(x1, y0, x1, y1, w, layer);
+    line(x1, y1, x0, y1, w, layer);
+    line(x0, y1, x0, y0, w, layer);
+  };
+  const text = (x, y, size, s, o = {}) => T.push([x, y, size, String(s ?? ''), o]);
+  // frame, outer border, zone marks
+  rect(FR.x0, FR.y0, FR.x1, FR.y1, 0.7, '0.50');
+  rect(FR.x0 - 4, FR.y0 - 4, FR.x1 + 4, FR.y1 + 4, 0.25, '0.00');
+  const nx = 8,
+    ny = 6;
+  for (let i = 0; i <= nx; i++) {
+    const x = FR.x0 + ((FR.x1 - FR.x0) * i) / nx;
+    line(x, FR.y0 - 4, x, FR.y0, 0.25, '0.00');
+    line(x, FR.y1, x, FR.y1 + 4, 0.25, '0.00');
+    if (i < nx) {
+      const cx = x + (FR.x1 - FR.x0) / nx / 2;
+      text(cx, FR.y0 - 1, 2.6, i + 1, { anchor: 'middle' });
+      text(cx, FR.y1 + 3.2, 2.6, i + 1, { anchor: 'middle' });
+    }
+  }
+  for (let j = 0; j <= ny; j++) {
+    const y = FR.y0 + ((FR.y1 - FR.y0) * j) / ny;
+    line(FR.x0 - 4, y, FR.x0, y, 0.25, '0.00');
+    line(FR.x1, y, FR.x1 + 4, y, 0.25, '0.00');
+    if (j < ny) {
+      const cy = y + (FR.y1 - FR.y0) / ny / 2 + 1;
+      text(FR.x0 - 2, cy, 2.6, 'ABCDEF'[j], { anchor: 'middle' });
+      text(FR.x1 + 2, cy, 2.6, 'ABCDEF'[j], { anchor: 'middle' });
+    }
+  }
+  // caption and scale under the drawing
+  const title = dw.title || 'Drawing';
+  text((DA.x0 + DA.x1) / 2, DA.y1 - 9, 4.4, `Drawing ${drawingCode(dw)}: ${title}`.slice(0, 120), {
+    anchor: 'middle',
+    bold: true,
+    serif: true,
+    layer: 'TEXT TITLE',
+  });
+  text(
+    (DA.x0 + DA.x1) / 2,
+    DA.y1 - 4,
+    3,
+    scale && !isoNts ? `SCALE 1:${scale} (A3)` : isoNts ? 'ISOMETRIC VIEW – NOT TO SCALE' : 'NOT TO SCALE',
+    { anchor: 'middle' },
+  );
+  // ---- notes and legend band
+  line(FR.x0, NB.y0 - 2, FR.x1, NB.y0 - 2, 0.5, '0.50');
+  line(296, NB.y0, 296, NB.y1, 0.25, '0.00');
+  text(NB.x0 + 1, NB.y0 + 3.6, 2.8, 'NOTES', { bold: true, underline: true });
+  let ny0 = NB.y0 + 8;
+  NOTES.forEach((n, i) => {
+    wrap(n, 175).forEach((ln, k) => {
+      text(NB.x0 + 1 + (k ? 4 : 0), ny0, 2.2, `${k ? '' : `${i + 1}. `}${ln}`);
+      ny0 += 3.1;
+    });
+    ny0 += 0.6;
+  });
+  text(300, NB.y0 + 3.6, 2.8, 'LEGEND', { bold: true, underline: true });
+  // ---- title strip
+  const S = TS;
+  line(S.x0, S.y0, S.x1, S.y0, 0.5, '0.50');
+  for (const x of [CX.title, CX.rev, CX.sig]) line(x, S.y0, x, S.y1, 0.5, '0.50');
+  // revision table
+  for (const x of REVC.slice(1, -1)) line(x, S.y0, x, S.y1, 0.25, '0.25');
+  for (let k = 1; k < 6; k++) line(CX.rev, S.y0 + k * 5, CX.sig, S.y0 + k * 5, k === 1 ? 0.35 : 0.18, '0.25');
+  [
+    ['REV.', 0],
+    ['DESCRIPTION', 1],
+    ['DATE', 2],
+    ['SIGN.', 3],
+  ].forEach(([t, i]) => text((REVC[i] + REVC[i + 1]) / 2, S.y0 + 3.6, 1.9, t, { anchor: 'middle', bold: true }));
+  const revs = [
+    ...(meta.revisions || []).map((r) => [r.rev, r.desc, r.date, '']),
+    [meta.rev, meta.revDesc, meta.date, ''],
+  ].slice(-5);
+  revs.forEach(([rv, desc, dt], k) => {
+    const y = S.y0 + 5 + k * 5 + 3.6;
+    text((REVC[0] + REVC[1]) / 2, y, 2, rv || '', { anchor: 'middle' });
+    text(REVC[1] + 1, y, fit(desc || '', REVC[2] - REVC[1] - 2, 2), desc || '');
+    text((REVC[2] + REVC[3]) / 2, y, fit(dmy(dt), REVC[3] - REVC[2] - 1, 1.8), dmy(dt), { anchor: 'middle' });
+  });
+  // signature grid: posts 1–7, drawing number, date
+  for (let k = 1; k < 3; k++) line(CX.sig, S.y0 + k * 10, CX.end, S.y0 + k * 10, 0.25, '0.25');
+  for (let k = 1; k < 3; k++) line(CX.sig + k * SIGW, S.y0, CX.sig + k * SIGW, S.y1, 0.25, '0.25');
+  const p = meta.posts || [];
+  const number = drawingNumber({ code: meta.code }, dw);
+  const cells = [
+    [p[0], p[1], p[2]],
+    [p[3], p[4], { title: `DRG NO. · REV. ${meta.rev}`, name: number, strong: true }],
+    [p[5], p[6], { title: 'DATE', name: dmy(meta.date), strong: true }],
+  ];
+  cells.forEach((row, r) =>
+    row.forEach((c, k) => {
+      if (!c) return;
+      const cx = CX.sig + k * SIGW + SIGW / 2,
+        y0 = S.y0 + r * 10;
+      if (c.name)
+        text(cx, y0 + 4.6, fit(c.name, SIGW - 2, c.strong ? 2.3 : 2.2), c.name, {
+          anchor: 'middle',
+          bold: !!c.strong,
+        });
+      text(cx, y0 + 8.6, fit(c.title, SIGW - 2, 1.8), c.title, { anchor: 'middle', color: '#444' });
+    }),
+  );
+  // project, drawing title and scale
+  const tc = (CX.title + CX.rev) / 2,
+    tw = CX.rev - CX.title - 4;
+  const proj = meta.project.toUpperCase();
+  text(tc, S.y0 + 5, fit(proj, tw, 3.2), proj, { anchor: 'middle', bold: true, underline: true, layer: 'TEXT TITLE' });
+  const sub = [meta.location, meta.rsc].filter(Boolean).join(' · ');
+  if (sub) text(tc, S.y0 + 9, fit(sub, tw, 2), sub, { anchor: 'middle' });
+  const [grp, view] = String(dw.group ? `${dw.group} – ${dw.view || ''}` : title)
+    .split(' – ')
+    .map((x) => (x || '').trim().toUpperCase());
+  text(tc, S.y0 + 14.4, fit(grp, tw, 2.9), grp, { anchor: 'middle', bold: true });
+  if (view) text(tc, S.y0 + 18.6, fit(view, tw, 2.5), view, { anchor: 'middle' });
+  const sc = scale && !isoNts ? `SCALE:- 1:${scale} (A3)` : 'SCALE:- NOT TO SCALE';
+  text(tc, S.y0 + 23, 2.3, sc, { anchor: 'middle', underline: true });
+  text(CX.title + 2, S.y1 - 1.6, 1.8, String(meta.status || '').toUpperCase(), { bold: true, color: '#b3001b' });
+  text(CX.rev - 2, S.y1 - 1.6, 1.6, APP, { anchor: 'end', color: '#0b4a92' });
+  // logo + name: text for the DXF (the SVG shows the banner image)
+  T.push([CX.logo, S.y0, 0, '', { logo: true }]);
+  if (isTrial()) {
+    text((DA.x0 + DA.x1) / 2, (DA.y0 + DA.y1) / 2, 12, trialLabel(), { anchor: 'middle', color: '#b3001b' });
+    text(FR.x0 + 3, FR.y0 + 4.2, 2.6, trialLabel(), { bold: true, color: '#b3001b' });
+  }
+  return { lines: L, texts: T };
+}
+
+// ------------------------------------------------------------------ SVG (screen, PDF)
 /** A3 landscape NWSDB sheet as an SVG string (always print colours) */
 export function sheetSVG(dw, meta, { scale: forceScale, nts = false, inner } = {}) {
   const scale = nts ? null : forceScale || chooseScale(dw);
@@ -93,46 +290,14 @@ export function sheetSVG(dw, meta, { scale: forceScale, nts = false, inner } = {
     `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${A3.w} ${A3.h}" width="${A3.w}mm" height="${A3.h}mm" font-family="Arial, Helvetica, sans-serif" style="background:#fff">`,
   );
   out.push(`<rect width="${A3.w}" height="${A3.h}" fill="#fff"/>`);
-  // frame + zone marks
-  out.push(
-    `<rect x="${FR.x0}" y="${FR.y0}" width="${FR.x1 - FR.x0}" height="${FR.y1 - FR.y0}" fill="none" stroke="#000" stroke-width="0.7"/>`,
-  );
-  out.push(
-    `<rect x="${FR.x0 - 4}" y="${FR.y0 - 4}" width="${FR.x1 - FR.x0 + 8}" height="${FR.y1 - FR.y0 + 8}" fill="none" stroke="#000" stroke-width="0.25"/>`,
-  );
-  const nx = 8,
-    ny = 6;
-  for (let i = 0; i <= nx; i++) {
-    const x = FR.x0 + ((FR.x1 - FR.x0) * i) / nx;
-    out.push(`<path d="M${x},${FR.y0 - 4}V${FR.y0}M${x},${FR.y1}V${FR.y1 + 4}" stroke="#000" stroke-width="0.25"/>`);
-    if (i < nx) {
-      const cx = x + (FR.x1 - FR.x0) / nx / 2;
-      out.push(
-        `<text x="${cx}" y="${FR.y0 - 1}" font-size="2.6" text-anchor="middle">${i + 1}</text><text x="${cx}" y="${FR.y1 + 3.2}" font-size="2.6" text-anchor="middle">${i + 1}</text>`,
-      );
-    }
-  }
-  for (let j = 0; j <= ny; j++) {
-    const y = FR.y0 + ((FR.y1 - FR.y0) * j) / ny;
-    out.push(`<path d="M${FR.x0 - 4},${y}H${FR.x0}M${FR.x1},${y}H${FR.x1 + 4}" stroke="#000" stroke-width="0.25"/>`);
-    if (j < ny) {
-      const cy = y + (FR.y1 - FR.y0) / ny / 2 + 1;
-      out.push(
-        `<text x="${FR.x0 - 2}" y="${cy}" font-size="2.6" text-anchor="middle">${'ABCDEF'[j]}</text><text x="${FR.x1 + 2}" y="${cy}" font-size="2.6" text-anchor="middle">${'ABCDEF'[j]}</text>`,
-      );
-    }
-  }
-  out.push(`<path d="M${FR.x0},${TB.y0 - 4}H${FR.x1}" stroke="#000" stroke-width="0.5"/>`);
   // ---- drawing at true scale
-  let wmm = 0,
-    hmm = 0;
   if (inner) {
     // pre-rendered (not to scale) content, e.g. the process flow diagram
     const availW = DA.x1 - DA.x0 - 6,
       availH = DA.y1 - DA.y0 - 22;
     const k = Math.min(availW / inner.W, availH / inner.H);
-    wmm = inner.W * k;
-    hmm = inner.H * k;
+    const wmm = inner.W * k,
+      hmm = inner.H * k;
     const x = DA.x0 + (DA.x1 - DA.x0 - wmm) / 2,
       y = DA.y0 + 4;
     out.push(
@@ -151,8 +316,8 @@ export function sheetSVG(dw, meta, { scale: forceScale, nts = false, inner } = {
       statik: true,
       idPrefix: 's' + drawingCode(dw).replace(/\W/g, '') + Math.random().toString(36).slice(2, 6),
     });
-    wmm = (Wm * 1000) / scale;
-    hmm = (Hm * 1000) / scale;
+    const wmm = (Wm * 1000) / scale,
+      hmm = (Hm * 1000) / scale;
     const x = DA.x0 + (DA.x1 - DA.x0 - wmm) / 2,
       y = DA.y0 + Math.max(2, (DA.y1 - DA.y0 - 22 - hmm) / 2);
     out.push(
@@ -173,17 +338,9 @@ export function sheetSVG(dw, meta, { scale: forceScale, nts = false, inner } = {
         `<g transform="translate(${DA.x1 - 14},${DA.y0 + 14})"><circle r="7" fill="none" stroke="#000" stroke-width="0.35"/><path d="M0,-9L3,4L0,2L-3,4Z" fill="#000"/><text y="-10.5" font-size="3.4" font-weight="700" text-anchor="middle">N</text></g>`,
       );
   }
-  // caption + scale bar (D3 annex style: bold, centred)
-  const capY = DA.y1 - 9;
-  out.push(
-    `<text x="${(DA.x0 + DA.x1) / 2}" y="${capY}" font-family="Times New Roman, Times, serif" font-size="4.4" font-weight="700" text-anchor="middle">${esc(`Drawing ${drawingCode(dw)}: ${title}`.slice(0, 120))}</text>`,
-  );
-  out.push(
-    `<text x="${(DA.x0 + DA.x1) / 2}" y="${capY + 5}" font-size="3" text-anchor="middle">${scale && !isoNts ? `SCALE 1:${scale} (A3)` : isoNts ? 'ISOMETRIC VIEW – NOT TO SCALE' : 'NOT TO SCALE'}</text>`,
-  );
   if (scale && !isoNts) {
     // graphic scale bar: about 60 mm long, in round metres
-    const target = (60 * scale) / 1000; // metres
+    const target = (60 * scale) / 1000;
     const step = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100].find((v) => v * 5 >= target) || 100;
     const segMm = (step * 1000) / scale;
     const bx = DA.x0 + 6,
@@ -198,145 +355,65 @@ export function sheetSVG(dw, meta, { scale: forceScale, nts = false, inner } = {
       );
     out.push(`<text x="${(bx + 5 * segMm + 2).toFixed(2)}" y="${by + 1.5}" font-size="2.4">m</text>`);
   }
-  // ---- notes + legend
-  out.push(
-    `<rect x="${NB.x0}" y="${NB.y0}" width="${NB.x1 - NB.x0}" height="${NB.y1 - NB.y0}" fill="none" stroke="#000" stroke-width="0.35"/>`,
-  );
-  out.push(`<path d="M${NB.x0 + 132},${NB.y0}V${NB.y1}" stroke="#000" stroke-width="0.35"/>`);
-  out.push(`<text x="${NB.x0 + 3}" y="${NB.y0 + 5}" font-size="3" font-weight="700">NOTES</text>`);
-  let ny0 = NB.y0 + 10;
-  NOTES.forEach((n, i) => {
-    const words = n.split(' ');
-    const lines = [];
-    let cur = '';
-    for (const w of words) {
-      if ((cur + ' ' + w).length > 70) {
-        lines.push(cur);
-        cur = w;
-      } else cur = cur ? cur + ' ' + w : w;
-    }
-    if (cur) lines.push(cur);
-    lines.forEach((ln, k) => {
+  const { lines, texts } = sheetLayout(dw, meta, scale, isoNts);
+  // white under the title strip and notes band (a drawing never runs under them)
+  out.push(`<rect x="${FR.x0}" y="${NB.y0 - 2}" width="${FR.x1 - FR.x0}" height="${FR.y1 - NB.y0 + 2}" fill="#fff"/>`);
+  for (const [x1, y1, x2, y2, w] of lines)
+    out.push(
+      `<path d="M${x1.toFixed(2)},${y1.toFixed(2)}L${x2.toFixed(2)},${y2.toFixed(2)}" stroke="#000" stroke-width="${w}"/>`,
+    );
+  for (const [x, y, size, s, o] of texts) {
+    if (o.logo) {
+      // banner: emblem + the Board's name in Sinhala, Tamil and English
+      const w = CX.title - CX.logo - 4,
+        h = Math.min(TS.y1 - TS.y0 - 4, w / LOGO_BANNER_RATIO);
       out.push(
-        `<text x="${NB.x0 + 3 + (k ? 4 : 0)}" y="${ny0}" font-size="2.35">${k ? '' : `${i + 1}. `}${esc(ln)}</text>`,
+        `<image x="${CX.logo + 2}" y="${(TS.y0 + (TS.y1 - TS.y0 - h) / 2).toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}" href="${LOGO_BANNER}" xlink:href="${LOGO_BANNER}" preserveAspectRatio="xMidYMid meet"/>`,
       );
-      ny0 += 3.4;
-    });
-    ny0 += 1;
-  });
-  const LX = NB.x0 + 135;
-  out.push(`<text x="${LX}" y="${NB.y0 + 5}" font-size="3" font-weight="700">LEGEND</text>`);
+      continue;
+    }
+    if (!s) continue;
+    const trial = o.color === '#b3001b' && size >= 12;
+    out.push(
+      `<text x="${x.toFixed(2)}" y="${y.toFixed(2)}" font-size="${size.toFixed(2)}"${o.anchor ? ` text-anchor="${o.anchor}"` : ''}${o.bold ? ' font-weight="700"' : ''}${o.underline ? ' text-decoration="underline"' : ''}${o.color ? ` fill="${o.color}"` : ''}${o.serif ? ' font-family="Times New Roman, Times, serif"' : ''}${trial ? ` fill-opacity="0.13" transform="rotate(-24 ${x} ${y})"` : ''}>${esc(s)}</text>`,
+    );
+  }
+  // legend symbols (two columns)
+  const LX = 300,
+    LY = NB.y0 + 7;
   const xh = (x, y, w, hh) => {
     let d = '';
-    for (let k = -hh; k <= w; k += 1.6)
-      d += `M${x + k},${y}L${x + k + hh},${y + hh}M${x + k},${y + hh}L${x + k + hh},${y}`;
-    return `<clipPath id="lgc${Math.round(x * 10)}${Math.round(y * 10)}"><rect x="${x}" y="${y}" width="${w}" height="${hh}"/></clipPath><path d="${d}" clip-path="url(#lgc${Math.round(x * 10)}${Math.round(y * 10)})" stroke="#d0313f" stroke-width=".2" fill="none"/>`;
+    for (let k = -hh; k <= w; k += 1.6) d += `M${x + k},${y + hh}L${x + k + hh},${y}`;
+    return `<clipPath id="lgc${Math.round(x * 10)}${Math.round(y * 10)}"><rect x="${x}" y="${y}" width="${w}" height="${hh}"/></clipPath><path d="${d}" clip-path="url(#lgc${Math.round(x * 10)}${Math.round(y * 10)})" stroke="#000" stroke-width=".2" fill="none"/>`;
   };
   const lg = [
     [
-      `${xh(LX, NB.y0 + 9, 9, 5)}<rect x="${LX}" y="${NB.y0 + 9}" width="9" height="5" fill="none" stroke="#b3001b" stroke-width=".4"/>`,
+      (x, y) =>
+        `${xh(x, y, 9, 4)}<rect x="${x}" y="${y}" width="9" height="4" fill="none" stroke="#000" stroke-width=".4"/>`,
       'Reinforced concrete',
     ],
+    [(x, y) => `<path d="M${x},${y + 2}h9" stroke="#2a78d6" stroke-width=".5"/>`, 'Water surface'],
+    [(x, y) => `<path d="M${x + 2},${y}h5l-2.5,3z" fill="#fff" stroke="#000" stroke-width=".3"/>`, 'Level (m MSL)'],
     [
-      `<rect x="${LX}" y="${NB.y0 + 18}" width="9" height="5" fill="rgba(42,120,214,.18)"/><path d="M${LX},${NB.y0 + 18}h9" stroke="#2a78d6" stroke-width=".5"/>`,
-      'Water / water surface',
+      (x, y) =>
+        `<path d="M${x},${y + 2}h9" stroke="#000" stroke-width=".3"/><path d="M${x},${y + 2}l2,-.6v1.2zM${x + 9},${y + 2}l-2,-.6v1.2z"/>`,
+      'Dimension (mm)',
     ],
     [
-      `<path d="M${LX + 2},${NB.y0 + 27}h5l-2.5,3z" fill="#fff" stroke="#000" stroke-width=".3"/>`,
-      'Water / structure level (m MSL)',
-    ],
-    [
-      `<path d="M${LX},${NB.y0 + 38.5}h9" stroke="#000" stroke-width=".3" marker-end="url(#lg-a)"/><defs><marker id="lg-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,1L10,5L0,9z"/></marker></defs>`,
-      'Dimension (m)',
-    ],
-    [
-      `<rect x="${LX}" y="${NB.y0 + 45}" width="9" height="5" fill="#e8d29b" stroke="#22324a" stroke-width=".2"/>`,
+      (x, y) => `<rect x="${x}" y="${y}" width="9" height="4" fill="#e8d29b" stroke="#22324a" stroke-width=".2"/>`,
       'Filter sand / media',
     ],
-    [`<path d="M${LX},${NB.y0 + 56}h9" stroke="#eb6834" stroke-width=".7"/>`, 'Mechanical equipment'],
+    [
+      (x, y) => `<path d="M${x},${y + 2}h9" stroke="#000" stroke-width=".3" stroke-dasharray="4 1 1 1"/>`,
+      'Centre / section line',
+    ],
   ];
   lg.forEach(([sym, txt], i) => {
-    out.push(sym);
-    out.push(`<text x="${LX + 12}" y="${NB.y0 + 13 + i * 9.2}" font-size="2.5">${txt}</text>`);
+    const x = LX + (i % 2) * 53,
+      y = LY + Math.floor(i / 2) * 8.5;
+    out.push(sym(x, y));
+    out.push(`<text x="${x + 11}" y="${y + 3.2}" font-size="2.3">${txt}</text>`);
   });
-  // ---- title block
-  const L = TB.x0,
-    R = TB.x1,
-    W = R - L;
-  const box = (x, y, w, h) =>
-    `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="#000" stroke-width="0.35"/>`;
-  const lab = (x, y, t) => `<text x="${x}" y="${y}" font-size="1.9" fill="#555">${esc(t)}</text>`;
-  const val = (x, y, t, size = 2.8, bold = false, anchor = 'start') =>
-    `<text x="${x}" y="${y}" font-size="${size}" ${bold ? 'font-weight="700"' : ''} text-anchor="${anchor}">${esc(t)}</text>`;
-  out.push(
-    `<rect x="${L}" y="${TB.y0}" width="${W}" height="${TB.y1 - TB.y0}" fill="#fff" stroke="#000" stroke-width="0.6"/>`,
-  );
-  // logo row
-  const logoH = 10.5,
-    logoW = logoH * LOGO_BANNER_RATIO;
-  out.push(
-    `<image x="${L + 2}" y="${TB.y0 + 1.5}" width="${logoW.toFixed(2)}" height="${logoH}" href="${LOGO_BANNER}" xlink:href="${LOGO_BANNER}" preserveAspectRatio="xMinYMid meet"/>`,
-  );
-  out.push(val(R - 2, TB.y0 + 5.5, (meta.rsc || 'NWSDB').toUpperCase(), 2.4, true, 'end'));
-  out.push(val(R - 2, TB.y0 + 9.5, 'WATER TREATMENT PLANT – DESIGN', 2.2, false, 'end'));
-  out.push(`<path d="M${L},${TB.y0 + 13.5}H${R}" stroke="#000" stroke-width="0.35"/>`);
-  // project
-  out.push(lab(L + 2, TB.y0 + 16.3, 'PROJECT'));
-  out.push(
-    val(L + 2, TB.y0 + 20.5, meta.project.length > 62 ? meta.project.slice(0, 60) + '…' : meta.project, 3, true),
-  );
-  out.push(val(L + 2, TB.y0 + 24.2, [meta.location, meta.client].filter(Boolean).join(' · ').slice(0, 92), 2.1));
-  out.push(`<path d="M${L},${TB.y0 + 26}H${R}" stroke="#000" stroke-width="0.35"/>`);
-  // drawing title
-  out.push(lab(L + 2, TB.y0 + 28.8, 'DRAWING TITLE'));
-  const t1 = title.toUpperCase();
-  out.push(val(L + 2, TB.y0 + 33.4, t1.length > 58 ? t1.slice(0, 57) + '…' : t1, 3.3, true));
-  out.push(`<path d="M${L},${TB.y0 + 36}H${R}" stroke="#000" stroke-width="0.35"/>`);
-  // people
-  const pw = W / 4;
-  [
-    ['DESIGNED', meta.designer],
-    ['DRAWN', meta.drawn || 'WTP Designer'],
-    ['CHECKED', meta.checker],
-    ['APPROVED', meta.approver],
-  ].forEach(([k, v], i) => {
-    out.push(box(L + i * pw, TB.y0 + 36, pw, 9.5));
-    out.push(lab(L + i * pw + 1.5, TB.y0 + 38.6, k));
-    out.push(val(L + i * pw + 1.5, TB.y0 + 43, (v || '').slice(0, 22), 2.4));
-  });
-  // number row
-  const cols = [
-    ['DRAWING No.', drawingNumber({ code: meta.code }, dw), 64],
-    ['REV', meta.rev, 12],
-    ['SCALE (A3)', scale && !isoNts ? `1:${scale}` : 'NTS', 24],
-    ['SHEET', `${meta.sheet} of ${meta.sheets}`, 22],
-    ['DATE', meta.date, W - 122],
-  ];
-  let cx = L;
-  for (const [k, v, w] of cols) {
-    out.push(box(cx, TB.y0 + 45.5, w, 11));
-    out.push(lab(cx + 1.5, TB.y0 + 48.2, k));
-    out.push(val(cx + 1.5, TB.y0 + 53.6, v, k === 'DRAWING No.' ? 2.9 : 2.7, true));
-    cx += w;
-  }
-  // revision + credit
-  out.push(lab(L + 2, TB.y0 + 59.3, 'REVISION'));
-  out.push(val(L + 17, TB.y0 + 59.6, `${meta.rev} – ${meta.date} – ${meta.revDesc || ''}`.slice(0, 70), 2.1));
-  (meta.revisions || []).forEach((rv, i) =>
-    out.push(
-      val(L + 17, TB.y0 + 62.4 + i * 2.5, `${rv.rev || ''} – ${rv.date || ''} – ${rv.desc || ''}`.slice(0, 70), 1.8),
-    ),
-  );
-  out.push(
-    `<rect x="${R - 52}" y="${TB.y0 + 57.3}" width="50" height="4.6" fill="none" stroke="#b3001b" stroke-width="0.4"/><text x="${R - 27}" y="${TB.y0 + 60.6}" font-size="2.6" font-weight="700" text-anchor="middle" fill="#b3001b">${esc(String(meta.status || '').toUpperCase())}</text>`,
-  );
-  out.push(
-    `<text x="${R - 2}" y="${TB.y1 - 1.6}" font-size="2" text-anchor="end" fill="#0b4a92" font-weight="700">${APP}</text>`,
-  );
-  if (isTrial())
-    out.push(
-      `<text x="${(DA.x0 + DA.x1) / 2}" y="${(DA.y0 + DA.y1) / 2}" transform="rotate(-24 ${(DA.x0 + DA.x1) / 2} ${(DA.y0 + DA.y1) / 2})" font-size="19" font-weight="800" text-anchor="middle" fill="#b3001b" fill-opacity="0.13" font-family="Arial, sans-serif">${esc(trialLabel())}</text><text x="${FR.x0 + 3}" y="${FR.y0 + 4.2}" font-size="2.6" font-weight="700" fill="#b3001b">${esc(trialLabel())}</text>`,
-    );
   out.push('</svg>');
   return {
     svg: out.join(''),
@@ -358,92 +435,140 @@ html, body { margin: 0; padding: 0; background: #fff; }
 </style></head><body>${sheets.map((s) => `<div class="sheet">${s}</div>`).join('')}</body></html>`;
 }
 
-// ------------------------------------------------------------------ DXF sheet (frame + title block in model space)
-export function sheetDXFItems(dw, meta) {
+// ------------------------------------------------------------------ DXF sheet (model space, millimetres)
+const NAME_SI = 'ජාතික ජල සම්පාදන හා ජලාපවහන මණ්ඩලය';
+const NAME_TA = 'தேசிய நீர் வழங்கல் வடிகாலமைப்புச் சபை';
+/**
+ * DXF of the drawing with the A3 sheet around it, drawn in model space at the drawing scale (paper mm × scale =
+ * model mm): sheet edge on NPRINT (does not plot), frame on 0.50, title-block grid on 0.25, text on TEXT.
+ */
+export function sheetDXF(dw, meta) {
   const scale = chooseScale(dw);
-  const k = scale / 1000; // metres per paper-mm
+  const isoNts = !!dw.nts;
   const b = dw.bounds;
-  const cxm = (b.x0 + b.x1) / 2,
-    cym = (b.y0 + b.y1) / 2;
+  const cxm = ((b.x0 + b.x1) / 2) * 1000,
+    cym = ((b.y0 + b.y1) / 2) * 1000;
   const daCx = (DA.x0 + DA.x1) / 2,
     daCy = (DA.y0 + (DA.y1 - 22)) / 2;
-  const X = (xmm) => cxm + (xmm - daCx) * k;
-  const Y = (ymm) => cym - (ymm - daCy) * k; // paper y down → model y up
-  const lines = [],
-    texts = [];
-  const rect = (x0, y0, x1, y1, layer = 'FRAME') => {
-    lines.push(
-      [X(x0), Y(y0), X(x1), Y(y0), layer],
-      [X(x1), Y(y0), X(x1), Y(y1), layer],
-      [X(x1), Y(y1), X(x0), Y(y1), layer],
-      [X(x0), Y(y1), X(x0), Y(y0), layer],
-    );
-  };
-  const hl = (x0, x1, y, layer = 'TITLEBLOCK') => lines.push([X(x0), Y(y), X(x1), Y(y), layer]);
-  const vl = (x, y0, y1, layer = 'TITLEBLOCK') => lines.push([X(x), Y(y0), X(x), Y(y1), layer]);
-  const tx = (xmm, ymm, hmm, s, align = 0) => texts.push([X(xmm), Y(ymm), hmm * k, s, align]);
-  rect(0, 0, A3.w, A3.h, 'SHEET');
-  rect(FR.x0, FR.y0, FR.x1, FR.y1);
-  hl(FR.x0, FR.x1, TB.y0 - 4, 'FRAME');
-  rect(TB.x0, TB.y0, TB.x1, TB.y1, 'TITLEBLOCK');
-  rect(NB.x0, NB.y0, NB.x1, NB.y1, 'TITLEBLOCK');
-  vl(NB.x0 + 132, NB.y0, NB.y1);
-  const L = TB.x0,
-    W = TB.x1 - TB.x0;
-  hl(L, TB.x1, TB.y0 + 13.5);
-  hl(L, TB.x1, TB.y0 + 26);
-  hl(L, TB.x1, TB.y0 + 36);
-  hl(L, TB.x1, TB.y0 + 45.5);
-  hl(L, TB.x1, TB.y0 + 56.5);
-  for (let i = 1; i < 4; i++) vl(L + (i * W) / 4, TB.y0 + 36, TB.y0 + 45.5);
-  let cx = L;
-  for (const w of [64, 12, 24, 22]) {
-    cx += w;
-    vl(cx, TB.y0 + 45.5, TB.y0 + 56.5);
-  }
-  tx(L + 2, TB.y0 + 6, 3.2, 'NATIONAL WATER SUPPLY & DRAINAGE BOARD');
-  tx(L + 2, TB.y0 + 11, 2.2, (meta.rsc || '').toUpperCase() + ' - WATER TREATMENT PLANT DESIGN');
-  tx(L + 2, TB.y0 + 16.3, 1.9, 'PROJECT');
-  tx(L + 2, TB.y0 + 20.5, 3, meta.project.slice(0, 62));
-  tx(L + 2, TB.y0 + 24.2, 2.1, [meta.location, meta.client].filter(Boolean).join(' - ').slice(0, 92));
-  tx(L + 2, TB.y0 + 28.8, 1.9, 'DRAWING TITLE');
-  tx(L + 2, TB.y0 + 33.4, 3.3, (dw.title || '').toUpperCase().slice(0, 58));
-  [
-    ['DESIGNED', meta.designer],
-    ['DRAWN', meta.drawn || 'WTP Designer'],
-    ['CHECKED', meta.checker],
-    ['APPROVED', meta.approver],
-  ].forEach(([kk, v], i) => {
-    tx(L + (i * W) / 4 + 1.5, TB.y0 + 38.6, 1.9, kk);
-    tx(L + (i * W) / 4 + 1.5, TB.y0 + 43, 2.4, (v || '').slice(0, 22));
+  const X = (xp) => cxm + (xp - daCx) * scale;
+  const Y = (yp) => cym - (yp - daCy) * scale; // paper y down → model y up
+  return drawingDXF(dw, {
+    scale,
+    extra: (x) => {
+      const { lines, texts } = sheetLayout(dw, meta, scale, isoNts);
+      // sheet edge (not plotted)
+      x.poly(
+        [
+          [X(0), Y(0)],
+          [X(A3.w), Y(0)],
+          [X(A3.w), Y(A3.h)],
+          [X(0), Y(A3.h)],
+        ],
+        true,
+        'NPRINT',
+      );
+      for (const [x1, y1, x2, y2, , layer] of lines) x.line(X(x1), Y(y1), X(x2), Y(y2), layer);
+      for (const [tx, ty, size, s, o] of texts) {
+        if (o.logo) {
+          // vector emblem and the Board's name in three languages (Sinhala / Tamil in the Nirmala UI font)
+          const ex = CX.logo + 12,
+            ey = TS.y0 + 15,
+            r = 10;
+          x.circle(X(ex), Y(ey), r * scale, 'LOGO');
+          x.circle(X(ex), Y(ey), (r - 1.2) * scale, 'LOGO');
+          const drop = Array.from({ length: 25 }, (_, i) => {
+            const t = (i / 24) * 2 * Math.PI;
+            const px = Math.sin(t) * (1 - Math.cos(t)) * 0.5 * 5.2,
+              py = -Math.cos(t) * 6.5 + 1.5;
+            return [X(ex + px), Y(ey - py)];
+          });
+          x.poly(drop, true, 'LOGO');
+          for (const k of [0, 1]) {
+            const wy = ey + 3.2 + k * 1.8;
+            x.poly(
+              Array.from({ length: 13 }, (_, i) => [
+                X(ex - 5 + (i * 10) / 12),
+                Y(wy + Math.sin((i / 12) * 4 * Math.PI) * 0.45),
+              ]),
+              false,
+              'LOGO',
+            );
+          }
+          const nx = CX.logo + 24,
+            nw = CX.title - nx - 2;
+          x.text(
+            X(nx),
+            Y(TS.y0 + 6.5),
+            fit('NATIONAL WATER SUPPLY', nw, 3) * scale,
+            'NATIONAL WATER SUPPLY',
+            'TEXT TITLE',
+            { style: 'SANS BOLD' },
+          );
+          x.text(X(nx), Y(TS.y0 + 11), fit('AND DRAINAGE BOARD', nw, 3) * scale, 'AND DRAINAGE BOARD', 'TEXT TITLE', {
+            style: 'SANS BOLD',
+          });
+          x.text(X(nx), Y(TS.y0 + 17.5), Math.min(2.4, nw / (NAME_SI.length * 0.5)) * scale, NAME_SI, 'TEXT');
+          x.text(X(nx), Y(TS.y0 + 23.5), Math.min(2.2, nw / (NAME_TA.length * 0.5)) * scale, NAME_TA, 'TEXT');
+          continue;
+        }
+        if (!s) continue;
+        const str = o.underline ? `%%U${s}` : s;
+        x.text(X(tx), Y(ty), size * scale, str, o.layer || 'TEXT', {
+          align: o.anchor === 'middle' ? 1 : o.anchor === 'end' ? 2 : 0,
+          style: o.bold ? 'SANS BOLD' : undefined,
+        });
+      }
+      // scale bar (5 segments) under the drawing
+      if (scale && !isoNts) {
+        const target = (60 * scale) / 1000;
+        const step = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100].find((v) => v * 5 >= target) || 100;
+        const seg = (step * 1000) / scale,
+          bx = DA.x0 + 6,
+          by = DA.y1 - 7;
+        for (let i = 0; i < 5; i++) {
+          const pts = [
+            [X(bx + i * seg), Y(by)],
+            [X(bx + (i + 1) * seg), Y(by)],
+            [X(bx + (i + 1) * seg), Y(by + 1.6)],
+            [X(bx + i * seg), Y(by + 1.6)],
+          ];
+          if (i % 2 === 0) x.solid(pts, 'DIM');
+          x.poly(pts, true, 'DIM');
+        }
+        for (let i = 0; i <= 5; i++)
+          x.text(X(bx + i * seg), Y(by - 1.2), 2.4 * scale, fmt(step * i, Number.isInteger(step) ? 0 : 2), 'TEXT', {
+            align: 1,
+          });
+        x.text(X(bx + 5 * seg + 2), Y(by + 1.5), 2.4 * scale, 'm', 'TEXT');
+      }
+      // legend (text and simple symbols)
+      const LX = 300,
+        LY = NB.y0 + 7;
+      [
+        'Reinforced concrete',
+        'Water surface',
+        'Level (m MSL)',
+        'Dimension (mm)',
+        'Filter sand / media',
+        'Centre / section line',
+      ].forEach((t, i) => {
+        const lx = LX + (i % 2) * 53,
+          ly = LY + Math.floor(i / 2) * 8.5;
+        const layer = ['wall', 'WATER', 'DIM', 'DIM', 'OL', 'CL'][i];
+        if (i === 0 || i === 4)
+          x.poly(
+            [
+              [X(lx), Y(ly)],
+              [X(lx + 9), Y(ly)],
+              [X(lx + 9), Y(ly + 4)],
+              [X(lx), Y(ly + 4)],
+            ],
+            true,
+            layer,
+          );
+        else x.line(X(lx), Y(ly + 2), X(lx + 9), Y(ly + 2), layer);
+        x.text(X(lx + 11), Y(ly + 3.2), 2.3 * scale, t, 'TEXT');
+      });
+    },
   });
-  cx = L;
-  for (const [kk, v, w] of [
-    ['DRAWING No.', drawingNumber({ code: meta.code }, dw), 64],
-    ['REV', meta.rev, 12],
-    ['SCALE (A3)', dw.nts ? 'NTS' : `1:${scale}`, 24],
-    ['SHEET', `${meta.sheet} of ${meta.sheets}`, 22],
-    ['DATE', meta.date, W - 122],
-  ]) {
-    tx(cx + 1.5, TB.y0 + 48.2, 1.9, kk);
-    tx(cx + 1.5, TB.y0 + 53.6, 2.7, v);
-    cx += w;
-  }
-  tx(L + 2, TB.y0 + 59.6, 2.1, `REVISION ${meta.rev} - ${meta.date} - ${meta.revDesc || ''}`.slice(0, 80));
-  tx(TB.x1 - 27, TB.y0 + 60.6, 2.6, String(meta.status || '').toUpperCase(), 1);
-  tx(TB.x1 - 2, TB.y1 - 1.6, 2, APP, 2);
-  if (isTrial()) {
-    tx(FR.x0 + 3, FR.y0 + 4.2, 2.6, trialLabel());
-    tx((DA.x0 + DA.x1) / 2, (DA.y0 + DA.y1) / 2, 12, trialLabel(), 1);
-  }
-  tx(NB.x0 + 3, NB.y0 + 5, 3, 'NOTES');
-  NOTES.forEach((n, i) => tx(NB.x0 + 3, NB.y0 + 10 + i * 7.5, 2.2, `${i + 1}. ${n.slice(0, 95)}`));
-  tx((DA.x0 + DA.x1) / 2, DA.y1 - 9, 4.4, `DRAWING ${drawingCode(dw)}: ${(dw.title || '').toUpperCase()}`, 1);
-  tx((DA.x0 + DA.x1) / 2, DA.y1 - 4, 3, `SCALE 1:${scale} (A3)`, 1);
-  return { lines, texts, scale };
-}
-
-/** DXF of the drawing with the A3 sheet frame and title block around it (model space, metres) */
-export function sheetDXF(dw, meta) {
-  return drawingDXF(dw, { extra: sheetDXFItems(dw, meta) });
 }
